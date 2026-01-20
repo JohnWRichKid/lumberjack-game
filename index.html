@@ -36,8 +36,8 @@
         
         #gameArea {
             background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
-            width: 550px; /* Medium - was 600px */
-            height: 750px; /* Medium - was 800px */
+            width: 500px;
+            height: 700px;
             position: relative;
             border: 5px solid #9c27b0;
             border-radius: 10px;
@@ -72,7 +72,7 @@
             width: 80px;
             height: 100px;
             position: absolute;
-            bottom: 50px; /* LOWERED MORE - was 70px */
+            bottom: 70px; /* LOWERED - was 110px */
             left: 80px;
             transition: left 0.15s ease;
             z-index: 10;
@@ -212,9 +212,41 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         
-        /* Arrow buttons - HIDDEN */
+        /* Arrow buttons */
         #arrowButtons {
-            display: none;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 60px;
+            z-index: 20;
+        }
+        
+        .arrow-btn {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #FFD54F, #FFC107);
+            border: 4px solid #FFA000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            color: #8B6F47;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.5);
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .arrow-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .arrow-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         
         #sidePanel {
@@ -240,20 +272,14 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
-        /* Time bar at bottom of game */
         #timeBarContainer {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            height: 30px;
-            background: rgba(0,0,0,0.4);
-            border-radius: 15px;
+            width: 100%;
+            height: 45px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 25px;
             overflow: hidden;
-            border: 3px solid rgba(255,255,255,0.4);
-            z-index: 15;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            margin: 15px 0;
+            border: 2px solid rgba(255,255,255,0.3);
         }
         
         #timeBarFill {
@@ -385,10 +411,6 @@
             </div>
             <div id="ground"></div>
             
-            <div id="timeBarContainer">
-                <div id="timeBarFill"></div>
-            </div>
-            
             <div id="arrowButtons">
                 <div class="arrow-btn" id="leftArrow">←</div>
                 <div class="arrow-btn" id="rightArrow">→</div>
@@ -411,6 +433,9 @@
             <div class="panel-section">
                 <button id="startBtn" disabled>Start Game</button>
                 <div id="score">Score: 0</div>
+                <div id="timeBarContainer">
+                    <div id="timeBarFill"></div>
+                </div>
             </div>
             
             <div class="panel-section instructions">
@@ -451,9 +476,9 @@
         let branches = [];
         let provider, signer, userAddress, contract;
         let timeRemaining = 100;
-        let baseTimeDecay = 0.14; // Faster - was 0.10
-        let currentTimeDecay = 0.14;
-        let timeAddPerChop = 6; // LESS TIME - was 12
+        let baseTimeDecay = 0.10; // SLOWER - was 0.15
+        let currentTimeDecay = 0.10;
+        let timeAddPerChop = 12; // More time per chop - was 10
         let gameSpeed = 0.8; // SLOWER - was 1
         let animationFrameId;
         
@@ -472,6 +497,8 @@
         const finalScoreDiv = document.getElementById('finalScore');
         const txLinkDiv = document.getElementById('txLink');
         const highScoreDiv = document.getElementById('highScore');
+        const leftArrow = document.getElementById('leftArrow');
+        const rightArrow = document.getElementById('rightArrow');
         
         // Load high score from localStorage
         if (localStorage.getItem('monadLumberjackHighScore')) {
@@ -482,30 +509,16 @@
         walletBtn.addEventListener('click', async () => {
             if (typeof window.ethereum === 'undefined') {
                 alert('Please install MetaMask!');
-                statusDiv.textContent = 'MetaMask not found';
                 return;
             }
             
             try {
                 statusDiv.textContent = 'Connecting...';
-                
-                // Request account access
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                
-                if (!accounts || accounts.length === 0) {
-                    statusDiv.textContent = 'No accounts found';
-                    return;
-                }
-                
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
                 provider = new ethers.providers.Web3Provider(window.ethereum);
-                signer = provider.getSigner();
-                userAddress = await signer.getAddress();
-                
-                statusDiv.textContent = 'Checking network...';
                 
                 const network = await provider.getNetwork();
                 if (network.chainId !== 10143) {
-                    statusDiv.textContent = 'Switching to Monad Testnet...';
                     try {
                         await window.ethereum.request({
                             method: 'wallet_switchEthereumChain',
@@ -513,7 +526,6 @@
                         });
                     } catch (switchError) {
                         if (switchError.code === 4902) {
-                            statusDiv.textContent = 'Adding Monad Testnet...';
                             await window.ethereum.request({
                                 method: 'wallet_addEthereumChain',
                                 params: [{
@@ -528,12 +540,11 @@
                             throw switchError;
                         }
                     }
-                    // Reconnect after network switch
                     provider = new ethers.providers.Web3Provider(window.ethereum);
-                    signer = provider.getSigner();
-                    userAddress = await signer.getAddress();
                 }
                 
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
                 contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
                 
                 walletBtn.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
@@ -543,15 +554,7 @@
                 
             } catch (error) {
                 console.error('Connection error:', error);
-                if (error.code === 4001) {
-                    statusDiv.textContent = 'Connection rejected';
-                } else if (error.code === -32002) {
-                    statusDiv.textContent = 'Check MetaMask popup';
-                } else {
-                    statusDiv.textContent = 'Error: ' + (error.message || 'Connection failed');
-                }
-                walletBtn.textContent = 'Connect MetaMask';
-                walletBtn.classList.remove('connected');
+                statusDiv.textContent = 'Error connecting';
             }
         });
         
@@ -579,19 +582,15 @@
         
         function gameLoop() {
             if (!gameActive) return;
-            
-            // Compounding speed increase every 20 chops
-            // Each 20 chop milestone adds another layer of speed
-            const milestones = Math.floor(score / 20);
-            const speedMultiplier = 1 + (milestones * 0.15); // Each milestone adds 15% speed
-            
-            currentTimeDecay = baseTimeDecay * speedMultiplier;
-            
             timeRemaining -= currentTimeDecay * gameSpeed;
             updateTimeBar();
             if (timeRemaining <= 0) {
                 endGame();
                 return;
+            }
+            if (score > 0 && score % 15 === 0) {
+                gameSpeed = 0.8 + (score / 200); // Slower ramp up
+                currentTimeDecay = baseTimeDecay * (1 + score / 400); // Slower increase
             }
             animationFrameId = requestAnimationFrame(gameLoop);
         }
@@ -611,7 +610,7 @@
             const branch = document.createElement('div');
             branch.className = `branch ${side}`;
             branch.style.bottom = `${position}px`;
-            branch.style.left = '235px'; // Center on tree for 550px width
+            branch.style.left = '210px'; // Center on tree
             
             const connector = document.createElement('div');
             connector.className = 'branch-connector';
@@ -631,12 +630,12 @@
         
         function updateLumberjackPosition() {
             if (lumberjackSide === 'left') {
-                lumberjack.style.left = '105px'; // Adjusted for 550px width
+                lumberjack.style.left = '80px';
                 keoneImg.style.transform = 'scaleX(1)';
                 axe.style.right = '-25px';
                 axe.style.left = 'auto';
             } else {
-                lumberjack.style.left = '365px'; // Adjusted for 550px width
+                lumberjack.style.left = '350px';
                 keoneImg.style.transform = 'scaleX(-1)';
                 axe.style.left = '-25px';
                 axe.style.right = 'auto';
@@ -653,7 +652,7 @@
             setTimeout(() => axe.classList.remove('swing'), 200);
             
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 160 && lowestBranch.side === side) {
+            if (lowestBranch && lowestBranch.position < 180 && lowestBranch.side === side) {
                 endGame();
                 return;
             }
@@ -734,9 +733,11 @@
             statusDiv.textContent = 'Click Start Game!';
         });
         
+        leftArrow.addEventListener('click', () => chop('left'));
+        rightArrow.addEventListener('click', () => chop('right'));
+        
         document.addEventListener('keydown', (e) => {
             if (!gameActive) return;
-            
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 chop('left');
