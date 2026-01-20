@@ -432,6 +432,7 @@
             
             <div class="panel-section">
                 <button id="startBtn" disabled>Start Game</button>
+                <div style="font-size: 11px; text-align: center; opacity: 0.7; margin-top: 5px;">press space or click button</div>
                 <div id="score">Score: 0</div>
                 <div id="timeBarContainer">
                     <div id="timeBarFill"></div>
@@ -737,6 +738,16 @@
         rightArrow.addEventListener('click', () => chop('right'));
         
         document.addEventListener('keydown', (e) => {
+            // Spacebar to start game
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                if (!gameActive && !startBtn.disabled) {
+                    e.preventDefault();
+                    startBtn.disabled = true;
+                    startGame();
+                    return;
+                }
+            }
+            
             if (!gameActive) return;
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
