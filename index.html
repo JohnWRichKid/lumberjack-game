@@ -621,6 +621,15 @@
         
         async function chop(side) {
             if (!gameActive) return;
+            
+            // Check collision FIRST before moving
+            const lowestBranch = branches[0];
+            if (lowestBranch && lowestBranch.position < 150 && lowestBranch.side === side) {
+                endGame();
+                return;
+            }
+            
+            // Safe to chop - update position
             lumberjackSide = side;
             updateLumberjackPosition();
             
@@ -628,11 +637,6 @@
             axe.classList.add('swing');
             setTimeout(() => axe.classList.remove('swing'), 200);
             
-            const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 150 && lowestBranch.side === side) {
-                endGame();
-                return;
-            }
             if (branches.length > 0) {
                 branches.shift();
                 const branchEls = document.querySelectorAll('.branch');
