@@ -72,7 +72,7 @@
             width: 80px;
             height: 100px;
             position: absolute;
-            bottom: 40px; /* LOWER - was 50px */
+            bottom: 70px; /* BACK TO WORKING POSITION */
             left: 80px;
             transition: left 0.15s ease;
             z-index: 10;
@@ -624,7 +624,7 @@
             
             // Check collision FIRST before moving
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 150 && lowestBranch.side === side) {
+            if (lowestBranch && lowestBranch.position < 180 && lowestBranch.side === side) {
                 endGame();
                 return;
             }
