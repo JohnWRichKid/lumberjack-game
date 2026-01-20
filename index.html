@@ -72,7 +72,7 @@
             width: 80px;
             height: 100px;
             position: absolute;
-            bottom: 70px; /* BACK TO WORKING POSITION */
+            bottom: 60px; /* LOWER - was 70px */
             left: 80px;
             transition: left 0.15s ease;
             z-index: 10;
@@ -607,12 +607,12 @@
         
         function updateLumberjackPosition() {
             if (lumberjackSide === 'left') {
-                lumberjack.style.left = '50px'; /* CLOSER - for 420px width */
+                lumberjack.style.left = '70px'; /* TIGHTER - was 50px */
                 keoneImg.style.transform = 'scaleX(1)';
                 axe.style.right = '-25px';
                 axe.style.left = 'auto';
             } else {
-                lumberjack.style.left = '290px'; /* CLOSER - for 420px width */
+                lumberjack.style.left = '270px'; /* TIGHTER - was 290px */
                 keoneImg.style.transform = 'scaleX(-1)';
                 axe.style.left = '-25px';
                 axe.style.right = 'auto';
@@ -624,7 +624,7 @@
             
             // Check collision FIRST before moving
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 180 && lowestBranch.side === side) {
+            if (lowestBranch && lowestBranch.position < 170 && lowestBranch.side === side) {
                 endGame();
                 return;
             }
