@@ -640,9 +640,12 @@
             setTimeout(() => axe.classList.remove('swing'), 200);
             
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.side !== 'safe' && lowestBranch.position < 160 && lowestBranch.side === side) {
-                endGame();
-                return;
+            // Only check collision if branch is on same side AND not safe
+            if (lowestBranch && lowestBranch.position < 160) {
+                if (lowestBranch.side !== 'safe' && lowestBranch.side === side) {
+                    endGame();
+                    return;
+                }
             }
             if (branches.length > 0) {
                 branches.shift();
@@ -725,23 +728,8 @@
         rightArrow.addEventListener('click', () => chop('right'));
         
         document.addEventListener('keydown', (e) => {
-            // Auto-start game on arrow press if not active
-            if (!gameActive && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-                if (!startBtn.disabled) {
-                    startBtn.disabled = true;
-                    startGame();
-                    // Then process the chop on next frame
-                    setTimeout(() => {
-                        if (e.key === 'ArrowLeft') chop('left');
-                        else chop('right');
-                    }, 100);
-                }
-                e.preventDefault();
-                return;
-            }
-            
-            // Normal gameplay
             if (!gameActive) return;
+            
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 chop('left');
