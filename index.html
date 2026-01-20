@@ -36,8 +36,8 @@
         
         #gameArea {
             background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
-            width: 500px;
-            height: 700px;
+            width: 600px; /* BIGGER - was 500px */
+            height: 800px; /* BIGGER - was 700px */
             position: relative;
             border: 5px solid #9c27b0;
             border-radius: 10px;
@@ -72,7 +72,7 @@
             width: 80px;
             height: 100px;
             position: absolute;
-            bottom: 70px; /* LOWERED - was 110px */
+            bottom: 50px; /* LOWERED MORE - was 70px */
             left: 80px;
             transition: left 0.15s ease;
             z-index: 10;
@@ -478,9 +478,10 @@
         let timeRemaining = 100;
         let baseTimeDecay = 0.10; // SLOWER - was 0.15
         let currentTimeDecay = 0.10;
-        let timeAddPerChop = 12; // More time per chop - was 10
+        let timeAddPerChop = 6; // LESS TIME - was 12
         let gameSpeed = 0.8; // SLOWER - was 1
         let animationFrameId;
+        let musicPlaying = false;
         
         const walletBtn = document.getElementById('wallet');
         const startBtn = document.getElementById('startBtn');
@@ -499,6 +500,65 @@
         const highScoreDiv = document.getElementById('highScore');
         const leftArrow = document.getElementById('leftArrow');
         const rightArrow = document.getElementById('rightArrow');
+        
+        // Audio context for background music
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Background music - upbeat melody
+        function startBackgroundMusic() {
+            if (musicPlaying) return;
+            musicPlaying = true;
+            
+            const melody = [
+                { freq: 523.25, time: 0 },    // C
+                { freq: 659.25, time: 0.2 },  // E
+                { freq: 783.99, time: 0.4 },  // G
+                { freq: 659.25, time: 0.6 },  // E
+                { freq: 523.25, time: 0.8 },  // C
+                { freq: 587.33, time: 1.0 },  // D
+                { freq: 659.25, time: 1.2 },  // E
+                { freq: 523.25, time: 1.4 }   // C
+            ];
+            
+            function playLoop() {
+                if (!musicPlaying) return;
+                
+                melody.forEach(note => {
+                    setTimeout(() => {
+                        if (!musicPlaying) return;
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        
+                        osc.frequency.value = note.freq;
+                        osc.type = 'sine';
+                        
+                        gain.gain.setValueAtTime(0.05, audioContext.currentTime); // Low volume
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                        
+                        osc.start(audioContext.currentTime);
+                        osc.stop(audioContext.currentTime + 0.15);
+                    }, note.time * 1000);
+                });
+                
+                if (musicPlaying) {
+                    setTimeout(playLoop, 1600);
+                }
+            }
+            
+            playLoop();
+        }
+        
+        // Auto-start music on first interaction
+        let musicStarted = false;
+        function ensureMusicStarted() {
+            if (!musicStarted) {
+                startBackgroundMusic();
+                musicStarted = true;
+            }
+        }
         
         // Load high score from localStorage
         if (localStorage.getItem('monadLumberjackHighScore')) {
@@ -582,15 +642,15 @@
         
         function gameLoop() {
             if (!gameActive) return;
+            
+            // Very gradual increase in time decay
+            currentTimeDecay = baseTimeDecay * (1 + (score * 0.002)); // VERY SLOW increase
+            
             timeRemaining -= currentTimeDecay * gameSpeed;
             updateTimeBar();
             if (timeRemaining <= 0) {
                 endGame();
                 return;
-            }
-            if (score > 0 && score % 15 === 0) {
-                gameSpeed = 0.8 + (score / 200); // Slower ramp up
-                currentTimeDecay = baseTimeDecay * (1 + score / 400); // Slower increase
             }
             animationFrameId = requestAnimationFrame(gameLoop);
         }
@@ -610,7 +670,7 @@
             const branch = document.createElement('div');
             branch.className = `branch ${side}`;
             branch.style.bottom = `${position}px`;
-            branch.style.left = '210px'; // Center on tree
+            branch.style.left = '260px'; // Center on tree for 600px width
             
             const connector = document.createElement('div');
             connector.className = 'branch-connector';
@@ -630,12 +690,12 @@
         
         function updateLumberjackPosition() {
             if (lumberjackSide === 'left') {
-                lumberjack.style.left = '80px';
+                lumberjack.style.left = '130px'; // Adjusted for 600px width
                 keoneImg.style.transform = 'scaleX(1)';
                 axe.style.right = '-25px';
                 axe.style.left = 'auto';
             } else {
-                lumberjack.style.left = '350px';
+                lumberjack.style.left = '390px'; // Adjusted for 600px width
                 keoneImg.style.transform = 'scaleX(-1)';
                 axe.style.left = '-25px';
                 axe.style.right = 'auto';
@@ -652,7 +712,7 @@
             setTimeout(() => axe.classList.remove('swing'), 200);
             
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 180 && lowestBranch.side === side) {
+            if (lowestBranch && lowestBranch.position < 160 && lowestBranch.side === side) {
                 endGame();
                 return;
             }
@@ -733,16 +793,41 @@
             statusDiv.textContent = 'Click Start Game!';
         });
         
-        leftArrow.addEventListener('click', () => chop('left'));
-        rightArrow.addEventListener('click', () => chop('right'));
+        leftArrow.addEventListener('click', () => {
+            ensureMusicStarted();
+            chop('left');
+        });
+        rightArrow.addEventListener('click', () => {
+            ensureMusicStarted();
+            chop('right');
+        });
         
         document.addEventListener('keydown', (e) => {
+            // Auto-start game on arrow press if not active
+            if (!gameActive && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+                if (!startBtn.disabled) {
+                    ensureMusicStarted();
+                    startBtn.disabled = true;
+                    startGame();
+                    // Then process the chop on next frame
+                    setTimeout(() => {
+                        if (e.key === 'ArrowLeft') chop('left');
+                        else chop('right');
+                    }, 100);
+                }
+                e.preventDefault();
+                return;
+            }
+            
+            // Normal gameplay
             if (!gameActive) return;
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
+                ensureMusicStarted();
                 chop('left');
             } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
+                ensureMusicStarted();
                 chop('right');
             }
         });
