@@ -562,38 +562,6 @@
         
         // Create realistic chopping sound
         function playChopSound() {
-            // Create "thwack" sound with noise and lower frequency
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            const filter = audioContext.createBiquadFilter();
-            
-            oscillator.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            // Low frequency for wood sound
-            oscillator.frequency.value = 120;
-            oscillator.type = 'sawtooth';
-            
-            filter.type = 'lowpass';
-            filter.frequency.value = 800;
-            
-            gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.15);
-            
-            // Add click for impact
-            const click = audioContext.createOscillator();
-            const clickGain = audioContext.createGain();
-            click.connect(clickGain);
-            clickGain.connect(audioContext.destination);
-            click.frequency.value = 80;
-            click.type = 'square';
-            clickGain.gain.setValueAtTime(0.3, audioContext.currentTime);
-            clickGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
-            click.start(audioContext.currentTime);
         }
         
         // Auto-start music on first click
