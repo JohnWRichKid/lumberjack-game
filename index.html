@@ -36,8 +36,8 @@
         
         #gameArea {
             background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
-            width: 500px;
-            height: 750px; /* Taller - was 700px */
+            width: 480px; /* Smaller - was 500px */
+            height: 720px; /* Smaller - was 750px */
             position: relative;
             border: 5px solid #9c27b0;
             border-radius: 10px;
@@ -72,7 +72,7 @@
             width: 80px;
             height: 100px;
             position: absolute;
-            bottom: 60px; /* LOWER - was 70px */
+            bottom: 50px; /* EVEN LOWER - was 60px */
             left: 80px;
             transition: left 0.15s ease;
             z-index: 10;
@@ -587,7 +587,7 @@
             const branch = document.createElement('div');
             branch.className = `branch ${side}`;
             branch.style.bottom = `${position}px`;
-            branch.style.left = '210px'; // Center on tree
+            branch.style.left = '200px'; // Center on tree for 480px width
             
             const connector = document.createElement('div');
             connector.className = 'branch-connector';
@@ -607,12 +607,12 @@
         
         function updateLumberjackPosition() {
             if (lumberjackSide === 'left') {
-                lumberjack.style.left = '80px';
+                lumberjack.style.left = '70px'; // Adjusted for 480px width
                 keoneImg.style.transform = 'scaleX(1)';
                 axe.style.right = '-25px';
                 axe.style.left = 'auto';
             } else {
-                lumberjack.style.left = '350px';
+                lumberjack.style.left = '330px'; // Adjusted for 480px width
                 keoneImg.style.transform = 'scaleX(-1)';
                 axe.style.left = '-25px';
                 axe.style.right = 'auto';
@@ -629,7 +629,7 @@
             setTimeout(() => axe.classList.remove('swing'), 200);
             
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 170 && lowestBranch.side === side) { // Adjusted for lower position
+            if (lowestBranch && lowestBranch.position < 160 && lowestBranch.side === side) { // Adjusted for lower position
                 endGame();
                 return;
             }
