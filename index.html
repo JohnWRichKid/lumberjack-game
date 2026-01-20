@@ -37,8 +37,8 @@
         
         #gameArea {
             background: linear-gradient(to bottom, #4a148c 0%, #6a1b9a 50%, #8e24aa 100%);
-            width: 400px;
-            height: 600px;
+            width: 500px;
+            height: 700px;
             position: relative;
             border: 5px solid #9c27b0;
             border-radius: 10px;
@@ -47,7 +47,7 @@
         }
         
         #tree {
-            width: 120px;
+            width: 140px;
             background: linear-gradient(to bottom, #5d4037 0%, #4e342e 50%, #3e2723 100%);
             height: 100%;
             position: absolute;
@@ -66,11 +66,11 @@
         }
         
         #lumberjack {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             position: absolute;
-            bottom: 40px;
-            left: 50px;
+            bottom: 50px;
+            left: 60px;
             transition: left 0.1s;
             z-index: 5;
         }
@@ -80,16 +80,16 @@
             height: 100%;
             object-fit: cover;
             border-radius: 50%;
-            border: 3px solid #9c27b0;
+            border: 4px solid #9c27b0;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         
         .branch {
-            width: 100px;
-            height: 40px;
+            width: 120px;
+            height: 45px;
             background: linear-gradient(to right, #2e7d32 0%, #388e3c 50%, #43a047 100%);
             position: absolute;
-            border-radius: 20px;
+            border-radius: 25px;
             z-index: 2;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
@@ -98,17 +98,17 @@
             content: '🍃';
             position: absolute;
             top: -10px;
-            right: 5px;
-            font-size: 20px;
+            right: 10px;
+            font-size: 24px;
         }
         
         .branch.left {
-            left: 20px;
+            left: -20px;
             transform: rotate(-15deg);
         }
         
         .branch.right {
-            right: 20px;
+            right: -20px;
             transform: rotate(15deg);
         }
         
@@ -116,7 +116,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            width: 300px;
+            width: 320px;
         }
         
         .panel-section {
@@ -127,8 +127,8 @@
             backdrop-filter: blur(10px);
         }
         
-        #score, #timeBar {
-            font-size: 28px;
+        #score {
+            font-size: 32px;
             margin: 10px 0;
             text-align: center;
             font-weight: bold;
@@ -137,9 +137,9 @@
         
         #timeBarContainer {
             width: 100%;
-            height: 40px;
+            height: 45px;
             background: rgba(0,0,0,0.3);
-            border-radius: 20px;
+            border-radius: 25px;
             overflow: hidden;
             margin: 15px 0;
             border: 2px solid rgba(255,255,255,0.3);
@@ -181,7 +181,7 @@
         #startBtn {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            font-size: 20px;
+            font-size: 22px;
         }
         
         #startBtn:hover:not(:disabled) {
@@ -289,7 +289,6 @@
             font-weight: bold;
         }
         
-        /* Scrollbar styling */
         #leaderboardPanel::-webkit-scrollbar {
             width: 8px;
         }
@@ -321,7 +320,6 @@
     <div id="gameContainer">
         <div id="gameArea">
             <div id="tree">
-                <!-- Tree rings for effect -->
                 <div class="tree-ring" style="top: 20%"></div>
                 <div class="tree-ring" style="top: 40%"></div>
                 <div class="tree-ring" style="top: 60%"></div>
@@ -359,13 +357,13 @@
                 <p>3. Press <span class="highlight">LEFT ← or RIGHT →</span> to chop!</p>
                 <p>4. Avoid branches!</p>
                 <p>5. Keep the time bar filled!</p>
-                <p><strong>Every chop = 1 transaction on Monad!</strong></p>
+                <p><strong>Each chop = 1 transaction on Monad!</strong></p>
             </div>
             
             <div class="panel-section" id="leaderboardPanel">
                 <h3>🏆 Top 10 🏆</h3>
                 <div id="leaderboardList">
-                    <div class="leaderboard-entry">Loading...</div>
+                    <div class="leaderboard-entry">Connect wallet to load</div>
                 </div>
             </div>
         </div>
@@ -373,41 +371,33 @@
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
-        // Contract ABI and address (you'll need to deploy the contract first)
-        const CONTRACT_ADDRESS = "0x60f7a408ad533db7d6deb035cb23ef9f14066a67"; // Deployed contract
+        // SIMPLIFIED VERSION - Direct transactions, no session wallet funding needed
+        const CONTRACT_ADDRESS = "0x60f7a408ad533db7d6deb035cb23ef9f14066a67";
         const CONTRACT_ABI = [
             "function createSession(address sessionKey, uint256 duration) external",
             "function recordChop(address player, uint256 chopNumber) external",
             "function endGame(address player, uint256 finalScore) external",
-            "function getLeaderboard() external view returns (tuple(address player, uint256 score, uint256 timestamp)[])",
-            "function isSessionValid(address player) external view returns (bool)"
+            "function getLeaderboard() external view returns (tuple(address player, uint256 score, uint256 timestamp)[])"
         ];
         
-        // Monad configuration
-        const MONAD_CHAIN_ID = '0x8f'; // 143
+        const MONAD_CHAIN_ID = '0x8f';
         const MONAD_RPC = 'https://rpc.monad.xyz';
         
-        // Game variables
         let score = 0;
         let gameActive = false;
         let lumberjackSide = 'left';
         let branches = [];
-        let provider;
-        let signer;
-        let userAddress;
-        let contract;
-        let sessionWallet;
-        let sessionContract;
+        let provider, signer, userAddress, contract;
         
-        // Time bar mechanics
-        let timeRemaining = 100; // Percentage
-        let baseTimeDecay = 0.5; // Base decay per frame
+        let timeRemaining = 100;
+        let baseTimeDecay = 0.5;
         let currentTimeDecay = 0.5;
         let timeAddPerChop = 8;
         let gameSpeed = 1;
         let animationFrameId;
+        let chopQueue = [];
+        let isProcessingChop = false;
         
-        // DOM elements
         const walletBtn = document.getElementById('wallet');
         const startBtn = document.getElementById('startBtn');
         const statusDiv = document.getElementById('status');
@@ -478,49 +468,12 @@
             }
         });
         
-        // Start game
+        // Start game - SIMPLIFIED, just start playing
         startBtn.addEventListener('click', async () => {
-            if (CONTRACT_ADDRESS === "YOUR_CONTRACT_ADDRESS_HERE") {
-                alert('Contract not deployed yet! Check console for deployment instructions.');
-                console.log('Deploy LumberjackGame.sol first, then update CONTRACT_ADDRESS');
-                return;
-            }
-            
             startBtn.disabled = true;
-            statusDiv.textContent = 'Creating session key...';
-            
-            try {
-                // Create ephemeral session wallet
-                sessionWallet = ethers.Wallet.createRandom().connect(provider);
-                sessionContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, sessionWallet);
-                
-                statusDiv.textContent = 'Creating session (sign transaction)...';
-                
-                // Create session on-chain (3600 seconds = 1 hour max)
-                const tx = await contract.createSession(sessionWallet.address, 3600);
-                statusDiv.textContent = 'Waiting for confirmation...';
-                await tx.wait();
-                
-                statusDiv.textContent = 'Session created! Starting game...';
-                
-                // Fund session wallet with small amount for gas
-                const fundTx = await signer.sendTransaction({
-                    to: sessionWallet.address,
-                    value: ethers.utils.parseEther('0.01') // 0.01 MON for gas
-                });
-                await fundTx.wait();
-                
-                // Start the game
-                startGame();
-                
-            } catch (error) {
-                console.error('Session creation error:', error);
-                statusDiv.textContent = 'Error: ' + error.message.substring(0, 50);
-                startBtn.disabled = false;
-            }
+            startGame();
         });
         
-        // Start game
         function startGame() {
             score = 0;
             timeRemaining = 100;
@@ -530,6 +483,7 @@
             lumberjackSide = 'left';
             gameActive = true;
             gameOverDiv.style.display = 'none';
+            chopQueue = [];
             
             updateScore();
             updateTimeBar();
@@ -537,42 +491,35 @@
             updateLumberjackPosition();
             
             statusDiv.textContent = 'Game started! Use arrow keys!';
-            
-            // Start game loop
             gameLoop();
         }
         
-        // Main game loop
         function gameLoop() {
             if (!gameActive) return;
             
-            // Decrease time
             timeRemaining -= currentTimeDecay * gameSpeed;
             updateTimeBar();
             
-            // Check if time ran out
             if (timeRemaining <= 0) {
                 endGame('Time Ran Out!');
                 return;
             }
             
-            // Increase difficulty gradually
             if (score > 0 && score % 10 === 0) {
-                gameSpeed = 1 + (score / 100); // Speed increases slowly
-                currentTimeDecay = baseTimeDecay * (1 + score / 200); // Decay increases slowly
+                gameSpeed = 1 + (score / 100);
+                currentTimeDecay = baseTimeDecay * (1 + score / 200);
             }
             
             animationFrameId = requestAnimationFrame(gameLoop);
         }
         
-        // Generate branches
         function generateBranches() {
             document.querySelectorAll('.branch').forEach(b => b.remove());
             branches = [];
             
             for (let i = 0; i < 6; i++) {
                 const side = Math.random() > 0.5 ? 'left' : 'right';
-                const position = 80 + (i * 90);
+                const position = 100 + (i * 100);
                 branches.push({ side, position });
                 
                 const branchEl = document.createElement('div');
@@ -582,52 +529,46 @@
             }
         }
         
-        // Update lumberjack position
         function updateLumberjackPosition() {
             if (lumberjackSide === 'left') {
-                lumberjack.style.left = '30px';
+                lumberjack.style.left = '40px';
                 keoneImg.style.transform = 'scaleX(1)';
             } else {
-                lumberjack.style.left = '290px';
+                lumberjack.style.left = '360px';
                 keoneImg.style.transform = 'scaleX(-1)';
             }
         }
         
-        // Chop function
         async function chop(side) {
             if (!gameActive) return;
             
             lumberjackSide = side;
             updateLumberjackPosition();
             
-            // Add shake animation to tree
             treeEl.classList.add('chop-animation');
             setTimeout(() => treeEl.classList.remove('chop-animation'), 100);
             
-            // Check if hit a branch
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 120 && lowestBranch.side === side) {
+            if (lowestBranch && lowestBranch.position < 150 && lowestBranch.side === side) {
                 endGame('Hit a Branch!');
                 return;
             }
             
-            // Remove lowest branch and shift others down
             if (branches.length > 0) {
                 branches.shift();
                 const branchEls = document.querySelectorAll('.branch');
                 if (branchEls[0]) branchEls[0].remove();
                 
                 branches.forEach((branch, index) => {
-                    branch.position -= 90;
+                    branch.position -= 100;
                     const branchEl = branchEls[index + 1];
                     if (branchEl) {
                         branchEl.style.bottom = `${branch.position}px`;
                     }
                 });
                 
-                // Add new branch at top
                 const newSide = Math.random() > 0.5 ? 'left' : 'right';
-                const newPosition = 80 + (branches.length * 90);
+                const newPosition = 100 + (branches.length * 100);
                 branches.push({ side: newSide, position: newPosition });
                 
                 const newBranchEl = document.createElement('div');
@@ -641,31 +582,40 @@
             updateScore();
             updateTimeBar();
             
-            // Record chop on-chain (async, don't wait)
-            recordChopOnChain();
+            // Queue transaction instead of sending immediately
+            chopQueue.push(score);
+            processChopQueue();
         }
         
-        // Record chop on blockchain
-        async function recordChopOnChain() {
+        // Process chop transactions in background
+        async function processChopQueue() {
+            if (isProcessingChop || chopQueue.length === 0) return;
+            
+            isProcessingChop = true;
+            const chopNumber = chopQueue.shift();
+            
             try {
-                const tx = await sessionContract.recordChop(userAddress, score);
-                // Don't wait for confirmation, game continues
+                const tx = await contract.recordChop(userAddress, chopNumber, {
+                    gasLimit: 100000
+                });
+                // Don't wait for confirmation
             } catch (error) {
-                console.error('Chop recording error:', error);
-                // Game continues even if transaction fails
+                console.error('Chop tx error:', error);
+            }
+            
+            isProcessingChop = false;
+            if (chopQueue.length > 0) {
+                setTimeout(() => processChopQueue(), 100);
             }
         }
         
-        // Update score display
         function updateScore() {
             scoreDiv.textContent = `Score: ${score}`;
         }
         
-        // Update time bar
         function updateTimeBar() {
             timeBarFill.style.width = `${Math.max(0, timeRemaining)}%`;
             
-            // Change color based on time remaining
             if (timeRemaining > 60) {
                 timeBarFill.style.background = 'linear-gradient(to right, #48dbfb 0%, #0abde3 100%)';
             } else if (timeRemaining > 30) {
@@ -675,25 +625,22 @@
             }
         }
         
-        // End game
         async function endGame(reason) {
             gameActive = false;
             cancelAnimationFrame(animationFrameId);
             
             gameOverDiv.style.display = 'block';
-            finalScoreDiv.textContent = `${reason}\nScore: ${score}`;
+            finalScoreDiv.textContent = `${reason}\\nScore: ${score}`;
             
             statusDiv.textContent = 'Submitting final score...';
             
-            // Submit final score to contract
             try {
-                const tx = await sessionContract.endGame(userAddress, score);
+                const tx = await contract.endGame(userAddress, score);
                 const receipt = await tx.wait();
                 
-                statusDiv.textContent = 'Score submitted! Game over.';
+                statusDiv.textContent = 'Score submitted!';
                 txLinkDiv.innerHTML = `<a href="https://monadvision.com/tx/${receipt.transactionHash}" target="_blank" style="color: #48dbfb;">View Transaction</a>`;
                 
-                // Reload leaderboard
                 await loadLeaderboard();
                 
             } catch (error) {
@@ -704,7 +651,6 @@
             startBtn.disabled = false;
         }
         
-        // Load leaderboard
         async function loadLeaderboard() {
             if (!contract) return;
             
@@ -737,13 +683,11 @@
             }
         }
         
-        // Restart game
         restartBtn.addEventListener('click', () => {
             gameOverDiv.style.display = 'none';
             statusDiv.textContent = 'Click Start Game to play again!';
         });
         
-        // Keyboard controls
         document.addEventListener('keydown', (e) => {
             if (!gameActive) return;
             
@@ -754,12 +698,6 @@
                 e.preventDefault();
                 chop('right');
             }
-        });
-        
-        // Load leaderboard on page load
-        window.addEventListener('load', () => {
-            // Initial leaderboard message
-            leaderboardList.innerHTML = '<div class="leaderboard-entry">Connect wallet to load</div>';
         });
     </script>
 </body>
