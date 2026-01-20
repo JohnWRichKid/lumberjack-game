@@ -337,12 +337,15 @@
             try {
                 statusDiv.textContent = 'Sending chop transaction...';
                 
-                // Simple transaction - just send 0 MON to yourself
-                // This is the simplest way to record a chop on-chain
+                // Get current gas price
+                const gasPrice = await provider.getGasPrice();
+                
+                // Simple transaction - just send a tiny amount of MON to yourself
                 const tx = await signer.sendTransaction({
                     to: userAddress,
-                    value: ethers.utils.parseEther('0'),
-                    data: ethers.utils.toUtf8Bytes(`Chop #${onChainChops + 1}`)
+                    value: ethers.utils.parseEther('0.000001'), // Send tiny amount
+                    gasLimit: 21000, // Standard transfer
+                    gasPrice: gasPrice.mul(120).div(100) // 20% higher than current
                 });
                 
                 statusDiv.textContent = `Transaction sent! Hash: ${tx.hash.slice(0, 10)}...`;
@@ -352,11 +355,14 @@
                     onChainChops++;
                     updateScore();
                     statusDiv.textContent = 'Chop recorded on Monad! ✅';
+                }).catch((err) => {
+                    console.error('Transaction confirmation error:', err);
+                    statusDiv.textContent = 'Transaction sent but confirmation failed';
                 });
                 
             } catch (error) {
                 console.error('Transaction error:', error);
-                statusDiv.textContent = 'Transaction failed (but game continues)';
+                statusDiv.textContent = `Transaction failed: ${error.message.substring(0, 50)}...`;
             }
         }
         
