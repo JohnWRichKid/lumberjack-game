@@ -152,8 +152,15 @@
         <p>Make sure you have MON tokens for gas fees.</p>
     </div>
 
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
+        // Wait for ethers to load
+        window.addEventListener('load', () => {
+            if (typeof ethers === 'undefined') {
+                document.getElementById('status').textContent = 'Error: Could not load web3 library. Please refresh the page.';
+            }
+        });
+        
         // Game variables
         let score = 0;
         let onChainChops = 0;
