@@ -476,14 +476,11 @@
         let branches = [];
         let provider, signer, userAddress, contract;
         let timeRemaining = 100;
-        let baseTimeDecay = 0.15; // MUCH SLOWER - was 0.5
-        let currentTimeDecay = 0.15;
-        let timeAddPerChop = 10; // More time per chop
-        let gameSpeed = 1;
+        let baseTimeDecay = 0.10; // SLOWER - was 0.15
+        let currentTimeDecay = 0.10;
+        let timeAddPerChop = 12; // More time per chop - was 10
+        let gameSpeed = 0.8; // SLOWER - was 1
         let animationFrameId;
-        
-        // Audio context for chopping sound
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
         const walletBtn = document.getElementById('wallet');
         const startBtn = document.getElementById('startBtn');
@@ -507,43 +504,6 @@
         if (localStorage.getItem('monadLumberjackHighScore')) {
             highScore = parseInt(localStorage.getItem('monadLumberjackHighScore'));
             highScoreDiv.textContent = highScore;
-        }
-        
-        // Create realistic chopping sound
-        function playChopSound() {
-            // Create "thwack" sound with noise and lower frequency
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            const filter = audioContext.createBiquadFilter();
-            
-            oscillator.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            // Low frequency for wood sound
-            oscillator.frequency.value = 120;
-            oscillator.type = 'sawtooth';
-            
-            filter.type = 'lowpass';
-            filter.frequency.value = 800;
-            
-            gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.15);
-            
-            // Add click for impact
-            const click = audioContext.createOscillator();
-            const clickGain = audioContext.createGain();
-            click.connect(clickGain);
-            clickGain.connect(audioContext.destination);
-            click.frequency.value = 80;
-            click.type = 'square';
-            clickGain.gain.setValueAtTime(0.3, audioContext.currentTime);
-            clickGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
-            click.start(audioContext.currentTime);
-            click.stop(audioContext.currentTime + 0.05);
         }
         
         walletBtn.addEventListener('click', async () => {
@@ -607,7 +567,7 @@
             score = 0;
             timeRemaining = 100;
             currentTimeDecay = baseTimeDecay;
-            gameSpeed = 1;
+            gameSpeed = 0.8;
             branches = [];
             lumberjackSide = 'left';
             gameActive = true;
@@ -629,8 +589,8 @@
                 return;
             }
             if (score > 0 && score % 15 === 0) {
-                gameSpeed = 1 + (score / 150);
-                currentTimeDecay = baseTimeDecay * (1 + score / 300);
+                gameSpeed = 0.8 + (score / 200); // Slower ramp up
+                currentTimeDecay = baseTimeDecay * (1 + score / 400); // Slower increase
             }
             animationFrameId = requestAnimationFrame(gameLoop);
         }
@@ -691,11 +651,8 @@
             axe.classList.add('swing');
             setTimeout(() => axe.classList.remove('swing'), 200);
             
-            // Play chopping sound
-            playChopSound();
-            
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 180 && lowestBranch.side === side) { // Adjusted for lower position
+            if (lowestBranch && lowestBranch.position < 180 && lowestBranch.side === side) {
                 endGame();
                 return;
             }
