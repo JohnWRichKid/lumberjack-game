@@ -472,8 +472,6 @@
         const finalScoreDiv = document.getElementById('finalScore');
         const txLinkDiv = document.getElementById('txLink');
         const highScoreDiv = document.getElementById('highScore');
-        const leftArrow = document.getElementById('leftArrow');
-        const rightArrow = document.getElementById('rightArrow');
         
         // Load high score from localStorage
         if (localStorage.getItem('monadLumberjackHighScore')) {
@@ -578,19 +576,10 @@
             document.querySelectorAll('.branch').forEach(b => b.remove());
             branches = [];
             for (let i = 0; i < 8; i++) {
-                let side;
-                if (i < 3) {
-                    // First 3 branches are safe - position them in middle (won't collide)
-                    side = 'safe';
-                } else {
-                    // After first 3, random placement
-                    side = Math.random() > 0.5 ? 'left' : 'right';
-                }
+                const side = Math.random() > 0.5 ? 'left' : 'right';
                 const position = 150 + (i * 80);
                 branches.push({ side, position });
-                if (side !== 'safe') {
-                    createBranch(side, position);
-                }
+                createBranch(side, position);
             }
         }
         
@@ -640,12 +629,9 @@
             setTimeout(() => axe.classList.remove('swing'), 200);
             
             const lowestBranch = branches[0];
-            // Only check collision if branch is on same side AND not safe
-            if (lowestBranch && lowestBranch.position < 160) {
-                if (lowestBranch.side !== 'safe' && lowestBranch.side === side) {
-                    endGame();
-                    return;
-                }
+            if (lowestBranch && lowestBranch.position < 160 && lowestBranch.side === side) {
+                endGame();
+                return;
             }
             if (branches.length > 0) {
                 branches.shift();
@@ -723,9 +709,6 @@
             gameOverDiv.style.display = 'none';
             statusDiv.textContent = 'Click Start Game!';
         });
-        
-        leftArrow.addEventListener('click', () => chop('left'));
-        rightArrow.addEventListener('click', () => chop('right'));
         
         document.addEventListener('keydown', (e) => {
             if (!gameActive) return;
