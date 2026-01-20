@@ -36,8 +36,8 @@
         
         #gameArea {
             background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
-            width: 600px; /* BIGGER - was 500px */
-            height: 800px; /* BIGGER - was 700px */
+            width: 550px; /* Medium - was 600px */
+            height: 750px; /* Medium - was 800px */
             position: relative;
             border: 5px solid #9c27b0;
             border-radius: 10px;
@@ -212,41 +212,9 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         
-        /* Arrow buttons */
+        /* Arrow buttons - HIDDEN */
         #arrowButtons {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 60px;
-            z-index: 20;
-        }
-        
-        .arrow-btn {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #FFD54F, #FFC107);
-            border: 4px solid #FFA000;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 45px;
-            color: #8B6F47;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.5);
-            transition: all 0.2s;
-            user-select: none;
-        }
-        
-        .arrow-btn:hover {
-            transform: scale(1.05);
-        }
-        
-        .arrow-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: none;
         }
         
         #sidePanel {
@@ -272,14 +240,20 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
+        /* Time bar at bottom of game */
         #timeBarContainer {
-            width: 100%;
-            height: 45px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 25px;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 30px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
             overflow: hidden;
-            margin: 15px 0;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255,255,255,0.4);
+            z-index: 15;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         
         #timeBarFill {
@@ -411,6 +385,10 @@
             </div>
             <div id="ground"></div>
             
+            <div id="timeBarContainer">
+                <div id="timeBarFill"></div>
+            </div>
+            
             <div id="arrowButtons">
                 <div class="arrow-btn" id="leftArrow">←</div>
                 <div class="arrow-btn" id="rightArrow">→</div>
@@ -433,9 +411,6 @@
             <div class="panel-section">
                 <button id="startBtn" disabled>Start Game</button>
                 <div id="score">Score: 0</div>
-                <div id="timeBarContainer">
-                    <div id="timeBarFill"></div>
-                </div>
             </div>
             
             <div class="panel-section instructions">
@@ -476,12 +451,11 @@
         let branches = [];
         let provider, signer, userAddress, contract;
         let timeRemaining = 100;
-        let baseTimeDecay = 0.10; // SLOWER - was 0.15
-        let currentTimeDecay = 0.10;
+        let baseTimeDecay = 0.14; // Faster - was 0.10
+        let currentTimeDecay = 0.14;
         let timeAddPerChop = 6; // LESS TIME - was 12
         let gameSpeed = 0.8; // SLOWER - was 1
         let animationFrameId;
-        let musicPlaying = false;
         
         const walletBtn = document.getElementById('wallet');
         const startBtn = document.getElementById('startBtn');
@@ -501,63 +475,25 @@
         const leftArrow = document.getElementById('leftArrow');
         const rightArrow = document.getElementById('rightArrow');
         
-        // Audio context for background music
+        // Audio context for chop sound
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Background music - upbeat melody
-        function startBackgroundMusic() {
-            if (musicPlaying) return;
-            musicPlaying = true;
+        // Chop sound - quick thwack
+        function playChopSound() {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
             
-            const melody = [
-                { freq: 523.25, time: 0 },    // C
-                { freq: 659.25, time: 0.2 },  // E
-                { freq: 783.99, time: 0.4 },  // G
-                { freq: 659.25, time: 0.6 },  // E
-                { freq: 523.25, time: 0.8 },  // C
-                { freq: 587.33, time: 1.0 },  // D
-                { freq: 659.25, time: 1.2 },  // E
-                { freq: 523.25, time: 1.4 }   // C
-            ];
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
             
-            function playLoop() {
-                if (!musicPlaying) return;
-                
-                melody.forEach(note => {
-                    setTimeout(() => {
-                        if (!musicPlaying) return;
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        
-                        osc.frequency.value = note.freq;
-                        osc.type = 'sine';
-                        
-                        gain.gain.setValueAtTime(0.05, audioContext.currentTime); // Low volume
-                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-                        
-                        osc.start(audioContext.currentTime);
-                        osc.stop(audioContext.currentTime + 0.15);
-                    }, note.time * 1000);
-                });
-                
-                if (musicPlaying) {
-                    setTimeout(playLoop, 1600);
-                }
-            }
+            osc.frequency.value = 150;
+            osc.type = 'sawtooth';
             
-            playLoop();
-        }
-        
-        // Auto-start music on first interaction
-        let musicStarted = false;
-        function ensureMusicStarted() {
-            if (!musicStarted) {
-                startBackgroundMusic();
-                musicStarted = true;
-            }
+            gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+            
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.08);
         }
         
         // Load high score from localStorage
@@ -670,7 +606,7 @@
             const branch = document.createElement('div');
             branch.className = `branch ${side}`;
             branch.style.bottom = `${position}px`;
-            branch.style.left = '260px'; // Center on tree for 600px width
+            branch.style.left = '235px'; // Center on tree for 550px width
             
             const connector = document.createElement('div');
             connector.className = 'branch-connector';
@@ -690,12 +626,12 @@
         
         function updateLumberjackPosition() {
             if (lumberjackSide === 'left') {
-                lumberjack.style.left = '130px'; // Adjusted for 600px width
+                lumberjack.style.left = '105px'; // Adjusted for 550px width
                 keoneImg.style.transform = 'scaleX(1)';
                 axe.style.right = '-25px';
                 axe.style.left = 'auto';
             } else {
-                lumberjack.style.left = '390px'; // Adjusted for 600px width
+                lumberjack.style.left = '365px'; // Adjusted for 550px width
                 keoneImg.style.transform = 'scaleX(-1)';
                 axe.style.left = '-25px';
                 axe.style.right = 'auto';
@@ -710,6 +646,9 @@
             // Swing axe animation
             axe.classList.add('swing');
             setTimeout(() => axe.classList.remove('swing'), 200);
+            
+            // Play chop sound
+            playChopSound();
             
             const lowestBranch = branches[0];
             if (lowestBranch && lowestBranch.position < 160 && lowestBranch.side === side) {
@@ -793,20 +732,13 @@
             statusDiv.textContent = 'Click Start Game!';
         });
         
-        leftArrow.addEventListener('click', () => {
-            ensureMusicStarted();
-            chop('left');
-        });
-        rightArrow.addEventListener('click', () => {
-            ensureMusicStarted();
-            chop('right');
-        });
+        leftArrow.addEventListener('click', () => chop('left'));
+        rightArrow.addEventListener('click', () => chop('right'));
         
         document.addEventListener('keydown', (e) => {
             // Auto-start game on arrow press if not active
             if (!gameActive && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
                 if (!startBtn.disabled) {
-                    ensureMusicStarted();
                     startBtn.disabled = true;
                     startGame();
                     // Then process the chop on next frame
@@ -823,11 +755,9 @@
             if (!gameActive) return;
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                ensureMusicStarted();
                 chop('left');
             } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                ensureMusicStarted();
                 chop('right');
             }
         });
