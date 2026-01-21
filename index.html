@@ -651,9 +651,9 @@
         let provider, signer, userAddress;
         let burnerWallet, burnerContract;
         let timeRemaining = 100;
-        let baseTimeDecay = 0.15;
-        let currentTimeDecay = 0.15;
-        let timeAddPerChop = 5;
+        let baseTimeDecay = 0.11;
+        let currentTimeDecay = 0.11;
+        let timeAddPerChop = 6;
         let animationFrameId;
         let txCount = 0;
         let pendingTxs = [];
@@ -909,7 +909,7 @@
             if (!gameActive) return;
             
             const milestones = Math.floor(score / 25);
-            const speedMultiplier = 1 + (milestones * 0.1);
+            const speedMultiplier = 1 + (milestones * 0.07);
             currentTimeDecay = baseTimeDecay * speedMultiplier;
             
             timeRemaining -= currentTimeDecay;
@@ -925,9 +925,9 @@
         function generateBranches() {
             document.querySelectorAll('.branch').forEach(b => b.remove());
             branches = [];
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 8; i++) {
                 const side = Math.random() > 0.5 ? 'left' : 'right';
-                const position = 200 + (i * 50);
+                const position = 200 + (i * 70);
                 branches.push({ side, position });
                 createBranch(side, position);
             }
@@ -999,13 +999,13 @@
                 if (branchEls[0]) branchEls[0].remove();
                 
                 branches.forEach((branch, index) => {
-                    branch.position -= 50;
+                    branch.position -= 70;
                     const branchEl = branchEls[index + 1];
                     if (branchEl) branchEl.style.bottom = `${branch.position}px`;
                 });
                 
                 const newSide = Math.random() > 0.5 ? 'left' : 'right';
-                const newPosition = 200 + (branches.length * 50);
+                const newPosition = 200 + (branches.length * 70);
                 branches.push({ side: newSide, position: newPosition });
                 createBranch(newSide, newPosition);
             }
