@@ -409,6 +409,7 @@
 </head>
 <body>
     <h1>🪓 Monad Lumberjack 🪓</h1>
+    <div id="topHighScore" style="font-size: 24px; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">🏆 Your Best: <span id="highScoreTop">0</span></div>
     
     <div id="gameContainer">
         <div id="gameArea">
@@ -472,12 +473,6 @@
                 <p>4. Use <span class="highlight">← or →</span> arrow keys</p>
                 <p>5. Each chop = 1 TX! 🔥</p>
             </div>
-            
-            <div class="panel-section" id="highScorePanel">
-                <h3>🏆 Your Best 🏆</h3>
-                <div id="highScore" style="font-size: 48px; text-align: center; color: #feca57; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">0</div>
-                <div style="text-align: center; margin-top: 10px; font-size: 14px; opacity: 0.8;">Personal High Score</div>
-            </div>
         </div>
     </div>
 
@@ -533,7 +528,7 @@
         const finalScoreDiv = document.getElementById('finalScore');
         const txSummaryDiv = document.getElementById('txSummary');
         const txLinkDiv = document.getElementById('txLink');
-        const highScoreDiv = document.getElementById('highScore');
+        const highScoreDiv = document.getElementById('highScoreTop');
         const leftArrow = document.getElementById('leftArrow');
         const rightArrow = document.getElementById('rightArrow');
         
@@ -608,13 +603,24 @@
                 walletBtn.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
                 walletBtn.classList.add('connected');
                 
-                // Show burner info
+                // Show burner info with clickable address
                 burnerInfoDiv.style.display = 'block';
-                burnerInfoDiv.innerHTML = `Game Wallet: ${burnerWallet.address.slice(0, 10)}...${burnerWallet.address.slice(-6)}`;
+                const burnerBalance = await checkBurnerBalance();
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet (click to copy):<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                burnerInfoDiv.onclick = () => {
+                    navigator.clipboard.writeText(burnerWallet.address);
+                    statusDiv.textContent = 'Address copied!';
+                    setTimeout(async () => {
+                        const bal = await checkBurnerBalance();
+                        if (bal < 0.01) {
+                            statusDiv.textContent = 'Fund game wallet to play!';
+                        } else {
+                            statusDiv.textContent = `Ready! Game wallet: ${bal.toFixed(4)} MON`;
+                        }
+                    }, 1500);
+                };
                 
                 // Check burner balance
-                const burnerBalance = await checkBurnerBalance();
-                
                 if (burnerBalance < 0.01) {
                     statusDiv.textContent = 'Fund game wallet to play!';
                     fundOptionsDiv.style.display = 'block';
@@ -859,7 +865,7 @@
                 
                 // Update burner balance display
                 const burnerBalance = await checkBurnerBalance();
-                burnerInfoDiv.innerHTML = `Game Wallet: ${burnerWallet.address.slice(0, 10)}...${burnerWallet.address.slice(-6)}<br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet (click to copy):<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
                 
             } catch (error) {
                 console.error('End game error:', error);
