@@ -607,7 +607,7 @@
                 // Show burner info with clickable address
                 burnerInfoDiv.style.display = 'block';
                 const burnerBalance = await checkBurnerBalance();
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet (click to copy):<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
                 burnerInfoDiv.onclick = () => {
                     navigator.clipboard.writeText(burnerWallet.address);
                     statusDiv.textContent = 'Address copied!';
@@ -868,18 +868,21 @@
             
             statusDiv.textContent = 'Submitting final score...';
             try {
+                // Wait a moment for pending txs to clear, then get fresh nonce
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                const freshNonce = await burnerWallet.getTransactionCount('pending');
+                
                 const tx = await burnerContract.endGame(userAddress, score, { 
                     gasLimit: 150000,
-                    nonce: currentNonce
+                    nonce: freshNonce
                 });
-                currentNonce++;
                 const receipt = await tx.wait();
                 statusDiv.textContent = 'Score submitted!';
                 txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank" style="color: #48dbfb;">View Final TX</a>`;
                 
                 // Update burner balance display
                 const burnerBalance = await checkBurnerBalance();
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet (click to copy):<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
                 
             } catch (error) {
                 console.error('End game error:', error);
