@@ -85,17 +85,6 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 0 40px rgba(156, 39, 176, 0.4), inset 0 0 60px rgba(0,0,0,0.5);
-            transition: transform 0.05s;
-        }
-        
-        #gameArea.shake {
-            animation: shake 0.1s;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
         }
         
         #ground {
@@ -122,7 +111,7 @@
             width: 60px;
             height: 75px;
             position: absolute;
-            bottom: 55px;
+            bottom: 100px;
             left: 75px;
             transition: left 0.03s ease-out;
             z-index: 10;
@@ -230,34 +219,35 @@
         .branch.right .branch-leaves:nth-child(2) { right: 35px; top: -8px; }
         .branch.right .branch-leaves:nth-child(3) { right: 60px; }
         
-        /* Score display - small under time bar */
-        #scoreDisplay {
+        /* Bottom HUD Container */
+        #bottomHUD {
             position: absolute;
-            top: 40px;
+            bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 28px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 0 0 8px rgba(156, 39, 176, 0.9), 0 0 15px rgba(156, 39, 176, 0.6), 0 2px 4px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
             z-index: 20;
         }
         
+        #scoreDisplay {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px rgba(156, 39, 176, 0.9), 0 0 20px rgba(156, 39, 176, 0.6), 2px 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 2px;
+        }
         
-        
-        /* Time bar */
         #timeBarContainer {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 70%;
-            height: 16px;
-            background: rgba(0,0,0,0.6);
-            border-radius: 8px;
+            width: 200px;
+            height: 12px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 6px;
             overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.2);
-            z-index: 15;
+            border: 2px solid rgba(156, 39, 176, 0.6);
+            box-shadow: 0 0 15px rgba(156, 39, 176, 0.3);
         }
         
         #timeBarFill {
@@ -265,7 +255,7 @@
             background: linear-gradient(to right, #00d2d3 0%, #54a0ff 100%);
             width: 100%;
             transition: width 0.1s linear, background 0.3s;
-            box-shadow: 0 0 10px rgba(0, 210, 211, 0.5);
+            border-radius: 4px;
         }
         
         /* Tap zones for mobile */
@@ -410,12 +400,26 @@
             justify-content: center;
             text-align: center;
             padding: 20px;
+            opacity: 0;
+            animation: fadeInOverlay 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeInOverlay {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
         
         #gameOver h2 {
             font-size: 28px;
             margin-bottom: 10px;
             color: #f5576c;
+            opacity: 0;
+            animation: slideDown 0.4s ease-out 0.3s forwards;
+        }
+        
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-30px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
         
         #gameOver.newRecord h2 {
@@ -429,6 +433,14 @@
             color: white;
             margin: 10px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            opacity: 0;
+            animation: popIn 0.5s ease-out 0.5s forwards;
+        }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            70% { transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
         }
         
         #txSummary {
@@ -438,13 +450,21 @@
             padding: 10px 20px;
             background: rgba(156, 39, 176, 0.2);
             border-radius: 20px;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 0.7s forwards;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
         
         #beatScore {
             font-size: 14px;
             color: #feca57;
             margin: 10px 0;
-            opacity: 0.8;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 0.8s forwards;
         }
         
         #restartBtn {
@@ -454,6 +474,8 @@
             font-size: 18px;
             padding: 15px 40px;
             width: auto;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 1s forwards;
         }
         
         #txLink {
@@ -512,10 +534,8 @@
             50% { opacity: 1; }
         }
         
-        /* Hide start overlay when game active */
         #startOverlay.hidden { display: none; }
         
-        /* Responsive */
         @media (max-width: 750px) {
             #mainContainer {
                 flex-direction: column;
@@ -539,8 +559,6 @@
         <div id="gameWrapper">
             <div id="gameArea">
                 <div id="tree"></div>
-                <div id="scoreDisplay">0</div>
-                
                 
                 <div id="lumberjack">
                     <img src="keone.png" alt="Lumberjack" id="keoneImg">
@@ -549,8 +567,11 @@
                 </div>
                 <div id="ground"></div>
                 
-                <div id="timeBarContainer">
-                    <div id="timeBarFill"></div>
+                <div id="bottomHUD">
+                    <div id="scoreDisplay">0</div>
+                    <div id="timeBarContainer">
+                        <div id="timeBarFill"></div>
+                    </div>
                 </div>
                 
                 <div class="tap-zone left" id="tapLeft"></div>
@@ -609,7 +630,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
-        // CONTRACT CONFIG
         const CONTRACT_ADDRESS = "0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
         const CONTRACT_ABI = [
             "function startGame(address mainWallet) external",
@@ -623,7 +643,6 @@
         const MONAD_RPC = 'https://testnet-rpc.monad.xyz';
         const MONAD_EXPLORER = 'https://testnet.monadexplorer.com';
         
-        // Game state
         let score = 0;
         let highScore = 0;
         let gameActive = false;
@@ -632,18 +651,17 @@
         let provider, signer, userAddress;
         let burnerWallet, burnerContract;
         let timeRemaining = 100;
-        let baseTimeDecay = 0.08;
-        let currentTimeDecay = 0.08;
-        let timeAddPerChop = 6;
+        let baseTimeDecay = 0.15;
+        let currentTimeDecay = 0.15;
+        let timeAddPerChop = 5;
         let animationFrameId;
         let txCount = 0;
         let pendingTxs = [];
         let currentNonce = null;
         let txQueue = [];
         let isProcessingQueue = false;
+        let canRestart = true;
         
-        
-        // DOM elements
         const $ = id => document.getElementById(id);
         const walletBtn = $('wallet');
         const fundOptionsDiv = $('fundOptions');
@@ -653,7 +671,6 @@
         const statusDiv = $('status');
         const burnerInfoDiv = $('burnerInfo');
         const scoreDisplay = $('scoreDisplay');
-        
         const timeBarFill = $('timeBarFill');
         const lumberjack = $('lumberjack');
         const keoneImg = $('keoneImg');
@@ -671,13 +688,11 @@
         const tapLeft = $('tapLeft');
         const tapRight = $('tapRight');
         
-        // Load high score
         if (localStorage.getItem('monadLumberjackHighScore')) {
             highScore = parseInt(localStorage.getItem('monadLumberjackHighScore'));
             highScoreDiv.textContent = highScore;
         }
         
-        // Burner wallet management
         function getOrCreateBurnerWallet() {
             let pk = localStorage.getItem('monadLumberjackBurner');
             if (!pk) {
@@ -695,7 +710,6 @@
             return parseFloat(ethers.utils.formatEther(balance));
         }
         
-        // Wallet connection
         walletBtn.addEventListener('click', async () => {
             if (typeof window.ethereum === 'undefined') {
                 alert('Please install MetaMask!');
@@ -772,7 +786,6 @@
             }
         });
         
-        // Funding
         async function fundBurnerWallet(amount) {
             try {
                 statusDiv.textContent = 'Confirm in wallet...';
@@ -802,7 +815,6 @@
             if (amount && amount > 0) fundBurnerWallet(amount);
         });
         
-        // Transaction queue
         async function processQueue() {
             if (isProcessingQueue) return;
             isProcessingQueue = true;
@@ -831,7 +843,6 @@
             processQueue();
         }
         
-        // Particles
         function spawnParticles(x, y) {
             for (let i = 0; i < 5; i++) {
                 const particle = document.createElement('div');
@@ -861,11 +872,9 @@
             }
         }
         
-        
-        
-        // Game functions
         function startGame() {
             if (!burnerWallet || startBtn.disabled) return;
+            if (gameOverDiv.style.display === 'flex' && !canRestart) return;
             
             score = 0;
             txCount = 0;
@@ -876,7 +885,6 @@
             currentTimeDecay = baseTimeDecay;
             branches = [];
             lumberjackSide = 'left';
-            
             gameActive = true;
             
             startOverlay.classList.add('hidden');
@@ -888,7 +896,6 @@
             generateBranches();
             updateLumberjackPosition();
             
-            // Get nonce and start
             burnerWallet.getTransactionCount('pending').then(nonce => {
                 currentNonce = nonce;
                 burnerContract.startGame(userAddress, { gasLimit: 100000, nonce: currentNonce }).catch(console.error);
@@ -902,7 +909,7 @@
             if (!gameActive) return;
             
             const milestones = Math.floor(score / 25);
-            const speedMultiplier = 1 + (milestones * 0.08);
+            const speedMultiplier = 1 + (milestones * 0.1);
             currentTimeDecay = baseTimeDecay * speedMultiplier;
             
             timeRemaining -= currentTimeDecay;
@@ -920,7 +927,7 @@
             branches = [];
             for (let i = 0; i < 8; i++) {
                 const side = Math.random() > 0.5 ? 'left' : 'right';
-                const position = 150 + (i * 70);
+                const position = 200 + (i * 70);
                 branches.push({ side, position });
                 createBranch(side, position);
             }
@@ -953,11 +960,13 @@
                 keoneImg.style.transform = 'scaleX(1)';
                 axe.style.right = '-20px';
                 axe.style.left = 'auto';
+                axe.style.transform = 'scaleX(1)';
             } else {
                 lumberjack.style.left = '245px';
                 keoneImg.style.transform = 'scaleX(-1)';
                 axe.style.left = '-20px';
                 axe.style.right = 'auto';
+                axe.style.transform = 'scaleX(-1)';
             }
         }
         
@@ -965,7 +974,7 @@
             if (!gameActive) return;
             
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 160 && lowestBranch.side === side) {
+            if (lowestBranch && lowestBranch.position < 210 && lowestBranch.side === side) {
                 endGame();
                 return;
             }
@@ -973,14 +982,10 @@
             lumberjackSide = side;
             updateLumberjackPosition();
             
-            // Visual feedback
             axe.classList.remove('swing');
             void axe.offsetWidth;
             axe.classList.add('swing');
             
-            
-            
-            // Spawn particles at branch position
             if (branches.length > 0) {
                 const branchEl = document.querySelector('.branch');
                 if (branchEl) {
@@ -1000,7 +1005,7 @@
                 });
                 
                 const newSide = Math.random() > 0.5 ? 'left' : 'right';
-                const newPosition = 150 + (branches.length * 70);
+                const newPosition = 200 + (branches.length * 70);
                 branches.push({ side: newSide, position: newPosition });
                 createBranch(newSide, newPosition);
             }
@@ -1011,15 +1016,12 @@
             
             updateScore();
             updateTimeBar();
-            
             sendChopTx(score);
         }
         
         function updateScore() {
             scoreDisplay.textContent = score;
         }
-        
-        
         
         function updateTimeBar() {
             const pct = Math.max(0, timeRemaining);
@@ -1061,10 +1063,11 @@
             txLinkDiv.innerHTML = '';
             gameOverDiv.style.display = 'flex';
             
-            // Enable restart immediately
+            canRestart = false;
+            setTimeout(() => { canRestart = true; }, 1000);
+            
             startBtn.disabled = false;
             
-            // Submit final score in background (don't block restart)
             (async () => {
                 try {
                     await new Promise(r => setTimeout(r, 300));
@@ -1079,17 +1082,15 @@
                     console.error('End game error:', error);
                 }
                 
-                // Update balance display
                 const burnerBalance = await checkBurnerBalance();
                 burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
                 statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
             })();
         }
         
-        // Event listeners
         restartBtn.addEventListener('click', startGame);
+        startBtn.addEventListener('click', startGame);
         
-        // Auto-restart with space/arrows when game over
         document.addEventListener('keydown', (e) => {
             if (gameOverDiv.style.display === 'flex') {
                 if (e.key === ' ' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
@@ -1098,10 +1099,9 @@
                 }
             }
         });
-        startBtn.addEventListener('click', startGame);
         
         tapLeft.addEventListener('click', () => {
-            if (!gameActive && !startBtn.disabled && startOverlay.classList.contains('hidden') === false) {
+            if (!gameActive && !startBtn.disabled && !startOverlay.classList.contains('hidden')) {
                 startGame();
             } else {
                 chop('left');
@@ -1109,14 +1109,13 @@
         });
         
         tapRight.addEventListener('click', () => {
-            if (!gameActive && !startBtn.disabled && startOverlay.classList.contains('hidden') === false) {
+            if (!gameActive && !startBtn.disabled && !startOverlay.classList.contains('hidden')) {
                 startGame();
             } else {
                 chop('right');
             }
         });
         
-        // Touch events for mobile
         tapLeft.addEventListener('touchstart', (e) => {
             e.preventDefault();
             if (!gameActive && !startBtn.disabled) startGame();
