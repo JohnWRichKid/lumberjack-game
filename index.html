@@ -102,7 +102,7 @@
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 80px;
+            height: 60px;
             background: linear-gradient(to bottom, #4a7c59 0%, #2d5a3d 100%);
             z-index: 1;
         }
@@ -122,7 +122,7 @@
             width: 60px;
             height: 75px;
             position: absolute;
-            bottom: 55px;
+            bottom: 70px;
             left: 75px;
             transition: left 0.03s ease-out;
             z-index: 10;
@@ -230,13 +230,13 @@
         .branch.right .branch-leaves:nth-child(2) { right: 35px; top: -8px; }
         .branch.right .branch-leaves:nth-child(3) { right: 60px; }
         
-        /* Score display - small under time bar */
+        /* Score display - above time bar */
         #scoreDisplay {
             position: absolute;
-            top: 40px;
+            bottom: 32px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             color: white;
             text-shadow: 0 0 8px rgba(156, 39, 176, 0.9), 0 0 15px rgba(156, 39, 176, 0.6), 0 2px 4px rgba(0,0,0,0.5);
@@ -248,16 +248,17 @@
         /* Time bar */
         #timeBarContainer {
             position: absolute;
-            top: 15px;
+            bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
             width: 70%;
-            height: 16px;
+            height: 14px;
             background: rgba(0,0,0,0.6);
-            border-radius: 8px;
+            border-radius: 7px;
             overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.2);
+            border: 2px solid rgba(156, 39, 176, 0.5);
             z-index: 15;
+            box-shadow: 0 0 10px rgba(156, 39, 176, 0.3);
         }
         
         #timeBarFill {
@@ -384,7 +385,28 @@
             transition: background 0.2s;
         }
         
-        #burnerInfo:hover { background: rgba(0,0,0,0.5); }
+        #lowBalanceWarning {
+            display: none;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 8px;
+            text-align: center;
+            animation: pulse 1.5s infinite;
+        }
+        
+        #withdrawBtn {
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+            font-size: 14px;
+            padding: 10px;
+        }
+        
+        #withdrawBtn:hover {
+            transform: translateY(-2px);
+        }
         
         .instructions {
             font-size: 13px;
@@ -410,12 +432,26 @@
             justify-content: center;
             text-align: center;
             padding: 20px;
+            opacity: 0;
+            animation: fadeInGameOver 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeInGameOver {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
         
         #gameOver h2 {
             font-size: 28px;
             margin-bottom: 10px;
             color: #f5576c;
+            opacity: 0;
+            animation: slideInDown 0.4s ease-out 0.3s forwards;
+        }
+        
+        @keyframes slideInDown {
+            0% { opacity: 0; transform: translateY(-30px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
         
         #gameOver.newRecord h2 {
@@ -429,6 +465,14 @@
             color: white;
             margin: 10px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            opacity: 0;
+            animation: popIn 0.5s ease-out 0.5s forwards;
+        }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            70% { transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
         }
         
         #txSummary {
@@ -438,13 +482,21 @@
             padding: 10px 20px;
             background: rgba(156, 39, 176, 0.2);
             border-radius: 20px;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 0.7s forwards;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
         
         #beatScore {
             font-size: 14px;
             color: #feca57;
             margin: 10px 0;
-            opacity: 0.8;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 0.8s forwards;
         }
         
         #restartBtn {
@@ -454,6 +506,8 @@
             font-size: 18px;
             padding: 15px 40px;
             width: auto;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 1s forwards;
         }
         
         #txLink {
@@ -591,6 +645,8 @@
                 </div>
                 <div id="status">Connect wallet to play</div>
                 <div id="burnerInfo"></div>
+                <div id="lowBalanceWarning">⚠️ Low balance! Fund wallet to keep playing</div>
+                <button id="withdrawBtn">Withdraw to Main Wallet</button>
             </div>
             
             <div class="panel-section">
@@ -632,15 +688,16 @@
         let provider, signer, userAddress;
         let burnerWallet, burnerContract;
         let timeRemaining = 100;
-        let baseTimeDecay = 0.08;
-        let currentTimeDecay = 0.08;
-        let timeAddPerChop = 6;
+        let baseTimeDecay = 0.12;
+        let currentTimeDecay = 0.12;
+        let timeAddPerChop = 5;
         let animationFrameId;
         let txCount = 0;
         let pendingTxs = [];
         let currentNonce = null;
         let txQueue = [];
         let isProcessingQueue = false;
+        let canRestart = true;
         
         
         // DOM elements
@@ -652,6 +709,8 @@
         const startBtn = $('startBtn');
         const statusDiv = $('status');
         const burnerInfoDiv = $('burnerInfo');
+        const lowBalanceWarning = $('lowBalanceWarning');
+        const withdrawBtn = $('withdrawBtn');
         const scoreDisplay = $('scoreDisplay');
         
         const timeBarFill = $('timeBarFill');
@@ -744,7 +803,7 @@
                 
                 const burnerBalance = await checkBurnerBalance();
                 burnerInfoDiv.style.display = 'block';
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                updateBalanceDisplay(burnerBalance);
                 burnerInfoDiv.onclick = () => {
                     navigator.clipboard.writeText(burnerWallet.address);
                     statusDiv.textContent = 'Copied!';
@@ -784,7 +843,7 @@
                 await tx.wait();
                 const burnerBalance = await checkBurnerBalance();
                 statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                updateBalanceDisplay(burnerBalance);
                 startBtn.disabled = false;
                 tapToStart.textContent = 'TAP ANYWHERE TO START';
             } catch (error) {
@@ -865,7 +924,7 @@
         
         // Game functions
         function startGame() {
-            if (!burnerWallet || startBtn.disabled) return;
+            if (!burnerWallet || startBtn.disabled || !canRestart) return;
             
             score = 0;
             txCount = 0;
@@ -882,6 +941,7 @@
             startOverlay.classList.add('hidden');
             gameOverDiv.style.display = 'none';
             startBtn.disabled = true;
+            canRestart = true;
             
             updateScore();
             updateTimeBar();
@@ -1015,7 +1075,65 @@
             sendChopTx(score);
         }
         
-        function updateScore() {
+        function updateBalanceDisplay(balance) {
+            burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${balance.toFixed(4)} MON`;
+            
+            // Show/hide low balance warning
+            if (balance < 0.5 && balance > 0.01) {
+                lowBalanceWarning.style.display = 'block';
+                lowBalanceWarning.textContent = '⚠️ Low balance! Fund wallet to keep playing';
+            } else if (balance <= 0.01) {
+                lowBalanceWarning.style.display = 'block';
+                lowBalanceWarning.textContent = '🚫 Out of MON! Please fund wallet';
+            } else {
+                lowBalanceWarning.style.display = 'none';
+            }
+            
+            // Show withdraw button if balance > 0.1
+            withdrawBtn.style.display = balance > 0.1 ? 'block' : 'none';
+        }
+        
+        // Withdraw function
+        withdrawBtn.addEventListener('click', async () => {
+            if (!burnerWallet || !userAddress) return;
+            
+            try {
+                withdrawBtn.disabled = true;
+                withdrawBtn.textContent = 'Withdrawing...';
+                
+                const balance = await burnerWallet.getBalance();
+                const gasPrice = await burnerWallet.provider.getGasPrice();
+                const gasCost = gasPrice.mul(21000);
+                const amountToSend = balance.sub(gasCost);
+                
+                if (amountToSend.lte(0)) {
+                    statusDiv.textContent = 'Balance too low to withdraw';
+                    withdrawBtn.disabled = false;
+                    withdrawBtn.textContent = 'Withdraw to Main Wallet';
+                    return;
+                }
+                
+                const tx = await burnerWallet.sendTransaction({
+                    to: userAddress,
+                    value: amountToSend,
+                    gasLimit: 21000
+                });
+                
+                await tx.wait();
+                
+                const newBalance = await checkBurnerBalance();
+                updateBalanceDisplay(newBalance);
+                statusDiv.textContent = 'Withdrawn to main wallet!';
+                startBtn.disabled = true;
+                tapToStart.textContent = 'FUND WALLET TO PLAY';
+                
+            } catch (error) {
+                console.error('Withdraw error:', error);
+                statusDiv.textContent = 'Withdraw failed';
+            }
+            
+            withdrawBtn.disabled = false;
+            function updateScore() {
             scoreDisplay.textContent = score;
         }
         
@@ -1061,7 +1179,13 @@
             txLinkDiv.innerHTML = '';
             gameOverDiv.style.display = 'flex';
             
-            // Enable restart immediately
+            // Prevent instant restart - wait for animation
+            canRestart = false;
+            setTimeout(() => {
+                canRestart = true;
+            }, 1000);
+            
+            // Enable restart immediately (but canRestart blocks it)
             startBtn.disabled = false;
             
             // Submit final score in background (don't block restart)
@@ -1081,7 +1205,7 @@
                 
                 // Update balance display
                 const burnerBalance = await checkBurnerBalance();
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                updateBalanceDisplay(burnerBalance);
                 statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
             })();
         }
