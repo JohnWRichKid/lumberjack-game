@@ -294,14 +294,15 @@
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
         
-        #fundBurner {
+        .fund-btn {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            display: none;
-            margin-top: 10px;
+            padding: 10px 15px;
+            font-size: 14px;
+            flex: 1;
         }
         
-        #fundBurner:hover:not(:disabled) {
+        .fund-btn:hover:not(:disabled) {
             transform: translateY(-2px);
         }
         
@@ -442,7 +443,17 @@
         <div id="sidePanel">
             <div class="panel-section">
                 <button id="wallet">Connect MetaMask</button>
-                <button id="fundBurner">Fund Game Wallet (0.1 MON)</button>
+                <div id="fundOptions" style="display: none; margin-top: 10px;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <button class="fund-btn" data-amount="1">1 MON</button>
+                        <button class="fund-btn" data-amount="10">10 MON</button>
+                        <button class="fund-btn" data-amount="100">100 MON</button>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="customAmount" placeholder="Custom" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 16px; width: 80px;">
+                        <button class="fund-btn" id="customFundBtn">Fund</button>
+                    </div>
+                </div>
                 <div id="status">Not connected - Testnet Mode</div>
                 <div id="burnerInfo"></div>
             </div>
@@ -485,7 +496,6 @@
         const MONAD_CHAIN_ID = '0x279f';
         const MONAD_RPC = 'https://testnet-rpc.monad.xyz';
         const MONAD_EXPLORER = 'https://testnet.monadexplorer.com';
-        const BURNER_FUND_AMOUNT = '0.1';
         
         let score = 0;
         let highScore = 0;
@@ -504,7 +514,9 @@
         let pendingTxs = [];
         
         const walletBtn = document.getElementById('wallet');
-        const fundBurnerBtn = document.getElementById('fundBurner');
+        const fundOptionsDiv = document.getElementById('fundOptions');
+        const customAmountInput = document.getElementById('customAmount');
+        const customFundBtn = document.getElementById('customFundBtn');
         const startBtn = document.getElementById('startBtn');
         const statusDiv = document.getElementById('status');
         const burnerInfoDiv = document.getElementById('burnerInfo');
@@ -605,11 +617,11 @@
                 
                 if (burnerBalance < 0.01) {
                     statusDiv.textContent = 'Fund game wallet to play!';
-                    fundBurnerBtn.style.display = 'block';
+                    fundOptionsDiv.style.display = 'block';
                     startBtn.disabled = true;
                 } else {
                     statusDiv.textContent = `Ready! Game wallet: ${burnerBalance.toFixed(4)} MON`;
-                    fundBurnerBtn.style.display = 'none';
+                    fundOptionsDiv.style.display = 'block';
                     startBtn.disabled = false;
                 }
                 
@@ -619,14 +631,13 @@
             }
         });
         
-        fundBurnerBtn.addEventListener('click', async () => {
+        async function fundBurnerWallet(amount) {
             try {
-                fundBurnerBtn.disabled = true;
                 statusDiv.textContent = 'Confirm in MetaMask...';
                 
                 const tx = await signer.sendTransaction({
                     to: burnerWallet.address,
-                    value: ethers.utils.parseEther(BURNER_FUND_AMOUNT)
+                    value: ethers.utils.parseEther(amount.toString())
                 });
                 
                 statusDiv.textContent = 'Funding game wallet...';
@@ -634,13 +645,28 @@
                 
                 const burnerBalance = await checkBurnerBalance();
                 statusDiv.textContent = `Ready! Game wallet: ${burnerBalance.toFixed(4)} MON`;
-                fundBurnerBtn.style.display = 'none';
                 startBtn.disabled = false;
                 
             } catch (error) {
                 console.error('Funding error:', error);
                 statusDiv.textContent = 'Funding failed - try again';
-                fundBurnerBtn.disabled = false;
+            }
+        }
+        
+        // Fund button click handlers
+        document.querySelectorAll('.fund-btn[data-amount]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const amount = btn.getAttribute('data-amount');
+                fundBurnerWallet(amount);
+            });
+        });
+        
+        customFundBtn.addEventListener('click', () => {
+            const amount = parseFloat(customAmountInput.value);
+            if (amount && amount > 0) {
+                fundBurnerWallet(amount);
+            } else {
+                statusDiv.textContent = 'Enter a valid amount';
             }
         });
         
