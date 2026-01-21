@@ -2,77 +2,110 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Monad Lumberjack</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
             font-family: 'Arial Black', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        
+        #header {
+            text-align: center;
+            margin-bottom: 10px;
         }
         
         h1 {
-            font-size: 48px;
-            margin: 20px 0;
-            text-shadow: 4px 4px 8px rgba(0,0,0,0.3);
+            font-size: 36px;
+            margin: 10px 0 5px 0;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8), 2px 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        #gameContainer {
+        #highScoreDisplay {
+            font-size: 16px;
+            color: #feca57;
+            text-shadow: 0 0 10px rgba(254, 202, 87, 0.5);
+        }
+        
+        #mainContainer {
             display: flex;
-            gap: 30px;
-            margin: 20px 0;
+            gap: 20px;
+            align-items: flex-start;
+            max-width: 100%;
+        }
+        
+        #gameWrapper {
+            position: relative;
         }
         
         #gameArea {
-            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
-            width: 420px;
-            height: 720px;
+            background: linear-gradient(to bottom, #1a1a2e 0%, #2d3436 100%);
+            width: 380px;
+            height: 640px;
             position: relative;
-            border: 5px solid #9c27b0;
-            border-radius: 10px;
+            border: 3px solid #9c27b0;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 0 40px rgba(156, 39, 176, 0.4), inset 0 0 60px rgba(0,0,0,0.5);
+            transition: transform 0.05s;
+        }
+        
+        #gameArea.shake {
+            animation: shake 0.1s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
         
         #ground {
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 100px;
-            background: linear-gradient(to bottom, #8BC34A 0%, #689F38 100%);
-            border-radius: 50% 50% 0 0 / 20% 20% 0 0;
+            height: 80px;
+            background: linear-gradient(to bottom, #4a7c59 0%, #2d5a3d 100%);
             z-index: 1;
         }
         
         #tree {
-            width: 60px;
-            background: linear-gradient(to right, #8B6F47 0%, #A0826D 50%, #8B6F47 100%);
+            width: 50px;
+            background: linear-gradient(to right, #5d4037 0%, #8d6e63 50%, #5d4037 100%);
             height: 100%;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            box-shadow: inset -5px 0 10px rgba(0,0,0,0.3);
+            box-shadow: inset -5px 0 15px rgba(0,0,0,0.4);
             z-index: 2;
         }
         
         #lumberjack {
-            width: 70px;
-            height: 85px;
+            width: 60px;
+            height: 75px;
             position: absolute;
-            bottom: 60px;
-            left: 80px;
-            transition: left 0.15s ease;
+            bottom: 55px;
+            left: 75px;
+            transition: left 0.08s ease-out;
             z-index: 10;
             display: flex;
             flex-direction: column;
@@ -80,21 +113,21 @@
         }
         
         #keoneImg {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             object-fit: cover;
             border-radius: 50%;
             border: 3px solid #9c27b0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            margin-bottom: -10px;
+            box-shadow: 0 0 15px rgba(156, 39, 176, 0.6);
+            margin-bottom: -8px;
             position: relative;
             z-index: 2;
         }
         
         .lumberjack-body {
-            width: 35px;
-            height: 45px;
-            background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%);
+            width: 30px;
+            height: 38px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             border-radius: 5px;
             position: relative;
             z-index: 1;
@@ -103,9 +136,9 @@
         .lumberjack-body::before {
             content: '';
             position: absolute;
-            width: 18px;
-            height: 22px;
-            background: #1976D2;
+            width: 16px;
+            height: 18px;
+            background: #3498db;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
@@ -114,23 +147,23 @@
         
         #axe {
             position: absolute;
-            width: 45px;
-            height: 45px;
-            top: 18px;
-            right: -23px;
-            font-size: 36px;
-            transition: transform 0.1s;
+            width: 40px;
+            height: 40px;
+            top: 15px;
+            right: -20px;
+            font-size: 32px;
+            transition: transform 0.08s;
             z-index: 3;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
         }
         
         #axe.swing {
-            animation: swingAxe 0.2s;
+            animation: swingAxe 0.12s ease-out;
         }
         
         @keyframes swingAxe {
             0% { transform: rotate(0deg); }
-            50% { transform: rotate(-45deg); }
+            50% { transform: rotate(-60deg); }
             100% { transform: rotate(0deg); }
         }
         
@@ -140,180 +173,211 @@
         }
         
         .branch-main {
-            width: 100px;
-            height: 35px;
-            background: linear-gradient(135deg, #66BB6A 0%, #4CAF50 100%);
-            border-radius: 20px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            width: 90px;
+            height: 30px;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
             position: relative;
         }
         
         .branch-connector {
-            width: 40px;
-            height: 25px;
-            background: linear-gradient(to right, #8B6F47, #66BB6A);
+            width: 35px;
+            height: 22px;
+            background: linear-gradient(to right, #5d4037, #27ae60);
             position: absolute;
-            top: 5px;
+            top: 4px;
         }
         
-        .branch.left .branch-main {
-            left: -70px;
-        }
-        
-        .branch.left .branch-connector {
-            left: 30px;
-        }
-        
-        .branch.right .branch-main {
-            right: -70px;
-        }
-        
-        .branch.right .branch-connector {
-            right: 30px;
-        }
+        .branch.left .branch-main { left: -60px; }
+        .branch.left .branch-connector { left: 30px; }
+        .branch.right .branch-main { right: -60px; }
+        .branch.right .branch-connector { right: 30px; }
         
         .branch-leaves {
             position: absolute;
-            width: 25px;
-            height: 25px;
-            background: #81C784;
+            width: 20px;
+            height: 20px;
+            background: #2ecc71;
             border-radius: 50%;
             top: -5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
         .branch.left .branch-leaves:nth-child(1) { left: 10px; }
-        .branch.left .branch-leaves:nth-child(2) { left: 40px; top: -8px; }
-        .branch.left .branch-leaves:nth-child(3) { left: 70px; }
-        
+        .branch.left .branch-leaves:nth-child(2) { left: 35px; top: -8px; }
+        .branch.left .branch-leaves:nth-child(3) { left: 60px; }
         .branch.right .branch-leaves:nth-child(1) { right: 10px; }
-        .branch.right .branch-leaves:nth-child(2) { right: 40px; top: -8px; }
-        .branch.right .branch-leaves:nth-child(3) { right: 70px; }
+        .branch.right .branch-leaves:nth-child(2) { right: 35px; top: -8px; }
+        .branch.right .branch-leaves:nth-child(3) { right: 60px; }
         
-        #scoreOnTree {
+        /* Score display - BIG and centered */
+        #scoreDisplay {
             position: absolute;
-            top: 50px;
+            top: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(139, 111, 71, 0.9);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50%;
-            font-size: 32px;
+            font-size: 72px;
             font-weight: bold;
-            border: 4px solid #FFC107;
+            color: white;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5), 2px 2px 4px rgba(0,0,0,0.5);
             z-index: 20;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
         }
         
-        #txCounter {
+        #scoreDisplay.pop {
+            animation: popScore 0.15s ease-out;
+        }
+        
+        @keyframes popScore {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.2); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+        
+        /* TX Counter - the Monad flex */
+        #txDisplay {
             position: absolute;
-            top: 120px;
+            top: 110px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(156, 39, 176, 0.9);
-            color: white;
-            padding: 8px 16px;
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+            padding: 6px 16px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: bold;
             z-index: 20;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 0 20px rgba(156, 39, 176, 0.6);
         }
         
-        #arrowButtons {
-            display: none;
-        }
-        
-        #sidePanel {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 320px;
-        }
-        
-        .panel-section {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-        }
-        
-        #score {
-            font-size: 32px;
-            margin: 10px 0;
-            text-align: center;
+        /* Milestone popup */
+        #milestone {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #feca57;
+            text-shadow: 0 0 30px rgba(254, 202, 87, 0.8);
+            z-index: 25;
+            opacity: 0;
+            pointer-events: none;
         }
         
+        #milestone.show {
+            animation: milestonePopup 0.8s ease-out;
+        }
+        
+        @keyframes milestonePopup {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        /* Time bar */
         #timeBarContainer {
             position: absolute;
-            bottom: 10px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;
-            height: 30px;
-            background: rgba(0,0,0,0.4);
-            border-radius: 15px;
+            width: 85%;
+            height: 20px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 10px;
             overflow: hidden;
-            border: 3px solid rgba(255,255,255,0.4);
+            border: 2px solid rgba(255,255,255,0.2);
             z-index: 15;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         
         #timeBarFill {
             height: 100%;
-            background: linear-gradient(to right, #48dbfb 0%, #0abde3 100%);
+            background: linear-gradient(to right, #00d2d3 0%, #54a0ff 100%);
             width: 100%;
-            transition: width 0.1s linear;
+            transition: width 0.1s linear, background 0.3s;
+            box-shadow: 0 0 10px rgba(0, 210, 211, 0.5);
+        }
+        
+        /* Tap zones for mobile */
+        .tap-zone {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 30;
+            cursor: pointer;
+        }
+        
+        .tap-zone.left { left: 0; }
+        .tap-zone.right { right: 0; }
+        
+        .tap-zone:active {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        /* Side panel */
+        #sidePanel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 280px;
+        }
+        
+        .panel-section {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
         }
         
         button {
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 12px 20px;
+            font-size: 16px;
             font-weight: bold;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.2s;
             width: 100%;
         }
         
         #wallet {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         
-        #wallet:hover:not(:disabled) {
-            transform: translateY(-2px);
-        }
-        
+        #wallet:hover { transform: translateY(-2px); }
         #wallet.connected {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
         }
         
         .fund-btn {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            padding: 10px 15px;
-            font-size: 14px;
+            padding: 10px 8px;
+            font-size: 12px;
             flex: 1;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
         }
         
-        .fund-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-        }
+        .fund-btn:hover { transform: translateY(-2px); }
         
         #startBtn {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
             color: white;
-            font-size: 22px;
+            font-size: 20px;
+            padding: 15px;
+            box-shadow: 0 4px 20px rgba(245, 87, 108, 0.5);
         }
         
-        #startBtn:hover:not(:disabled) {
+        #startBtn:hover:not(:disabled) { 
             transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(245, 87, 108, 0.6);
         }
         
         #startBtn:disabled {
@@ -322,163 +386,262 @@
         }
         
         #status {
-            font-size: 14px;
+            font-size: 13px;
             text-align: center;
             padding: 10px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 5px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
             min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
+        #fundOptions {
+            display: none;
+            margin-top: 10px;
+        }
+        
         #burnerInfo {
-            font-size: 12px;
+            font-size: 11px;
             text-align: center;
             padding: 10px;
             background: rgba(0,0,0,0.3);
-            border-radius: 5px;
+            border-radius: 8px;
             margin-top: 10px;
             display: none;
             word-break: break-all;
+            cursor: pointer;
+            transition: background 0.2s;
         }
         
-        #highScorePanel {
-            text-align: center;
+        #burnerInfo:hover { background: rgba(0,0,0,0.5); }
+        
+        .instructions {
+            font-size: 13px;
+            line-height: 1.5;
+            opacity: 0.8;
         }
         
-        #highScorePanel h3 {
-            margin-bottom: 15px;
-            font-size: 24px;
-        }
+        .instructions p { margin: 5px 0; }
+        .highlight { color: #feca57; }
         
+        /* Game Over Overlay */
         #gameOver {
             display: none;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
             z-index: 100;
-            border: 3px solid #9c27b0;
-            min-width: 400px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
         }
         
         #gameOver h2 {
-            font-size: 32px;
-            margin-bottom: 20px;
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #f5576c;
+        }
+        
+        #gameOver.newRecord h2 {
             color: #feca57;
+            text-shadow: 0 0 20px rgba(254, 202, 87, 0.8);
         }
         
         #finalScore {
-            font-size: 24px;
-            color: #fff;
-            margin: 20px 0;
+            font-size: 64px;
+            font-weight: bold;
+            color: white;
+            margin: 10px 0;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5);
         }
         
         #txSummary {
-            font-size: 16px;
-            color: #48dbfb;
+            font-size: 18px;
+            color: #9c27b0;
             margin: 10px 0;
+            padding: 10px 20px;
+            background: rgba(156, 39, 176, 0.2);
+            border-radius: 20px;
+        }
+        
+        #beatScore {
+            font-size: 14px;
+            color: #feca57;
+            margin: 10px 0;
+            opacity: 0.8;
         }
         
         #restartBtn {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
             color: white;
             margin-top: 20px;
+            font-size: 18px;
+            padding: 15px 40px;
+            width: auto;
+        }
+        
+        #txLink {
+            margin-top: 15px;
+        }
+        
+        #txLink a {
+            color: #54a0ff;
+            text-decoration: none;
+        }
+        
+        /* Particles */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 50;
             font-size: 20px;
         }
         
-        .instructions {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 14px;
-            line-height: 1.6;
+        /* Start overlay */
+        #startOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         
-        .highlight {
+        #startOverlay h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        #startOverlay p {
+            font-size: 16px;
+            opacity: 0.8;
+            margin: 5px 0;
+        }
+        
+        #tapToStart {
+            margin-top: 20px;
+            font-size: 18px;
             color: #feca57;
-            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        /* Hide start overlay when game active */
+        #startOverlay.hidden { display: none; }
+        
+        /* Responsive */
+        @media (max-width: 750px) {
+            #mainContainer {
+                flex-direction: column;
+                align-items: center;
+            }
+            #sidePanel {
+                width: 380px;
+                max-width: 100%;
+            }
+            h1 { font-size: 28px; }
         }
     </style>
 </head>
 <body>
-    <h1>🪓 Monad Lumberjack 🪓</h1>
-    <div id="topHighScore" style="font-size: 24px; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">🏆 Your Best: <span id="highScoreTop">0</span></div>
+    <div id="header">
+        <h1>🪓 MONAD LUMBERJACK</h1>
+        <div id="highScoreDisplay">🏆 Best: <span id="highScoreTop">0</span></div>
+    </div>
     
-    <div id="gameContainer">
-        <div id="gameArea">
-            <div id="tree"></div>
-            <div id="scoreOnTree">0</div>
-            <div id="txCounter">TX: 0</div>
-            <div id="lumberjack">
-                <img src="keone.png" alt="Lumberjack" id="keoneImg">
-                <div class="lumberjack-body"></div>
-                <div id="axe">🪓</div>
-            </div>
-            <div id="ground"></div>
-            
-            <div id="timeBarContainer">
-                <div id="timeBarFill"></div>
-            </div>
-            
-            <div id="arrowButtons">
-                <div class="arrow-btn" id="leftArrow">←</div>
-                <div class="arrow-btn" id="rightArrow">→</div>
-            </div>
-            
-            <div id="gameOver">
-                <h2>Better chopping next time!</h2>
-                <div id="finalScore">You chopped 0 branches.</div>
-                <div id="txSummary"></div>
-                <div id="txLink"></div>
-                <button id="restartBtn">Play Again</button>
+    <div id="mainContainer">
+        <div id="gameWrapper">
+            <div id="gameArea">
+                <div id="tree"></div>
+                <div id="scoreDisplay">0</div>
+                <div id="txDisplay">⚡ 0 TXs</div>
+                <div id="milestone"></div>
+                
+                <div id="lumberjack">
+                    <img src="keone.png" alt="Lumberjack" id="keoneImg">
+                    <div class="lumberjack-body"></div>
+                    <div id="axe">🪓</div>
+                </div>
+                <div id="ground"></div>
+                
+                <div id="timeBarContainer">
+                    <div id="timeBarFill"></div>
+                </div>
+                
+                <div class="tap-zone left" id="tapLeft"></div>
+                <div class="tap-zone right" id="tapRight"></div>
+                
+                <div id="startOverlay">
+                    <h2>TAP TO CHOP</h2>
+                    <p>⬅️ Left side = chop left</p>
+                    <p>➡️ Right side = chop right</p>
+                    <p>🌿 Avoid the branches!</p>
+                    <div id="tapToStart">TAP ANYWHERE TO START</div>
+                </div>
+                
+                <div id="gameOver">
+                    <h2>GAME OVER</h2>
+                    <div id="finalScore">0</div>
+                    <div id="txSummary">⚡ 0 transactions</div>
+                    <div id="beatScore"></div>
+                    <div id="txLink"></div>
+                    <button id="restartBtn">TAP TO RETRY</button>
+                </div>
             </div>
         </div>
         
         <div id="sidePanel">
             <div class="panel-section">
-                <button id="wallet">Connect MetaMask</button>
-                <div id="fundOptions" style="display: none; margin-top: 10px;">
+                <button id="wallet">Connect Wallet</button>
+                <div id="fundOptions">
                     <div style="display: flex; gap: 8px; margin-bottom: 8px;">
                         <button class="fund-btn" data-amount="1">1 MON</button>
                         <button class="fund-btn" data-amount="10">10 MON</button>
                         <button class="fund-btn" data-amount="100">100 MON</button>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <input type="number" id="customAmount" placeholder="Custom" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 16px; width: 80px;">
+                        <input type="number" id="customAmount" placeholder="Custom" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 14px; width: 70px;">
                         <button class="fund-btn" id="customFundBtn">Fund</button>
                     </div>
                 </div>
-                <div id="status">Not connected - Testnet Mode</div>
+                <div id="status">Connect wallet to play</div>
                 <div id="burnerInfo"></div>
             </div>
             
             <div class="panel-section">
-                <button id="startBtn" disabled>Start Game</button>
-                <div style="font-size: 11px; text-align: center; opacity: 0.7; margin-top: 5px;">press space or click button</div>
-                <div id="score">Score: 0</div>
+                <button id="startBtn" disabled>START GAME</button>
+                <div style="font-size: 11px; text-align: center; opacity: 0.6; margin-top: 8px;">or press SPACE</div>
             </div>
             
             <div class="panel-section instructions">
                 <p><strong>How to Play:</strong></p>
-                <p>1. Connect wallet (Testnet)</p>
-                <p>2. Fund game wallet (one-time)</p>
-                <p>3. Click <span class="highlight">Start Game</span></p>
-                <p>4. Use <span class="highlight">← or →</span> arrow keys</p>
-                <p>5. Each chop = 1 TX! 🔥</p>
+                <p>• Tap <span class="highlight">left</span> or <span class="highlight">right</span> to chop</p>
+                <p>• Don't hit the branches!</p>
+                <p>• Every chop = 1 transaction ⚡</p>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
-        // MONAD TESTNET CONFIGURATION
+        // CONTRACT CONFIG
         const CONTRACT_ADDRESS = "0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
         const CONTRACT_ABI = [
             "function startGame(address mainWallet) external",
@@ -492,6 +655,7 @@
         const MONAD_RPC = 'https://testnet-rpc.monad.xyz';
         const MONAD_EXPLORER = 'https://testnet.monadexplorer.com';
         
+        // Game state
         let score = 0;
         let highScore = 0;
         let gameActive = false;
@@ -500,48 +664,52 @@
         let provider, signer, userAddress;
         let burnerWallet, burnerContract;
         let timeRemaining = 100;
-        let baseTimeDecay = 0.10;
-        let currentTimeDecay = 0.10;
-        let timeAddPerChop = 12;
-        let gameSpeed = 0.8;
+        let baseTimeDecay = 0.12;
+        let currentTimeDecay = 0.12;
+        let timeAddPerChop = 10;
         let animationFrameId;
         let txCount = 0;
         let pendingTxs = [];
         let currentNonce = null;
         let txQueue = [];
         let isProcessingQueue = false;
+        let lastMilestone = 0;
         
-        const walletBtn = document.getElementById('wallet');
-        const fundOptionsDiv = document.getElementById('fundOptions');
-        const customAmountInput = document.getElementById('customAmount');
-        const customFundBtn = document.getElementById('customFundBtn');
-        const startBtn = document.getElementById('startBtn');
-        const statusDiv = document.getElementById('status');
-        const burnerInfoDiv = document.getElementById('burnerInfo');
-        const scoreDiv = document.getElementById('score');
-        const scoreOnTree = document.getElementById('scoreOnTree');
-        const txCounterDiv = document.getElementById('txCounter');
-        const timeBarFill = document.getElementById('timeBarFill');
-        const lumberjack = document.getElementById('lumberjack');
-        const keoneImg = document.getElementById('keoneImg');
-        const axe = document.getElementById('axe');
-        const gameArea = document.getElementById('gameArea');
-        const gameOverDiv = document.getElementById('gameOver');
-        const restartBtn = document.getElementById('restartBtn');
-        const finalScoreDiv = document.getElementById('finalScore');
-        const txSummaryDiv = document.getElementById('txSummary');
-        const txLinkDiv = document.getElementById('txLink');
-        const highScoreDiv = document.getElementById('highScoreTop');
-        const leftArrow = document.getElementById('leftArrow');
-        const rightArrow = document.getElementById('rightArrow');
+        // DOM elements
+        const $ = id => document.getElementById(id);
+        const walletBtn = $('wallet');
+        const fundOptionsDiv = $('fundOptions');
+        const customAmountInput = $('customAmount');
+        const customFundBtn = $('customFundBtn');
+        const startBtn = $('startBtn');
+        const statusDiv = $('status');
+        const burnerInfoDiv = $('burnerInfo');
+        const scoreDisplay = $('scoreDisplay');
+        const txDisplay = $('txDisplay');
+        const milestoneDiv = $('milestone');
+        const timeBarFill = $('timeBarFill');
+        const lumberjack = $('lumberjack');
+        const keoneImg = $('keoneImg');
+        const axe = $('axe');
+        const gameArea = $('gameArea');
+        const gameOverDiv = $('gameOver');
+        const restartBtn = $('restartBtn');
+        const finalScoreDiv = $('finalScore');
+        const txSummaryDiv = $('txSummary');
+        const beatScoreDiv = $('beatScore');
+        const txLinkDiv = $('txLink');
+        const highScoreDiv = $('highScoreTop');
+        const startOverlay = $('startOverlay');
+        const tapLeft = $('tapLeft');
+        const tapRight = $('tapRight');
         
-        // Load high score from localStorage
+        // Load high score
         if (localStorage.getItem('monadLumberjackHighScore')) {
             highScore = parseInt(localStorage.getItem('monadLumberjackHighScore'));
             highScoreDiv.textContent = highScore;
         }
         
-        // Load or create burner wallet
+        // Burner wallet management
         function getOrCreateBurnerWallet() {
             let pk = localStorage.getItem('monadLumberjackBurner');
             if (!pk) {
@@ -559,6 +727,7 @@
             return parseFloat(ethers.utils.formatEther(balance));
         }
         
+        // Wallet connection
         walletBtn.addEventListener('click', async () => {
             if (typeof window.ethereum === 'undefined') {
                 alert('Please install MetaMask!');
@@ -599,229 +768,70 @@
                 signer = provider.getSigner();
                 userAddress = await signer.getAddress();
                 
-                // Setup burner wallet
                 burnerWallet = getOrCreateBurnerWallet();
                 burnerContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, burnerWallet);
                 
                 walletBtn.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
                 walletBtn.classList.add('connected');
                 
-                // Show burner info with clickable address
-                burnerInfoDiv.style.display = 'block';
                 const burnerBalance = await checkBurnerBalance();
+                burnerInfoDiv.style.display = 'block';
                 burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
                 burnerInfoDiv.onclick = () => {
                     navigator.clipboard.writeText(burnerWallet.address);
-                    statusDiv.textContent = 'Address copied!';
+                    statusDiv.textContent = 'Copied!';
                     setTimeout(async () => {
                         const bal = await checkBurnerBalance();
-                        if (bal < 0.01) {
-                            statusDiv.textContent = 'Fund game wallet to play!';
-                        } else {
-                            statusDiv.textContent = `Ready! Game wallet: ${bal.toFixed(4)} MON`;
-                        }
-                    }, 1500);
+                        statusDiv.textContent = bal < 0.01 ? 'Fund wallet to play' : `Ready! ${bal.toFixed(3)} MON`;
+                    }, 1000);
                 };
                 
-                // Check burner balance
+                fundOptionsDiv.style.display = 'block';
+                
                 if (burnerBalance < 0.01) {
-                    statusDiv.textContent = 'Fund game wallet to play!';
-                    fundOptionsDiv.style.display = 'block';
+                    statusDiv.textContent = 'Fund game wallet to play';
                     startBtn.disabled = true;
                 } else {
-                    statusDiv.textContent = `Ready! Game wallet: ${burnerBalance.toFixed(4)} MON`;
-                    fundOptionsDiv.style.display = 'block';
+                    statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
                     startBtn.disabled = false;
                 }
                 
             } catch (error) {
                 console.error('Connection error:', error);
-                statusDiv.textContent = 'Error connecting';
+                statusDiv.textContent = 'Connection failed';
             }
         });
         
+        // Funding
         async function fundBurnerWallet(amount) {
             try {
-                statusDiv.textContent = 'Confirm in MetaMask...';
-                
+                statusDiv.textContent = 'Confirm in wallet...';
                 const tx = await signer.sendTransaction({
                     to: burnerWallet.address,
                     value: ethers.utils.parseEther(amount.toString())
                 });
-                
-                statusDiv.textContent = 'Funding game wallet...';
+                statusDiv.textContent = 'Funding...';
                 await tx.wait();
-                
                 const burnerBalance = await checkBurnerBalance();
-                statusDiv.textContent = `Ready! Game wallet: ${burnerBalance.toFixed(4)} MON`;
+                statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
                 startBtn.disabled = false;
-                
             } catch (error) {
                 console.error('Funding error:', error);
-                statusDiv.textContent = 'Funding failed - try again';
+                statusDiv.textContent = 'Funding failed';
             }
         }
         
-        // Fund button click handlers
         document.querySelectorAll('.fund-btn[data-amount]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const amount = btn.getAttribute('data-amount');
-                fundBurnerWallet(amount);
-            });
+            btn.addEventListener('click', () => fundBurnerWallet(btn.getAttribute('data-amount')));
         });
         
         customFundBtn.addEventListener('click', () => {
             const amount = parseFloat(customAmountInput.value);
-            if (amount && amount > 0) {
-                fundBurnerWallet(amount);
-            } else {
-                statusDiv.textContent = 'Enter a valid amount';
-            }
+            if (amount && amount > 0) fundBurnerWallet(amount);
         });
         
-        startBtn.addEventListener('click', () => {
-            startBtn.disabled = true;
-            startGame();
-        });
-        
-        async function startGame() {
-            score = 0;
-            txCount = 0;
-            pendingTxs = [];
-            timeRemaining = 100;
-            currentTimeDecay = baseTimeDecay;
-            gameSpeed = 0.8;
-            branches = [];
-            lumberjackSide = 'left';
-            gameActive = true;
-            gameOverDiv.style.display = 'none';
-            updateScore();
-            updateTimeBar();
-            updateTxCounter();
-            generateBranches();
-            updateLumberjackPosition();
-            statusDiv.textContent = 'Chopping! 🪓';
-            
-            // Get starting nonce for this game session
-            currentNonce = await burnerWallet.getTransactionCount('pending');
-            txQueue = [];
-            isProcessingQueue = false;
-            
-            // Send startGame transaction
-            try {
-                burnerContract.startGame(userAddress, { gasLimit: 100000, nonce: currentNonce }).catch(console.error);
-                currentNonce++;
-            } catch (e) {
-                console.error('Start game tx error:', e);
-            }
-            
-            gameLoop();
-        }
-        
-        function gameLoop() {
-            if (!gameActive) return;
-            
-            const milestones = Math.floor(score / 20);
-            const speedMultiplier = 1 + (milestones * 0.15);
-            currentTimeDecay = baseTimeDecay * speedMultiplier;
-            
-            timeRemaining -= currentTimeDecay * gameSpeed;
-            updateTimeBar();
-            if (timeRemaining <= 0) {
-                endGame();
-                return;
-            }
-            animationFrameId = requestAnimationFrame(gameLoop);
-        }
-        
-        function generateBranches() {
-            document.querySelectorAll('.branch').forEach(b => b.remove());
-            branches = [];
-            for (let i = 0; i < 8; i++) {
-                const side = Math.random() > 0.5 ? 'left' : 'right';
-                const position = 150 + (i * 80);
-                branches.push({ side, position });
-                createBranch(side, position);
-            }
-        }
-        
-        function createBranch(side, position) {
-            const branch = document.createElement('div');
-            branch.className = `branch ${side}`;
-            branch.style.bottom = `${position}px`;
-            branch.style.left = '170px';
-            
-            const connector = document.createElement('div');
-            connector.className = 'branch-connector';
-            branch.appendChild(connector);
-            
-            const main = document.createElement('div');
-            main.className = 'branch-main';
-            for (let i = 0; i < 3; i++) {
-                const leaf = document.createElement('div');
-                leaf.className = 'branch-leaves';
-                main.appendChild(leaf);
-            }
-            branch.appendChild(main);
-            
-            gameArea.appendChild(branch);
-        }
-        
-        function updateLumberjackPosition() {
-            if (lumberjackSide === 'left') {
-                lumberjack.style.left = '70px';
-                keoneImg.style.transform = 'scaleX(1)';
-                axe.style.right = '-23px';
-                axe.style.left = 'auto';
-            } else {
-                lumberjack.style.left = '270px';
-                keoneImg.style.transform = 'scaleX(-1)';
-                axe.style.left = '-23px';
-                axe.style.right = 'auto';
-            }
-        }
-        
-        async function chop(side) {
-            if (!gameActive) return;
-            
-            const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 170 && lowestBranch.side === side) {
-                endGame();
-                return;
-            }
-            
-            lumberjackSide = side;
-            updateLumberjackPosition();
-            
-            axe.classList.add('swing');
-            setTimeout(() => axe.classList.remove('swing'), 200);
-            
-            if (branches.length > 0) {
-                branches.shift();
-                const branchEls = document.querySelectorAll('.branch');
-                if (branchEls[0]) branchEls[0].remove();
-                branches.forEach((branch, index) => {
-                    branch.position -= 80;
-                    const branchEl = branchEls[index + 1];
-                    if (branchEl) branchEl.style.bottom = `${branch.position}px`;
-                });
-                const newSide = Math.random() > 0.5 ? 'left' : 'right';
-                const newPosition = 150 + (branches.length * 80);
-                branches.push({ side: newSide, position: newPosition });
-                createBranch(newSide, newPosition);
-            }
-            
-            score++;
-            txCount++;
-            timeRemaining = Math.min(100, timeRemaining + timeAddPerChop);
-            updateScore();
-            updateTimeBar();
-            updateTxCounter();
-            
-            // Fire off transaction WITHOUT waiting (fire and forget)
-            sendChopTx(score);
-        }
-        
+        // Transaction queue
         async function processQueue() {
             if (isProcessingQueue) return;
             isProcessingQueue = true;
@@ -837,35 +847,237 @@
                     pendingTxs.push(tx.hash);
                 } catch (error) {
                     console.error('Chop tx error:', error);
-                    // If nonce error, refresh it
-                    if (error.message.includes('nonce')) {
+                    if (error.message && error.message.includes('nonce')) {
                         currentNonce = await burnerWallet.getTransactionCount('pending');
                     }
                 }
             }
-            
             isProcessingQueue = false;
         }
         
-        async function sendChopTx(chopNumber) {
+        function sendChopTx(chopNumber) {
             txQueue.push(chopNumber);
             processQueue();
         }
         
+        // Particles
+        function spawnParticles(x, y) {
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = '🍃';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                gameArea.appendChild(particle);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 50 + Math.random() * 100;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+                
+                let px = x, py = y, opacity = 1;
+                const animate = () => {
+                    px += vx * 0.02;
+                    py += vy * 0.02 + 2;
+                    opacity -= 0.03;
+                    particle.style.left = px + 'px';
+                    particle.style.top = py + 'px';
+                    particle.style.opacity = opacity;
+                    if (opacity > 0) requestAnimationFrame(animate);
+                    else particle.remove();
+                };
+                requestAnimationFrame(animate);
+            }
+        }
+        
+        // Milestone celebration
+        function showMilestone(num) {
+            milestoneDiv.textContent = `🔥 ${num}!`;
+            milestoneDiv.classList.remove('show');
+            void milestoneDiv.offsetWidth;
+            milestoneDiv.classList.add('show');
+        }
+        
+        // Game functions
+        function startGame() {
+            if (!burnerWallet || startBtn.disabled) return;
+            
+            score = 0;
+            txCount = 0;
+            pendingTxs = [];
+            txQueue = [];
+            isProcessingQueue = false;
+            timeRemaining = 100;
+            currentTimeDecay = baseTimeDecay;
+            branches = [];
+            lumberjackSide = 'left';
+            lastMilestone = 0;
+            gameActive = true;
+            
+            startOverlay.classList.add('hidden');
+            gameOverDiv.style.display = 'none';
+            startBtn.disabled = true;
+            
+            updateScore();
+            updateTimeBar();
+            updateTxCounter();
+            generateBranches();
+            updateLumberjackPosition();
+            
+            // Get nonce and start
+            burnerWallet.getTransactionCount('pending').then(nonce => {
+                currentNonce = nonce;
+                burnerContract.startGame(userAddress, { gasLimit: 100000, nonce: currentNonce }).catch(console.error);
+                currentNonce++;
+            });
+            
+            gameLoop();
+        }
+        
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            const milestones = Math.floor(score / 25);
+            const speedMultiplier = 1 + (milestones * 0.12);
+            currentTimeDecay = baseTimeDecay * speedMultiplier;
+            
+            timeRemaining -= currentTimeDecay;
+            updateTimeBar();
+            
+            if (timeRemaining <= 0) {
+                endGame();
+                return;
+            }
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+        
+        function generateBranches() {
+            document.querySelectorAll('.branch').forEach(b => b.remove());
+            branches = [];
+            for (let i = 0; i < 8; i++) {
+                const side = Math.random() > 0.5 ? 'left' : 'right';
+                const position = 150 + (i * 70);
+                branches.push({ side, position });
+                createBranch(side, position);
+            }
+        }
+        
+        function createBranch(side, position) {
+            const branch = document.createElement('div');
+            branch.className = `branch ${side}`;
+            branch.style.bottom = `${position}px`;
+            branch.style.left = '155px';
+            
+            const connector = document.createElement('div');
+            connector.className = 'branch-connector';
+            branch.appendChild(connector);
+            
+            const main = document.createElement('div');
+            main.className = 'branch-main';
+            for (let i = 0; i < 3; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'branch-leaves';
+                main.appendChild(leaf);
+            }
+            branch.appendChild(main);
+            gameArea.appendChild(branch);
+        }
+        
+        function updateLumberjackPosition() {
+            if (lumberjackSide === 'left') {
+                lumberjack.style.left = '75px';
+                keoneImg.style.transform = 'scaleX(1)';
+                axe.style.right = '-20px';
+                axe.style.left = 'auto';
+            } else {
+                lumberjack.style.left = '245px';
+                keoneImg.style.transform = 'scaleX(-1)';
+                axe.style.left = '-20px';
+                axe.style.right = 'auto';
+            }
+        }
+        
+        function chop(side) {
+            if (!gameActive) return;
+            
+            const lowestBranch = branches[0];
+            if (lowestBranch && lowestBranch.position < 160 && lowestBranch.side === side) {
+                endGame();
+                return;
+            }
+            
+            lumberjackSide = side;
+            updateLumberjackPosition();
+            
+            // Visual feedback
+            axe.classList.remove('swing');
+            void axe.offsetWidth;
+            axe.classList.add('swing');
+            
+            gameArea.classList.add('shake');
+            setTimeout(() => gameArea.classList.remove('shake'), 100);
+            
+            // Spawn particles at branch position
+            if (branches.length > 0) {
+                const branchEl = document.querySelector('.branch');
+                if (branchEl) {
+                    const rect = branchEl.getBoundingClientRect();
+                    const gameRect = gameArea.getBoundingClientRect();
+                    spawnParticles(rect.left - gameRect.left + 50, rect.top - gameRect.top + 15);
+                }
+                
+                branches.shift();
+                const branchEls = document.querySelectorAll('.branch');
+                if (branchEls[0]) branchEls[0].remove();
+                
+                branches.forEach((branch, index) => {
+                    branch.position -= 70;
+                    const branchEl = branchEls[index + 1];
+                    if (branchEl) branchEl.style.bottom = `${branch.position}px`;
+                });
+                
+                const newSide = Math.random() > 0.5 ? 'left' : 'right';
+                const newPosition = 150 + (branches.length * 70);
+                branches.push({ side: newSide, position: newPosition });
+                createBranch(newSide, newPosition);
+            }
+            
+            score++;
+            txCount++;
+            timeRemaining = Math.min(100, timeRemaining + timeAddPerChop);
+            
+            updateScore();
+            updateTimeBar();
+            updateTxCounter();
+            
+            // Milestones every 25
+            const currentMilestone = Math.floor(score / 25) * 25;
+            if (currentMilestone > lastMilestone && currentMilestone > 0) {
+                lastMilestone = currentMilestone;
+                showMilestone(currentMilestone);
+            }
+            
+            sendChopTx(score);
+        }
+        
         function updateScore() {
-            scoreDiv.textContent = `Score: ${score}`;
-            scoreOnTree.textContent = score;
+            scoreDisplay.textContent = score;
+            scoreDisplay.classList.remove('pop');
+            void scoreDisplay.offsetWidth;
+            scoreDisplay.classList.add('pop');
         }
         
         function updateTxCounter() {
-            txCounterDiv.textContent = `TX: ${txCount}`;
+            txDisplay.textContent = `⚡ ${txCount} TXs`;
         }
         
         function updateTimeBar() {
-            timeBarFill.style.width = `${Math.max(0, timeRemaining)}%`;
-            if (timeRemaining > 60) {
-                timeBarFill.style.background = 'linear-gradient(to right, #48dbfb 0%, #0abde3 100%)';
-            } else if (timeRemaining > 30) {
+            const pct = Math.max(0, timeRemaining);
+            timeBarFill.style.width = `${pct}%`;
+            
+            if (pct > 60) {
+                timeBarFill.style.background = 'linear-gradient(to right, #00d2d3 0%, #54a0ff 100%)';
+            } else if (pct > 30) {
                 timeBarFill.style.background = 'linear-gradient(to right, #feca57 0%, #ff9f43 100%)';
             } else {
                 timeBarFill.style.background = 'linear-gradient(to right, #ff6b6b 0%, #ee5a6f 100%)';
@@ -875,72 +1087,99 @@
         async function endGame() {
             gameActive = false;
             cancelAnimationFrame(animationFrameId);
-            gameOverDiv.style.display = 'block';
-            finalScoreDiv.textContent = `You chopped ${score} branches.`;
-            txSummaryDiv.textContent = `${txCount} transactions sent!`;
             
-            if (score > highScore) {
+            const isNewRecord = score > highScore;
+            
+            if (isNewRecord) {
                 highScore = score;
                 highScoreDiv.textContent = highScore;
                 localStorage.setItem('monadLumberjackHighScore', highScore.toString());
-                finalScoreDiv.textContent = `🎉 NEW HIGH SCORE! 🎉\nYou chopped ${score} branches.`;
+                gameOverDiv.classList.add('newRecord');
+                gameOverDiv.querySelector('h2').textContent = '🎉 NEW RECORD!';
+                beatScoreDiv.textContent = '';
+            } else {
+                gameOverDiv.classList.remove('newRecord');
+                gameOverDiv.querySelector('h2').textContent = 'GAME OVER';
+                const diff = highScore - score;
+                beatScoreDiv.textContent = diff === 0 ? 'You tied your best!' : `${diff} away from your best`;
             }
             
-            statusDiv.textContent = 'Submitting final score...';
+            finalScoreDiv.textContent = score;
+            txSummaryDiv.textContent = `⚡ ${txCount} transactions on Monad`;
+            gameOverDiv.style.display = 'flex';
+            
+            // Submit final score
             try {
-                // Wait for queue to finish processing
                 while (txQueue.length > 0 || isProcessingQueue) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(r => setTimeout(r, 100));
                 }
-                
-                // Small delay then get fresh nonce
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(r => setTimeout(r, 500));
                 const freshNonce = await burnerWallet.getTransactionCount('pending');
-                
                 const tx = await burnerContract.endGame(userAddress, score, { 
                     gasLimit: 150000,
                     nonce: freshNonce
                 });
                 const receipt = await tx.wait();
-                statusDiv.textContent = 'Score submitted!';
-                txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank" style="color: #48dbfb;">View Final TX</a>`;
-                
-                // Update burner balance display
-                const burnerBalance = await checkBurnerBalance();
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
-                
+                txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank">View on Explorer →</a>`;
             } catch (error) {
                 console.error('End game error:', error);
-                statusDiv.textContent = 'Score saved locally';
+                txLinkDiv.innerHTML = '';
             }
+            
+            // Update balance
+            const burnerBalance = await checkBurnerBalance();
+            burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+            statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
             startBtn.disabled = false;
         }
         
-        restartBtn.addEventListener('click', () => {
-            gameOverDiv.style.display = 'none';
-            statusDiv.textContent = 'Click Start Game!';
+        // Event listeners
+        restartBtn.addEventListener('click', startGame);
+        startBtn.addEventListener('click', startGame);
+        
+        tapLeft.addEventListener('click', () => {
+            if (!gameActive && !startBtn.disabled && startOverlay.classList.contains('hidden') === false) {
+                startGame();
+            } else {
+                chop('left');
+            }
         });
         
-        leftArrow.addEventListener('click', () => chop('left'));
-        rightArrow.addEventListener('click', () => chop('right'));
+        tapRight.addEventListener('click', () => {
+            if (!gameActive && !startBtn.disabled && startOverlay.classList.contains('hidden') === false) {
+                startGame();
+            } else {
+                chop('right');
+            }
+        });
+        
+        // Touch events for mobile
+        tapLeft.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameActive && !startBtn.disabled) startGame();
+            else chop('left');
+        });
+        
+        tapRight.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameActive && !startBtn.disabled) startGame();
+            else chop('right');
+        });
         
         document.addEventListener('keydown', (e) => {
             if (e.key === ' ' || e.key === 'Spacebar') {
-                if (!gameActive && !startBtn.disabled) {
-                    e.preventDefault();
-                    startBtn.disabled = true;
-                    startGame();
-                    return;
-                }
+                e.preventDefault();
+                if (!gameActive && !startBtn.disabled) startGame();
             }
-            
-            if (!gameActive) return;
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                chop('left');
-            } else if (e.key === 'ArrowRight') {
+                if (!gameActive && !startBtn.disabled) startGame();
+                else chop('left');
+            }
+            if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                chop('right');
+                if (!gameActive && !startBtn.disabled) startGame();
+                else chop('right');
             }
         });
     </script>
