@@ -33,8 +33,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10 C25 10 10 30 10 50 C10 70 25 90 50 90 C75 90 90 70 90 50 C90 30 75 10 50 10 Z M50 25 C65 25 75 35 75 50 C75 65 65 75 50 75 C35 75 25 65 25 50 C25 35 35 25 50 25 Z' fill='%236E54FF' fill-opacity='0.03'/%3E%3C/svg%3E");
-            background-size: 120px 120px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5 L35 25 L55 30 L35 35 L30 55 L25 35 L5 30 L25 25 Z' fill='%236E54FF' fill-opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 60px 60px;
             pointer-events: none;
             z-index: 0;
         }
@@ -254,46 +254,7 @@
             100% { transform: translateX(-50%) scale(1); }
         }
         
-        /* TX Counter - the Monad flex */
-        #txDisplay {
-            position: absolute;
-            top: 110px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-            z-index: 20;
-            box-shadow: 0 0 20px rgba(156, 39, 176, 0.6);
-        }
         
-        /* Milestone popup */
-        #milestone {
-            position: absolute;
-            top: 140px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: #feca57;
-            text-shadow: 0 0 15px rgba(254, 202, 87, 0.6);
-            z-index: 25;
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        #milestone.show {
-            animation: milestonePopup 0.8s ease-out;
-        }
-        
-        @keyframes milestonePopup {
-            0% { opacity: 0; transform: translateX(-50%) scale(0.8); }
-            20% { opacity: 1; transform: translateX(-50%) scale(1.1); }
-            80% { opacity: 1; transform: translateX(-50%) scale(1); }
-            100% { opacity: 0; transform: translateX(-50%) scale(1); }
-        }
         
         /* Time bar */
         #timeBarContainer {
@@ -590,8 +551,7 @@
             <div id="gameArea">
                 <div id="tree"></div>
                 <div id="scoreDisplay">0</div>
-                <div id="txDisplay">⚡ 0 TXs</div>
-                <div id="milestone"></div>
+                
                 
                 <div id="lumberjack">
                     <img src="keone.png" alt="Lumberjack" id="keoneImg">
@@ -692,7 +652,7 @@
         let currentNonce = null;
         let txQueue = [];
         let isProcessingQueue = false;
-        let lastMilestone = 0;
+        
         
         // DOM elements
         const $ = id => document.getElementById(id);
@@ -704,8 +664,7 @@
         const statusDiv = $('status');
         const burnerInfoDiv = $('burnerInfo');
         const scoreDisplay = $('scoreDisplay');
-        const txDisplay = $('txDisplay');
-        const milestoneDiv = $('milestone');
+        
         const timeBarFill = $('timeBarFill');
         const lumberjack = $('lumberjack');
         const keoneImg = $('keoneImg');
@@ -909,13 +868,7 @@
             }
         }
         
-        // Milestone celebration
-        function showMilestone(num) {
-            milestoneDiv.textContent = `🔥 ${num}!`;
-            milestoneDiv.classList.remove('show');
-            void milestoneDiv.offsetWidth;
-            milestoneDiv.classList.add('show');
-        }
+        
         
         // Game functions
         function startGame() {
@@ -930,7 +883,7 @@
             currentTimeDecay = baseTimeDecay;
             branches = [];
             lumberjackSide = 'left';
-            lastMilestone = 0;
+            
             gameActive = true;
             
             startOverlay.classList.add('hidden');
@@ -939,7 +892,6 @@
             
             updateScore();
             updateTimeBar();
-            updateTxCounter();
             generateBranches();
             updateLumberjackPosition();
             
@@ -1066,14 +1018,6 @@
             
             updateScore();
             updateTimeBar();
-            updateTxCounter();
-            
-            // Milestones every 25
-            const currentMilestone = Math.floor(score / 25) * 25;
-            if (currentMilestone > lastMilestone && currentMilestone > 0) {
-                lastMilestone = currentMilestone;
-                showMilestone(currentMilestone);
-            }
             
             sendChopTx(score);
         }
@@ -1085,9 +1029,7 @@
             scoreDisplay.classList.add('pop');
         }
         
-        function updateTxCounter() {
-            txDisplay.textContent = `⚡ ${txCount} TXs`;
-        }
+        
         
         function updateTimeBar() {
             const pct = Math.max(0, timeRemaining);
@@ -1107,6 +1049,8 @@
             cancelAnimationFrame(animationFrameId);
             
             const isNewRecord = score > highScore;
+            const finalScore = score;
+            const finalTxCount = txCount;
             
             if (isNewRecord) {
                 highScore = score;
@@ -1122,33 +1066,34 @@
                 beatScoreDiv.textContent = diff === 0 ? 'You tied your best!' : `${diff} away from your best`;
             }
             
-            finalScoreDiv.textContent = score;
-            txSummaryDiv.textContent = `⚡ ${txCount} transactions on Monad`;
+            finalScoreDiv.textContent = finalScore;
+            txSummaryDiv.textContent = `⚡ ${finalTxCount} transactions on Monad`;
+            txLinkDiv.innerHTML = '';
             gameOverDiv.style.display = 'flex';
             
-            // Submit final score
-            try {
-                while (txQueue.length > 0 || isProcessingQueue) {
-                    await new Promise(r => setTimeout(r, 100));
-                }
-                await new Promise(r => setTimeout(r, 500));
-                const freshNonce = await burnerWallet.getTransactionCount('pending');
-                const tx = await burnerContract.endGame(userAddress, score, { 
-                    gasLimit: 150000,
-                    nonce: freshNonce
-                });
-                const receipt = await tx.wait();
-                txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank">View on Explorer →</a>`;
-            } catch (error) {
-                console.error('End game error:', error);
-                txLinkDiv.innerHTML = '';
-            }
-            
-            // Update balance
-            const burnerBalance = await checkBurnerBalance();
-            burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
-            statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
+            // Enable restart immediately
             startBtn.disabled = false;
+            
+            // Submit final score in background (don't block restart)
+            (async () => {
+                try {
+                    await new Promise(r => setTimeout(r, 300));
+                    const freshNonce = await burnerWallet.getTransactionCount('pending');
+                    const tx = await burnerContract.endGame(userAddress, finalScore, { 
+                        gasLimit: 150000,
+                        nonce: freshNonce
+                    });
+                    const receipt = await tx.wait();
+                    txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank">View on Explorer →</a>`;
+                } catch (error) {
+                    console.error('End game error:', error);
+                }
+                
+                // Update balance display
+                const burnerBalance = await checkBurnerBalance();
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
+            })();
         }
         
         // Event listeners
