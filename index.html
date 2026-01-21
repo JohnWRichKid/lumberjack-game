@@ -36,7 +36,7 @@
         
         #gameArea {
             background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
-            width: 420px; /* NARROWER - was 480px */
+            width: 420px;
             height: 720px;
             position: relative;
             border: 5px solid #9c27b0;
@@ -55,9 +55,8 @@
             z-index: 1;
         }
         
-        /* Tree trunk - simple clean design */
         #tree {
-            width: 60px; /* NARROWER - was 80px */
+            width: 60px;
             background: linear-gradient(to right, #8B6F47 0%, #A0826D 50%, #8B6F47 100%);
             height: 100%;
             position: absolute;
@@ -67,10 +66,9 @@
             z-index: 2;
         }
         
-        /* Lumberjack - full character with axe */
         #lumberjack {
-            width: 70px; /* SMALLER - was 80px */
-            height: 85px; /* SHORTER - was 100px */
+            width: 70px;
+            height: 85px;
             position: absolute;
             bottom: 60px;
             left: 80px;
@@ -82,8 +80,8 @@
         }
         
         #keoneImg {
-            width: 45px; /* SMALLER - was 50px */
-            height: 45px; /* SMALLER - was 50px */
+            width: 45px;
+            height: 45px;
             object-fit: cover;
             border-radius: 50%;
             border: 3px solid #9c27b0;
@@ -93,10 +91,9 @@
             z-index: 2;
         }
         
-        /* Lumberjack body */
         .lumberjack-body {
-            width: 35px; /* SMALLER - was 40px */
-            height: 45px; /* SHORTER - was 50px */
+            width: 35px;
+            height: 45px;
             background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%);
             border-radius: 5px;
             position: relative;
@@ -106,8 +103,8 @@
         .lumberjack-body::before {
             content: '';
             position: absolute;
-            width: 18px; /* SMALLER - was 20px */
-            height: 22px; /* SHORTER - was 25px */
+            width: 18px;
+            height: 22px;
             background: #1976D2;
             bottom: 0;
             left: 50%;
@@ -115,14 +112,13 @@
             border-radius: 0 0 3px 3px;
         }
         
-        /* Axe element - bigger and more visible */
         #axe {
             position: absolute;
-            width: 45px; /* SMALLER - was 50px */
-            height: 45px; /* SMALLER - was 50px */
-            top: 18px; /* ADJUSTED */
+            width: 45px;
+            height: 45px;
+            top: 18px;
             right: -23px;
-            font-size: 36px; /* SMALLER - was 40px */
+            font-size: 36px;
             transition: transform 0.1s;
             z-index: 3;
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
@@ -138,14 +134,13 @@
             100% { transform: rotate(0deg); }
         }
         
-        /* Branches CONNECTED to tree */
         .branch {
             position: absolute;
             z-index: 3;
         }
         
         .branch-main {
-            width: 100px; /* SHORTER - was 120px */
+            width: 100px;
             height: 35px;
             background: linear-gradient(135deg, #66BB6A 0%, #4CAF50 100%);
             border-radius: 20px;
@@ -162,7 +157,7 @@
         }
         
         .branch.left .branch-main {
-            left: -70px; /* Closer - was -80px */
+            left: -70px;
         }
         
         .branch.left .branch-connector {
@@ -170,14 +165,13 @@
         }
         
         .branch.right .branch-main {
-            right: -70px; /* Closer - was -80px */
+            right: -70px;
         }
         
         .branch.right .branch-connector {
             right: 30px;
         }
         
-        /* Leaves on branches */
         .branch-leaves {
             position: absolute;
             width: 25px;
@@ -195,7 +189,6 @@
         .branch.right .branch-leaves:nth-child(2) { right: 40px; top: -8px; }
         .branch.right .branch-leaves:nth-child(3) { right: 70px; }
         
-        /* Score display on tree */
         #scoreOnTree {
             position: absolute;
             top: 50px;
@@ -212,7 +205,21 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         
-        /* Arrow buttons - HIDDEN */
+        #txCounter {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(156, 39, 176, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 20;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
         #arrowButtons {
             display: none;
         }
@@ -271,6 +278,7 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            width: 100%;
         }
         
         #wallet {
@@ -284,6 +292,17 @@
         
         #wallet.connected {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        #fundBurner {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            display: none;
+            margin-top: 10px;
+        }
+        
+        #fundBurner:hover:not(:disabled) {
+            transform: translateY(-2px);
         }
         
         #startBtn {
@@ -311,6 +330,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        
+        #burnerInfo {
+            font-size: 12px;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+            word-break: break-all;
         }
         
         #highScorePanel {
@@ -349,6 +379,12 @@
             margin: 20px 0;
         }
         
+        #txSummary {
+            font-size: 16px;
+            color: #48dbfb;
+            margin: 10px 0;
+        }
+        
         #restartBtn {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
@@ -377,6 +413,7 @@
         <div id="gameArea">
             <div id="tree"></div>
             <div id="scoreOnTree">0</div>
+            <div id="txCounter">TX: 0</div>
             <div id="lumberjack">
                 <img src="keone.png" alt="Lumberjack" id="keoneImg">
                 <div class="lumberjack-body"></div>
@@ -396,6 +433,7 @@
             <div id="gameOver">
                 <h2>Better chopping next time!</h2>
                 <div id="finalScore">You chopped 0 branches.</div>
+                <div id="txSummary"></div>
                 <div id="txLink"></div>
                 <button id="restartBtn">Play Again</button>
             </div>
@@ -404,7 +442,9 @@
         <div id="sidePanel">
             <div class="panel-section">
                 <button id="wallet">Connect MetaMask</button>
+                <button id="fundBurner">Fund Game Wallet (0.1 MON)</button>
                 <div id="status">Not connected - Testnet Mode</div>
+                <div id="burnerInfo"></div>
             </div>
             
             <div class="panel-section">
@@ -416,10 +456,10 @@
             <div class="panel-section instructions">
                 <p><strong>How to Play:</strong></p>
                 <p>1. Connect wallet (Testnet)</p>
-                <p>2. Click <span class="highlight">Start Game</span></p>
-                <p>3. Click <span class="highlight">← or →</span> arrows</p>
-                <p>4. Avoid branches!</p>
-                <p>5. Keep chopping!</p>
+                <p>2. Fund game wallet (one-time)</p>
+                <p>3. Click <span class="highlight">Start Game</span></p>
+                <p>4. Use <span class="highlight">← or →</span> arrow keys</p>
+                <p>5. Each chop = 1 TX! 🔥</p>
             </div>
             
             <div class="panel-section" id="highScorePanel">
@@ -433,35 +473,44 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
         // MONAD TESTNET CONFIGURATION
-        const CONTRACT_ADDRESS = "0x60f7a408ad533db7d6deb035cb23ef9f14066a67";
+        const CONTRACT_ADDRESS = "0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
         const CONTRACT_ABI = [
-            "function recordChop(address player, uint256 chopNumber) external",
-            "function endGame(address player, uint256 finalScore) external",
-            "function getLeaderboard() external view returns (tuple(address player, uint256 score, uint256 timestamp)[])"
+            "function startGame(address mainWallet) external",
+            "function chop(address mainWallet, uint256 chopNumber) external",
+            "function endGame(address mainWallet, uint256 finalScore) external",
+            "function getHighScore(address player) external view returns (uint256)",
+            "function totalChops() external view returns (uint256)"
         ];
         
-        const MONAD_CHAIN_ID = '0x279f'; // 10143 in hex - TESTNET
-        const MONAD_RPC = 'https://testnet-rpc.monad.xyz'; // TESTNET
-        const MONAD_EXPLORER = 'https://testnet.monadexplorer.com'; // TESTNET
+        const MONAD_CHAIN_ID = '0x279f';
+        const MONAD_RPC = 'https://testnet-rpc.monad.xyz';
+        const MONAD_EXPLORER = 'https://testnet.monadexplorer.com';
+        const BURNER_FUND_AMOUNT = '0.1';
         
         let score = 0;
         let highScore = 0;
         let gameActive = false;
         let lumberjackSide = 'left';
         let branches = [];
-        let provider, signer, userAddress, contract;
+        let provider, signer, userAddress;
+        let burnerWallet, burnerContract;
         let timeRemaining = 100;
-        let baseTimeDecay = 0.10; // SLOWER - was 0.15
+        let baseTimeDecay = 0.10;
         let currentTimeDecay = 0.10;
-        let timeAddPerChop = 12; // More time per chop - was 10
-        let gameSpeed = 0.8; // SLOWER - was 1
+        let timeAddPerChop = 12;
+        let gameSpeed = 0.8;
         let animationFrameId;
+        let txCount = 0;
+        let pendingTxs = [];
         
         const walletBtn = document.getElementById('wallet');
+        const fundBurnerBtn = document.getElementById('fundBurner');
         const startBtn = document.getElementById('startBtn');
         const statusDiv = document.getElementById('status');
+        const burnerInfoDiv = document.getElementById('burnerInfo');
         const scoreDiv = document.getElementById('score');
         const scoreOnTree = document.getElementById('scoreOnTree');
+        const txCounterDiv = document.getElementById('txCounter');
         const timeBarFill = document.getElementById('timeBarFill');
         const lumberjack = document.getElementById('lumberjack');
         const keoneImg = document.getElementById('keoneImg');
@@ -470,6 +519,7 @@
         const gameOverDiv = document.getElementById('gameOver');
         const restartBtn = document.getElementById('restartBtn');
         const finalScoreDiv = document.getElementById('finalScore');
+        const txSummaryDiv = document.getElementById('txSummary');
         const txLinkDiv = document.getElementById('txLink');
         const highScoreDiv = document.getElementById('highScore');
         const leftArrow = document.getElementById('leftArrow');
@@ -479,6 +529,24 @@
         if (localStorage.getItem('monadLumberjackHighScore')) {
             highScore = parseInt(localStorage.getItem('monadLumberjackHighScore'));
             highScoreDiv.textContent = highScore;
+        }
+        
+        // Load or create burner wallet
+        function getOrCreateBurnerWallet() {
+            let pk = localStorage.getItem('monadLumberjackBurner');
+            if (!pk) {
+                const newWallet = ethers.Wallet.createRandom();
+                pk = newWallet.privateKey;
+                localStorage.setItem('monadLumberjackBurner', pk);
+            }
+            const rpcProvider = new ethers.providers.JsonRpcProvider(MONAD_RPC);
+            return new ethers.Wallet(pk, rpcProvider);
+        }
+        
+        async function checkBurnerBalance() {
+            if (!burnerWallet) return 0;
+            const balance = await burnerWallet.getBalance();
+            return parseFloat(ethers.utils.formatEther(balance));
         }
         
         walletBtn.addEventListener('click', async () => {
@@ -520,16 +588,59 @@
                 
                 signer = provider.getSigner();
                 userAddress = await signer.getAddress();
-                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                
+                // Setup burner wallet
+                burnerWallet = getOrCreateBurnerWallet();
+                burnerContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, burnerWallet);
                 
                 walletBtn.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
                 walletBtn.classList.add('connected');
-                statusDiv.textContent = 'Connected to Testnet!';
-                startBtn.disabled = false;
+                
+                // Show burner info
+                burnerInfoDiv.style.display = 'block';
+                burnerInfoDiv.innerHTML = `Game Wallet: ${burnerWallet.address.slice(0, 10)}...${burnerWallet.address.slice(-6)}`;
+                
+                // Check burner balance
+                const burnerBalance = await checkBurnerBalance();
+                
+                if (burnerBalance < 0.01) {
+                    statusDiv.textContent = 'Fund game wallet to play!';
+                    fundBurnerBtn.style.display = 'block';
+                    startBtn.disabled = true;
+                } else {
+                    statusDiv.textContent = `Ready! Game wallet: ${burnerBalance.toFixed(4)} MON`;
+                    fundBurnerBtn.style.display = 'none';
+                    startBtn.disabled = false;
+                }
                 
             } catch (error) {
                 console.error('Connection error:', error);
                 statusDiv.textContent = 'Error connecting';
+            }
+        });
+        
+        fundBurnerBtn.addEventListener('click', async () => {
+            try {
+                fundBurnerBtn.disabled = true;
+                statusDiv.textContent = 'Confirm in MetaMask...';
+                
+                const tx = await signer.sendTransaction({
+                    to: burnerWallet.address,
+                    value: ethers.utils.parseEther(BURNER_FUND_AMOUNT)
+                });
+                
+                statusDiv.textContent = 'Funding game wallet...';
+                await tx.wait();
+                
+                const burnerBalance = await checkBurnerBalance();
+                statusDiv.textContent = `Ready! Game wallet: ${burnerBalance.toFixed(4)} MON`;
+                fundBurnerBtn.style.display = 'none';
+                startBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Funding error:', error);
+                statusDiv.textContent = 'Funding failed - try again';
+                fundBurnerBtn.disabled = false;
             }
         });
         
@@ -538,8 +649,10 @@
             startGame();
         });
         
-        function startGame() {
+        async function startGame() {
             score = 0;
+            txCount = 0;
+            pendingTxs = [];
             timeRemaining = 100;
             currentTimeDecay = baseTimeDecay;
             gameSpeed = 0.8;
@@ -549,18 +662,26 @@
             gameOverDiv.style.display = 'none';
             updateScore();
             updateTimeBar();
+            updateTxCounter();
             generateBranches();
             updateLumberjackPosition();
-            statusDiv.textContent = 'Chopping!';
+            statusDiv.textContent = 'Chopping! 🪓';
+            
+            // Send startGame transaction
+            try {
+                burnerContract.startGame(userAddress, { gasLimit: 100000 }).catch(console.error);
+            } catch (e) {
+                console.error('Start game tx error:', e);
+            }
+            
             gameLoop();
         }
         
         function gameLoop() {
             if (!gameActive) return;
             
-            // Compounding speed increase every 20 chops
             const milestones = Math.floor(score / 20);
-            const speedMultiplier = 1 + (milestones * 0.15); // Each 20 chops adds 15% speed
+            const speedMultiplier = 1 + (milestones * 0.15);
             currentTimeDecay = baseTimeDecay * speedMultiplier;
             
             timeRemaining -= currentTimeDecay * gameSpeed;
@@ -587,7 +708,7 @@
             const branch = document.createElement('div');
             branch.className = `branch ${side}`;
             branch.style.bottom = `${position}px`;
-            branch.style.left = '170px'; // Center on tree for 420px width
+            branch.style.left = '170px';
             
             const connector = document.createElement('div');
             connector.className = 'branch-connector';
@@ -622,18 +743,15 @@
         async function chop(side) {
             if (!gameActive) return;
             
-            // Check collision FIRST before moving
             const lowestBranch = branches[0];
             if (lowestBranch && lowestBranch.position < 170 && lowestBranch.side === side) {
                 endGame();
                 return;
             }
             
-            // Safe to chop - update position
             lumberjackSide = side;
             updateLumberjackPosition();
             
-            // Swing axe animation
             axe.classList.add('swing');
             setTimeout(() => axe.classList.remove('swing'), 200);
             
@@ -651,24 +769,34 @@
                 branches.push({ side: newSide, position: newPosition });
                 createBranch(newSide, newPosition);
             }
+            
             score++;
+            txCount++;
             timeRemaining = Math.min(100, timeRemaining + timeAddPerChop);
             updateScore();
             updateTimeBar();
-            recordChop();
+            updateTxCounter();
+            
+            // Fire off transaction WITHOUT waiting (fire and forget)
+            sendChopTx(score);
         }
         
-        async function recordChop() {
+        async function sendChopTx(chopNumber) {
             try {
-                await contract.recordChop(userAddress, score, { gasLimit: 100000 });
+                const tx = await burnerContract.chop(userAddress, chopNumber, { gasLimit: 100000 });
+                pendingTxs.push(tx.hash);
             } catch (error) {
-                console.error('Chop error:', error);
+                console.error('Chop tx error:', error);
             }
         }
         
         function updateScore() {
             scoreDiv.textContent = `Score: ${score}`;
             scoreOnTree.textContent = score;
+        }
+        
+        function updateTxCounter() {
+            txCounterDiv.textContent = `TX: ${txCount}`;
         }
         
         function updateTimeBar() {
@@ -687,8 +815,8 @@
             cancelAnimationFrame(animationFrameId);
             gameOverDiv.style.display = 'block';
             finalScoreDiv.textContent = `You chopped ${score} branches.`;
+            txSummaryDiv.textContent = `${txCount} transactions sent!`;
             
-            // Update high score
             if (score > highScore) {
                 highScore = score;
                 highScoreDiv.textContent = highScore;
@@ -696,15 +824,20 @@
                 finalScoreDiv.textContent = `🎉 NEW HIGH SCORE! 🎉\nYou chopped ${score} branches.`;
             }
             
-            statusDiv.textContent = 'Submitting score...';
+            statusDiv.textContent = 'Submitting final score...';
             try {
-                const tx = await contract.endGame(userAddress, score);
+                const tx = await burnerContract.endGame(userAddress, score, { gasLimit: 150000 });
                 const receipt = await tx.wait();
                 statusDiv.textContent = 'Score submitted!';
-                txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank" style="color: #48dbfb;">View TX</a>`;
+                txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank" style="color: #48dbfb;">View Final TX</a>`;
+                
+                // Update burner balance display
+                const burnerBalance = await checkBurnerBalance();
+                burnerInfoDiv.innerHTML = `Game Wallet: ${burnerWallet.address.slice(0, 10)}...${burnerWallet.address.slice(-6)}<br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                
             } catch (error) {
-                console.error('Score error:', error);
-                statusDiv.textContent = 'Error submitting';
+                console.error('End game error:', error);
+                statusDiv.textContent = 'Score saved locally';
             }
             startBtn.disabled = false;
         }
@@ -718,7 +851,6 @@
         rightArrow.addEventListener('click', () => chop('right'));
         
         document.addEventListener('keydown', (e) => {
-            // Spacebar to start game
             if (e.key === ' ' || e.key === 'Spacebar') {
                 if (!gameActive && !startBtn.disabled) {
                     e.preventDefault();
