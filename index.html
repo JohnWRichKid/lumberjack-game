@@ -233,7 +233,7 @@
         /* Score display - small under time bar */
         #scoreDisplay {
             position: absolute;
-            bottom: 45px;
+            top: 40px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 28px;
@@ -248,7 +248,7 @@
         /* Time bar */
         #timeBarContainer {
             position: absolute;
-            bottom: 85px;
+            top: 15px;
             left: 50%;
             transform: translateX(-50%);
             width: 70%;
@@ -561,7 +561,7 @@
                     <p>⬅️ Left side = chop left</p>
                     <p>➡️ Right side = chop right</p>
                     <p>🌿 Avoid the branches!</p>
-                    <div id="tapToStart">TAP ANYWHERE TO START</div>
+                    <div id="tapToStart">CONNECT WALLET TO PLAY</div>
                 </div>
                 
                 <div id="gameOver">
@@ -667,6 +667,7 @@
         const txLinkDiv = $('txLink');
         const highScoreDiv = $('highScoreTop');
         const startOverlay = $('startOverlay');
+        const tapToStart = $('tapToStart');
         const tapLeft = $('tapLeft');
         const tapRight = $('tapRight');
         
@@ -758,9 +759,11 @@
                 if (burnerBalance < 0.01) {
                     statusDiv.textContent = 'Fund game wallet to play';
                     startBtn.disabled = true;
+                    tapToStart.textContent = 'FUND WALLET TO PLAY';
                 } else {
                     statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
                     startBtn.disabled = false;
+                    tapToStart.textContent = 'TAP ANYWHERE TO START';
                 }
                 
             } catch (error) {
@@ -783,6 +786,7 @@
                 statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
                 burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
                 startBtn.disabled = false;
+                tapToStart.textContent = 'TAP ANYWHERE TO START';
             } catch (error) {
                 console.error('Funding error:', error);
                 statusDiv.textContent = 'Funding failed';
