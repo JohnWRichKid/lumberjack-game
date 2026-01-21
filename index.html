@@ -124,7 +124,7 @@
             position: absolute;
             bottom: 55px;
             left: 75px;
-            transition: left 0.08s ease-out;
+            transition: left 0.03s ease-out;
             z-index: 10;
             display: flex;
             flex-direction: column;
@@ -239,7 +239,7 @@
             font-size: 28px;
             font-weight: bold;
             color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 0 0 8px rgba(156, 39, 176, 0.9), 0 0 15px rgba(156, 39, 176, 0.6), 0 2px 4px rgba(0,0,0,0.5);
             z-index: 20;
         }
         
@@ -634,7 +634,7 @@
         let timeRemaining = 100;
         let baseTimeDecay = 0.12;
         let currentTimeDecay = 0.12;
-        let timeAddPerChop = 10;
+        let timeAddPerChop = 5;
         let animationFrameId;
         let txCount = 0;
         let pendingTxs = [];
