@@ -385,28 +385,7 @@
             transition: background 0.2s;
         }
         
-        #lowBalanceWarning {
-            display: none;
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-top: 8px;
-            text-align: center;
-            animation: pulse 1.5s infinite;
-        }
-        
-        #withdrawBtn {
-            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
-            font-size: 14px;
-            padding: 10px;
-        }
-        
-        #withdrawBtn:hover {
-            transform: translateY(-2px);
-        }
+        #burnerInfo:hover { background: rgba(0,0,0,0.5); }
         
         .instructions {
             font-size: 13px;
@@ -645,8 +624,6 @@
                 </div>
                 <div id="status">Connect wallet to play</div>
                 <div id="burnerInfo"></div>
-                <div id="lowBalanceWarning">⚠️ Low balance! Fund wallet to keep playing</div>
-                <button id="withdrawBtn">Withdraw to Main Wallet</button>
             </div>
             
             <div class="panel-section">
