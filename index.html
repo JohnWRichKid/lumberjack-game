@@ -736,6 +736,23 @@
             highScoreDiv.textContent = highScore;
         }
         
+        // Balance display helper
+        function updateBalanceDisplay(balance) {
+            burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${balance.toFixed(4)} MON`;
+            
+            if (balance < 0.5 && balance > 0.01) {
+                lowBalanceWarning.style.display = 'block';
+                lowBalanceWarning.textContent = '⚠️ Low balance! Fund wallet to keep playing';
+            } else if (balance <= 0.01) {
+                lowBalanceWarning.style.display = 'block';
+                lowBalanceWarning.textContent = '🚫 Out of MON! Please fund wallet';
+            } else {
+                lowBalanceWarning.style.display = 'none';
+            }
+            
+            withdrawBtn.style.display = balance > 0.1 ? 'block' : 'none';
+        }
+        
         // Burner wallet management
         function getOrCreateBurnerWallet() {
             let pk = localStorage.getItem('monadLumberjackBurner');
@@ -861,6 +878,49 @@
             if (amount && amount > 0) fundBurnerWallet(amount);
         });
         
+        // Withdraw function
+        withdrawBtn.addEventListener('click', async () => {
+            if (!burnerWallet || !userAddress) return;
+            
+            try {
+                withdrawBtn.disabled = true;
+                withdrawBtn.textContent = 'Withdrawing...';
+                
+                const balance = await burnerWallet.getBalance();
+                const gasPrice = await burnerWallet.provider.getGasPrice();
+                const gasCost = gasPrice.mul(21000);
+                const amountToSend = balance.sub(gasCost);
+                
+                if (amountToSend.lte(0)) {
+                    statusDiv.textContent = 'Balance too low to withdraw';
+                    withdrawBtn.disabled = false;
+                    withdrawBtn.textContent = 'Withdraw to Main Wallet';
+                    return;
+                }
+                
+                const tx = await burnerWallet.sendTransaction({
+                    to: userAddress,
+                    value: amountToSend,
+                    gasLimit: 21000
+                });
+                
+                await tx.wait();
+                
+                const newBalance = await checkBurnerBalance();
+                updateBalanceDisplay(newBalance);
+                statusDiv.textContent = 'Withdrawn to main wallet!';
+                startBtn.disabled = true;
+                tapToStart.textContent = 'FUND WALLET TO PLAY';
+                
+            } catch (error) {
+                console.error('Withdraw error:', error);
+                statusDiv.textContent = 'Withdraw failed';
+            }
+            
+            withdrawBtn.disabled = false;
+            withdrawBtn.textContent = 'Withdraw to Main Wallet';
+        });
+        
         // Transaction queue
         async function processQueue() {
             if (isProcessingQueue) return;
@@ -924,7 +984,8 @@
         
         // Game functions
         function startGame() {
-            if (!burnerWallet || startBtn.disabled || !canRestart) return;
+            if (!burnerWallet || startBtn.disabled) return;
+            if (gameOverDiv.style.display === 'flex' && !canRestart) return;
             
             score = 0;
             txCount = 0;
