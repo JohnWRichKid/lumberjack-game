@@ -230,28 +230,17 @@
         .branch.right .branch-leaves:nth-child(2) { right: 35px; top: -8px; }
         .branch.right .branch-leaves:nth-child(3) { right: 60px; }
         
-        /* Score display - BIG and centered */
+        /* Score display - small under time bar */
         #scoreDisplay {
             position: absolute;
-            top: 30px;
+            bottom: 45px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 72px;
+            font-size: 28px;
             font-weight: bold;
             color: white;
-            text-shadow: 0 0 30px rgba(255,255,255,0.5), 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
             z-index: 20;
-            transition: transform 0.1s;
-        }
-        
-        #scoreDisplay.pop {
-            animation: popScore 0.15s ease-out;
-        }
-        
-        @keyframes popScore {
-            0% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.2); }
-            100% { transform: translateX(-50%) scale(1); }
         }
         
         
@@ -259,13 +248,13 @@
         /* Time bar */
         #timeBarContainer {
             position: absolute;
-            bottom: 15px;
+            bottom: 85px;
             left: 50%;
             transform: translateX(-50%);
-            width: 85%;
-            height: 20px;
+            width: 70%;
+            height: 16px;
             background: rgba(0,0,0,0.6);
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
             border: 2px solid rgba(255,255,255,0.2);
             z-index: 15;
@@ -1024,9 +1013,6 @@
         
         function updateScore() {
             scoreDisplay.textContent = score;
-            scoreDisplay.classList.remove('pop');
-            void scoreDisplay.offsetWidth;
-            scoreDisplay.classList.add('pop');
         }
         
         
