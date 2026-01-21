@@ -651,9 +651,9 @@
         let provider, signer, userAddress;
         let burnerWallet, burnerContract;
         let timeRemaining = 100;
-        let baseTimeDecay = 0.18;
-        let currentTimeDecay = 0.18;
-        let timeAddPerChop = 4;
+        let baseTimeDecay = 0.12;
+        let currentTimeDecay = 0.12;
+        let timeAddPerChop = 5;
         let animationFrameId;
         let txCount = 0;
         let pendingTxs = [];
@@ -908,8 +908,8 @@
         function gameLoop() {
             if (!gameActive) return;
             
-            const milestones = Math.floor(score / 25);
-            const speedMultiplier = 1 + (milestones * 0.07);
+            const milestones = Math.floor(score / 20);
+            const speedMultiplier = 1 + (milestones * 0.12);
             currentTimeDecay = baseTimeDecay * speedMultiplier;
             
             timeRemaining -= currentTimeDecay;
