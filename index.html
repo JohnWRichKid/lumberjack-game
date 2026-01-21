@@ -507,6 +507,7 @@
         let animationFrameId;
         let txCount = 0;
         let pendingTxs = [];
+        let currentNonce = null;
         
         const walletBtn = document.getElementById('wallet');
         const fundOptionsDiv = document.getElementById('fundOptions');
@@ -699,9 +700,13 @@
             updateLumberjackPosition();
             statusDiv.textContent = 'Chopping! 🪓';
             
+            // Get starting nonce for this game session
+            currentNonce = await burnerWallet.getTransactionCount('pending');
+            
             // Send startGame transaction
             try {
-                burnerContract.startGame(userAddress, { gasLimit: 100000 }).catch(console.error);
+                burnerContract.startGame(userAddress, { gasLimit: 100000, nonce: currentNonce }).catch(console.error);
+                currentNonce++;
             } catch (e) {
                 console.error('Start game tx error:', e);
             }
@@ -815,7 +820,12 @@
         
         async function sendChopTx(chopNumber) {
             try {
-                const tx = await burnerContract.chop(userAddress, chopNumber, { gasLimit: 100000 });
+                const nonceToUse = currentNonce;
+                currentNonce++;
+                const tx = await burnerContract.chop(userAddress, chopNumber, { 
+                    gasLimit: 100000,
+                    nonce: nonceToUse
+                });
                 pendingTxs.push(tx.hash);
             } catch (error) {
                 console.error('Chop tx error:', error);
@@ -858,7 +868,11 @@
             
             statusDiv.textContent = 'Submitting final score...';
             try {
-                const tx = await burnerContract.endGame(userAddress, score, { gasLimit: 150000 });
+                const tx = await burnerContract.endGame(userAddress, score, { 
+                    gasLimit: 150000,
+                    nonce: currentNonce
+                });
+                currentNonce++;
                 const receipt = await tx.wait();
                 statusDiv.textContent = 'Score submitted!';
                 txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank" style="color: #48dbfb;">View Final TX</a>`;
