@@ -553,6 +553,7 @@
     <div id="header">
         <h1>🪓 MONAD LUMBERJACK</h1>
         <div id="highScoreDisplay">🏆 Best: <span id="highScoreTop">0</span></div>
+        <button id="musicToggle" style="margin-top: 8px; padding: 8px 16px; font-size: 12px; background: rgba(156, 39, 176, 0.3); border: 1px solid rgba(156, 39, 176, 0.5); color: white; border-radius: 20px; cursor: pointer;">🔇 Music Off</button>
     </div>
     
     <div id="mainContainer">
@@ -629,7 +630,93 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
+        // Music setup
+        let musicOn = false;
+        let musicStarted = false;
+        let bassLine, kick, hihat, synth;
+        
+        const musicToggle = document.getElementById('musicToggle');
+        
+        async function initMusic() {
+            if (musicStarted) return;
+            await Tone.start();
+            
+            // Kick drum
+            kick = new Tone.MembraneSynth({
+                pitchDecay: 0.05,
+                octaves: 6,
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.1 }
+            }).toDestination();
+            kick.volume.value = -8;
+            
+            // Hi-hat
+            hihat = new Tone.NoiseSynth({
+                noise: { type: 'white' },
+                envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.05 }
+            }).toDestination();
+            hihat.volume.value = -18;
+            
+            // Bass synth
+            bassLine = new Tone.Synth({
+                oscillator: { type: 'triangle' },
+                envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.1 }
+            }).toDestination();
+            bassLine.volume.value = -10;
+            
+            // Lead synth for melody
+            synth = new Tone.Synth({
+                oscillator: { type: 'square' },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.3 }
+            }).toDestination();
+            synth.volume.value = -14;
+            
+            // Kick pattern - four on the floor
+            new Tone.Loop((time) => {
+                if (musicOn) kick.triggerAttackRelease('C1', '8n', time);
+            }, '4n').start(0);
+            
+            // Hi-hat pattern - offbeats
+            new Tone.Loop((time) => {
+                if (musicOn) hihat.triggerAttackRelease('16n', time);
+            }, '8n').start('8n');
+            
+            // Bass pattern
+            const bassNotes = ['C2', 'C2', 'G2', 'G2', 'A2', 'A2', 'F2', 'F2'];
+            let bassIndex = 0;
+            new Tone.Loop((time) => {
+                if (musicOn) {
+                    bassLine.triggerAttackRelease(bassNotes[bassIndex % bassNotes.length], '8n', time);
+                    bassIndex++;
+                }
+            }, '4n').start(0);
+            
+            // Simple melody
+            const melodyNotes = ['C4', 'E4', 'G4', 'E4', 'A4', 'G4', 'E4', 'D4'];
+            let melodyIndex = 0;
+            new Tone.Loop((time) => {
+                if (musicOn) {
+                    synth.triggerAttackRelease(melodyNotes[melodyIndex % melodyNotes.length], '16n', time);
+                    melodyIndex++;
+                }
+            }, '2n').start('1n');
+            
+            Tone.Transport.bpm.value = 128;
+            Tone.Transport.start();
+            musicStarted = true;
+        }
+        
+        musicToggle.addEventListener('click', async () => {
+            if (!musicStarted) {
+                await initMusic();
+            }
+            musicOn = !musicOn;
+            musicToggle.textContent = musicOn ? '🔊 Music On' : '🔇 Music Off';
+            musicToggle.style.background = musicOn ? 'rgba(156, 39, 176, 0.6)' : 'rgba(156, 39, 176, 0.3)';
+        });
+
         const CONTRACT_ADDRESS = "0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
         const CONTRACT_ABI = [
             "function startGame(address mainWallet) external",
