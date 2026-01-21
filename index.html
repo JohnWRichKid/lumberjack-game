@@ -508,6 +508,8 @@
         let txCount = 0;
         let pendingTxs = [];
         let currentNonce = null;
+        let txQueue = [];
+        let isProcessingQueue = false;
         
         const walletBtn = document.getElementById('wallet');
         const fundOptionsDiv = document.getElementById('fundOptions');
@@ -702,6 +704,8 @@
             
             // Get starting nonce for this game session
             currentNonce = await burnerWallet.getTransactionCount('pending');
+            txQueue = [];
+            isProcessingQueue = false;
             
             // Send startGame transaction
             try {
@@ -818,18 +822,34 @@
             sendChopTx(score);
         }
         
-        async function sendChopTx(chopNumber) {
-            try {
-                const nonceToUse = currentNonce;
-                currentNonce++;
-                const tx = await burnerContract.chop(userAddress, chopNumber, { 
-                    gasLimit: 100000,
-                    nonce: nonceToUse
-                });
-                pendingTxs.push(tx.hash);
-            } catch (error) {
-                console.error('Chop tx error:', error);
+        async function processQueue() {
+            if (isProcessingQueue) return;
+            isProcessingQueue = true;
+            
+            while (txQueue.length > 0) {
+                const chopNumber = txQueue.shift();
+                try {
+                    const tx = await burnerContract.chop(userAddress, chopNumber, { 
+                        gasLimit: 100000,
+                        nonce: currentNonce
+                    });
+                    currentNonce++;
+                    pendingTxs.push(tx.hash);
+                } catch (error) {
+                    console.error('Chop tx error:', error);
+                    // If nonce error, refresh it
+                    if (error.message.includes('nonce')) {
+                        currentNonce = await burnerWallet.getTransactionCount('pending');
+                    }
+                }
             }
+            
+            isProcessingQueue = false;
+        }
+        
+        async function sendChopTx(chopNumber) {
+            txQueue.push(chopNumber);
+            processQueue();
         }
         
         function updateScore() {
@@ -868,8 +888,13 @@
             
             statusDiv.textContent = 'Submitting final score...';
             try {
-                // Wait a moment for pending txs to clear, then get fresh nonce
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Wait for queue to finish processing
+                while (txQueue.length > 0 || isProcessingQueue) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // Small delay then get fresh nonce
+                await new Promise(resolve => setTimeout(resolve, 500));
                 const freshNonce = await burnerWallet.getTransactionCount('pending');
                 
                 const tx = await burnerContract.endGame(userAddress, score, { 
