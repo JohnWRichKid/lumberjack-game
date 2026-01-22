@@ -111,7 +111,7 @@
             width: 60px;
             height: 75px;
             position: absolute;
-            bottom: 100px;
+            bottom: 130px;
             left: 75px;
             transition: left 0.04s ease-out;
             z-index: 10;
@@ -182,44 +182,60 @@
         }
         
         .branch-main {
-            width: 100px;
-            height: 22px;
-            background: linear-gradient(to bottom, #5d8a4a 0%, #4a7c3a 50%, #3d6830 100%);
-            border-radius: 30px 30px 30px 30px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             position: relative;
         }
         
-        .branch-connector {
-            width: 25px;
-            height: 20px;
-            background: linear-gradient(to bottom, #8d6e63 0%, #6d5043 100%);
+        /* The narrow horizontal branch arm */
+        .branch-arm {
+            width: 70px;
+            height: 12px;
+            background: linear-gradient(to bottom, #8B7355 0%, #6B5344 50%, #5a4636 100%);
+            border-radius: 6px;
             position: absolute;
-            top: 1px;
-            border-radius: 3px;
+            top: 20px;
+            box-shadow: 0 3px 4px rgba(0,0,0,0.3);
         }
         
-        .branch.left .branch-main { left: -75px; }
-        .branch.left .branch-connector { left: 25px; right: auto; }
-        .branch.right .branch-main { right: -75px; }
-        .branch.right .branch-connector { right: 25px; left: auto; }
-        
-        .branch-leaves {
+        /* The bush/foliage at the end */
+        .branch-foliage {
+            width: 55px;
+            height: 45px;
+            background: radial-gradient(ellipse at 50% 60%, #7cb860 0%, #5a9a45 40%, #4a8a38 70%, #3d7830 100%);
+            border-radius: 50% 50% 45% 45%;
             position: absolute;
-            width: 35px;
-            height: 28px;
-            background: radial-gradient(ellipse at center, #6ab04c 0%, #4a8a3a 60%, #3d7830 100%);
+            top: 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+        }
+        
+        /* Small accent leaves */
+        .branch-leaf-accent {
+            width: 20px;
+            height: 16px;
+            background: radial-gradient(ellipse at center, #8cd070 0%, #6ab050 100%);
             border-radius: 50%;
-            top: -8px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            position: absolute;
+            top: -5px;
         }
         
-        .branch.left .branch-leaves:nth-child(1) { left: -5px; }
-        .branch.left .branch-leaves:nth-child(2) { left: 25px; top: -12px; width: 40px; height: 32px; }
-        .branch.left .branch-leaves:nth-child(3) { left: 55px; top: -6px; }
-        .branch.right .branch-leaves:nth-child(1) { right: -5px; }
-        .branch.right .branch-leaves:nth-child(2) { right: 25px; top: -12px; width: 40px; height: 32px; }
-        .branch.right .branch-leaves:nth-child(3) { right: 55px; top: -6px; }
+        .branch.left .branch-arm { 
+            right: 0;
+        }
+        .branch.left .branch-foliage { 
+            left: 0; 
+        }
+        .branch.left .branch-leaf-accent {
+            left: 10px;
+        }
+        
+        .branch.right .branch-arm { 
+            left: 0;
+        }
+        .branch.right .branch-foliage { 
+            right: 0; 
+        }
+        .branch.right .branch-leaf-accent {
+            right: 10px;
+        }
         
         /* Bottom HUD Container */
         #bottomHUD {
@@ -1128,7 +1144,7 @@
             branches = [];
             for (let i = 0; i < 6; i++) {
                 const side = Math.random() > 0.5 ? 'left' : 'right';
-                const position = 220 + (i * 85);
+                const position = 210 + (i * 90);
                 branches.push({ side, position });
                 createBranch(side, position);
             }
@@ -1138,32 +1154,44 @@
             const branch = document.createElement('div');
             branch.className = `branch ${side}`;
             branch.style.bottom = `${position}px`;
-            branch.style.left = '155px';
             
-            const connector = document.createElement('div');
-            connector.className = 'branch-connector';
-            branch.appendChild(connector);
+            if (side === 'left') {
+                branch.style.left = '90px';
+            } else {
+                branch.style.left = '190px';
+            }
             
             const main = document.createElement('div');
             main.className = 'branch-main';
-            for (let i = 0; i < 3; i++) {
-                const leaf = document.createElement('div');
-                leaf.className = 'branch-leaves';
-                main.appendChild(leaf);
-            }
+            main.style.width = '120px';
+            main.style.height = '50px';
+            main.style.position = 'relative';
+            
+            const arm = document.createElement('div');
+            arm.className = 'branch-arm';
+            main.appendChild(arm);
+            
+            const foliage = document.createElement('div');
+            foliage.className = 'branch-foliage';
+            main.appendChild(foliage);
+            
+            const leafAccent = document.createElement('div');
+            leafAccent.className = 'branch-leaf-accent';
+            main.appendChild(leafAccent);
+            
             branch.appendChild(main);
             gameArea.appendChild(branch);
         }
         
         function updateLumberjackPosition() {
             if (lumberjackSide === 'left') {
-                lumberjack.style.left = '75px';
+                lumberjack.style.left = '65px';
                 keoneImg.style.transform = 'scaleX(1)';
                 axe.style.right = '-20px';
                 axe.style.left = 'auto';
                 axe.style.transform = 'scaleX(-1)';
             } else {
-                lumberjack.style.left = '245px';
+                lumberjack.style.left = '255px';
                 keoneImg.style.transform = 'scaleX(-1)';
                 axe.style.left = '-20px';
                 axe.style.right = 'auto';
@@ -1175,7 +1203,7 @@
             if (!gameActive) return;
             
             const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 230 && lowestBranch.side === side) {
+            if (lowestBranch && lowestBranch.position < 215 && lowestBranch.side === side) {
                 endGame();
                 return;
             }
@@ -1200,13 +1228,13 @@
                 if (branchEls[0]) branchEls[0].remove();
                 
                 branches.forEach((branch, index) => {
-                    branch.position -= 85;
+                    branch.position -= 90;
                     const branchEl = branchEls[index + 1];
                     if (branchEl) branchEl.style.bottom = `${branch.position}px`;
                 });
                 
                 const newSide = Math.random() > 0.5 ? 'left' : 'right';
-                const newPosition = 220 + (branches.length * 85);
+                const newPosition = 210 + (branches.length * 90);
                 branches.push({ side: newSide, position: newPosition });
                 createBranch(newSide, newPosition);
             }
