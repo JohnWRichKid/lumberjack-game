@@ -32,15 +32,13 @@
         h1 {
             font-size: 36px;
             margin: 10px 0 5px 0;
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8), 2px 2px 4px rgba(0,0,0,0.5);
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        #highScoreDisplay { font-size: 16px; color: #feca57; text-shadow: 0 0 10px rgba(254, 202, 87, 0.5); }
-        #mainContainer { display: flex; gap: 20px; align-items: flex-start; max-width: 100%; }
-        #gameWrapper { position: relative; }
+        #highScoreDisplay { font-size: 16px; color: #feca57; }
+        #mainContainer { display: flex; gap: 20px; align-items: flex-start; }
         #gameArea {
             background: linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 100%);
             width: 380px;
@@ -49,9 +47,7 @@
             border: 3px solid #5D4037;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 0 40px rgba(93, 64, 55, 0.4);
         }
-        /* Clouds */
         .cloud {
             position: absolute;
             background: rgba(255,255,255,0.9);
@@ -87,7 +83,6 @@
             border-radius: 50% 50% 0 0 / 100% 100% 0 0;
             z-index: 5;
         }
-        /* Tree trunk */
         #tree {
             width: 55px;
             background: linear-gradient(to right, #5D4037 0%, #8D6E63 35%, #A1887F 50%, #8D6E63 65%, #5D4037 100%);
@@ -98,7 +93,6 @@
             transform: translateX(-50%);
             z-index: 10;
         }
-        /* Tree top foliage */
         #treeTop {
             position: absolute;
             top: 10px;
@@ -114,78 +108,89 @@
         .tf1 { width: 100px; height: 70px; top: 0; left: -50px; }
         .tf2 { width: 70px; height: 55px; top: 35px; left: -65px; }
         .tf3 { width: 70px; height: 55px; top: 35px; left: -5px; }
-        /* Branches - matching screenshot */
+        
+        /* BRANCHES */
         .branch {
             position: absolute;
             z-index: 9;
-            height: 55px;
+            height: 60px;
+            width: 100px;
         }
         .branch.left {
-            right: 50%;
-            margin-right: 25px;
+            right: calc(50% + 25px);
         }
         .branch.right {
-            left: 50%;
-            margin-left: 25px;
+            left: calc(50% + 25px);
         }
+        /* Brown arm */
         .branch-arm {
             position: absolute;
-            width: 55px;
+            width: 50px;
             height: 14px;
-            background: linear-gradient(to bottom, #A68B6A 0%, #8B7355 40%, #6D5A40 100%);
-            top: 28px;
-            box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+            background: linear-gradient(to bottom, #A68B6A 0%, #8B7355 50%, #6D5A40 100%);
+            top: 32px;
+            border-radius: 6px;
         }
         .branch.left .branch-arm {
             right: 0;
             border-radius: 6px 0 0 6px;
-            background: linear-gradient(to bottom, #A68B6A 0%, #8B7355 40%, #6D5A40 100%);
         }
         .branch.right .branch-arm {
             left: 0;
             border-radius: 0 6px 6px 0;
         }
-        /* Shrub pointing upward */
+        /* Shrub - upward pointing bush */
         .branch-shrub {
             position: absolute;
-            width: 45px;
-            height: 40px;
+            width: 50px;
+            height: 45px;
             top: 0;
         }
-        .branch.left .branch-shrub { left: 0; }
-        .branch.right .branch-shrub { right: 0; }
-        /* Main shrub body */
-        .shrub-main {
+        .branch.left .branch-shrub {
+            left: 0;
+        }
+        .branch.right .branch-shrub {
+            right: 0;
+        }
+        .shrub-base {
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 40px;
-            height: 32px;
-            background: radial-gradient(ellipse at 50% 70%, #5CB85C 0%, #4A9F4A 40%, #3D8B3D 70%, #2E7D32 100%);
-            border-radius: 45% 45% 40% 40%;
+            width: 44px;
+            height: 30px;
+            background: radial-gradient(ellipse at 50% 80%, #5CB85C 0%, #4CAF50 30%, #43A047 60%, #388E3C 100%);
+            border-radius: 40% 40% 45% 45%;
         }
-        /* Top puff of shrub */
         .shrub-top {
             position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 30px;
-            height: 22px;
-            background: radial-gradient(ellipse at 50% 60%, #6DC96D 0%, #5CB85C 50%, #4A9F4A 100%);
-            border-radius: 50% 50% 45% 45%;
+            width: 32px;
+            height: 25px;
+            background: radial-gradient(ellipse at 50% 70%, #6DC96D 0%, #5CB85C 40%, #4CAF50 100%);
+            border-radius: 50% 50% 40% 40%;
         }
-        /* Small accent leaves */
-        .shrub-accent {
+        .shrub-left {
             position: absolute;
-            width: 18px;
-            height: 15px;
-            background: radial-gradient(ellipse at 50% 60%, #7ED67E 0%, #5CB85C 100%);
+            bottom: 8px;
+            left: 0;
+            width: 20px;
+            height: 18px;
+            background: radial-gradient(ellipse at 50% 70%, #5CB85C 0%, #43A047 100%);
             border-radius: 50%;
         }
-        .shrub-accent.left { left: 2px; top: 12px; }
-        .shrub-accent.right { right: 2px; top: 12px; }
+        .shrub-right {
+            position: absolute;
+            bottom: 8px;
+            right: 0;
+            width: 20px;
+            height: 18px;
+            background: radial-gradient(ellipse at 50% 70%, #5CB85C 0%, #43A047 100%);
+            border-radius: 50%;
+        }
+
         /* Lumberjack */
         #lumberjack {
             width: 70px;
@@ -197,15 +202,9 @@
         }
         #lumberjack.left { left: 55px; }
         #lumberjack.right { left: 255px; }
-        .lj-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
         #keoneImg {
             width: 40px;
             height: 40px;
-            object-fit: cover;
             border-radius: 50%;
             border: 3px solid #5D4037;
             position: absolute;
@@ -214,6 +213,7 @@
             transform: translateX(-50%);
             z-index: 2;
             background: #FFCCBC;
+            object-fit: cover;
         }
         .lumberjack-body {
             width: 35px;
@@ -224,7 +224,6 @@
             top: 35px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1;
         }
         .lumberjack-body::before {
             content: '';
@@ -234,7 +233,7 @@
             transform: translateX(-50%);
             width: 28px;
             height: 30px;
-            background: repeating-linear-gradient(90deg, #C62828 0px, #C62828 3px, #1A1A1A 3px, #1A1A1A 6px);
+            background: repeating-linear-gradient(90deg, #C62828 0px, #C62828 3px, #212121 3px, #212121 6px);
             border-radius: 3px;
         }
         .lumberjack-legs {
@@ -254,22 +253,15 @@
             top: 25px;
             font-size: 32px;
             z-index: 3;
-            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.4));
         }
-        #lumberjack.left #axe { right: 0; transform: scaleX(-1); }
-        #lumberjack.right #axe { left: 0; transform: scaleX(1); }
+        #lumberjack.left #axe { right: -5px; transform: scaleX(-1); }
+        #lumberjack.right #axe { left: -5px; transform: scaleX(1); }
         #axe.swing { animation: swingAxe 0.1s ease-out; }
         @keyframes swingAxe {
-            0% { transform: scaleX(-1) rotate(0deg); }
-            50% { transform: scaleX(-1) rotate(-50deg); }
-            100% { transform: scaleX(-1) rotate(0deg); }
+            0%, 100% { rotate: 0deg; }
+            50% { rotate: -45deg; }
         }
-        #lumberjack.right #axe.swing { animation: swingAxeRight 0.1s ease-out; }
-        @keyframes swingAxeRight {
-            0% { transform: scaleX(1) rotate(0deg); }
-            50% { transform: scaleX(1) rotate(50deg); }
-            100% { transform: scaleX(1) rotate(0deg); }
-        }
+        
         /* HUD */
         #scoreDisplay {
             position: absolute;
@@ -279,7 +271,7 @@
             font-size: 42px;
             font-weight: bold;
             color: white;
-            text-shadow: 3px 3px 0 #5D4037, -1px -1px 0 #5D4037, 1px -1px 0 #5D4037, -1px 1px 0 #5D4037;
+            text-shadow: 3px 3px 0 #5D4037;
             z-index: 100;
         }
         #timeBarContainer {
@@ -300,11 +292,10 @@
             background: linear-gradient(to right, #4CAF50, #8BC34A);
             width: 100%;
             transition: width 0.1s linear;
-            border-radius: 6px;
         }
         #timeBarFill.warning { background: linear-gradient(to right, #FF9800, #FFC107); }
         #timeBarFill.danger { background: linear-gradient(to right, #f44336, #FF5722); }
-        /* Tap zones */
+        
         .tap-zone {
             position: absolute;
             top: 0;
@@ -315,15 +306,14 @@
         }
         .tap-zone.left { left: 0; }
         .tap-zone.right { right: 0; }
-        .tap-zone:active { background: rgba(255,255,255,0.1); }
-        /* Side panel */
+        
+        /* Side Panel */
         #sidePanel { display: flex; flex-direction: column; gap: 15px; width: 280px; }
         .panel-section {
             background: rgba(255,255,255,0.05);
             padding: 15px;
             border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
         }
         button {
             padding: 12px 20px;
@@ -332,55 +322,21 @@
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
             width: 100%;
         }
-        #wallet {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        #wallet:hover { transform: translateY(-2px); }
+        #wallet { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         #wallet.connected { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-        .fund-btn {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 10px 8px;
-            font-size: 12px;
-            flex: 1;
-        }
-        #startBtn {
-            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-            color: white;
-            font-size: 20px;
-            padding: 15px;
-        }
+        .fund-btn { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 10px 8px; font-size: 12px; flex: 1; }
+        #startBtn { background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%); color: white; font-size: 20px; padding: 15px; }
         #startBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-        #status {
-            font-size: 13px;
-            text-align: center;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        #status { font-size: 13px; text-align: center; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
         #fundOptions { display: none; margin-top: 10px; }
-        #burnerInfo {
-            font-size: 11px;
-            text-align: center;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            margin-top: 10px;
-            display: none;
-            word-break: break-all;
-            cursor: pointer;
-        }
+        #burnerInfo { font-size: 11px; text-align: center; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-top: 10px; display: none; word-break: break-all; cursor: pointer; }
         .instructions { font-size: 13px; line-height: 1.5; opacity: 0.8; }
         .instructions p { margin: 5px 0; }
         .highlight { color: #feca57; }
+        #withdrawSection { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+        
         /* Overlays */
         #startOverlay {
             position: absolute;
@@ -394,11 +350,12 @@
             justify-content: center;
             text-align: center;
         }
+        #startOverlay.hidden { display: none; }
         #startOverlay h2 { font-size: 24px; margin-bottom: 15px; }
         #startOverlay p { font-size: 16px; opacity: 0.8; margin: 5px 0; }
         #tapToStart { margin-top: 20px; font-size: 18px; color: #feca57; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-        #startOverlay.hidden { display: none; }
+        
         #gameOver {
             display: none;
             position: absolute;
@@ -413,14 +370,14 @@
             padding: 20px;
         }
         #gameOver h2 { font-size: 28px; margin-bottom: 10px; color: #f5576c; }
-        #gameOver.newRecord h2 { color: #feca57; text-shadow: 0 0 20px rgba(254, 202, 87, 0.8); }
+        #gameOver.newRecord h2 { color: #feca57; }
         #finalScore { font-size: 64px; font-weight: bold; color: white; margin: 10px 0; }
-        #txSummary { font-size: 18px; color: #9c27b0; margin: 10px 0; padding: 10px 20px; background: rgba(156, 39, 176, 0.2); border-radius: 20px; }
+        #txSummary { font-size: 18px; color: #9c27b0; margin: 10px 0; padding: 10px 20px; background: rgba(156,39,176,0.2); border-radius: 20px; }
         #beatScore { font-size: 14px; color: #feca57; margin: 10px 0; }
         #restartBtn { background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%); color: white; margin-top: 20px; font-size: 18px; padding: 15px 40px; width: auto; }
         #txLink { margin-top: 15px; }
         #txLink a { color: #54a0ff; text-decoration: none; }
-        #withdrawSection { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+        
         @media (max-width: 750px) {
             #mainContainer { flex-direction: column; align-items: center; }
             #sidePanel { width: 380px; max-width: 100%; }
@@ -435,54 +392,48 @@
     </div>
     
     <div id="mainContainer">
-        <div id="gameWrapper">
-            <div id="gameArea">
-                <div class="cloud cloud1"></div>
-                <div class="cloud cloud2"></div>
-                
-                <div id="timeBarContainer">
-                    <div id="timeBarFill"></div>
-                </div>
-                <div id="scoreDisplay">0</div>
-                
-                <div id="treeTop">
-                    <div class="tree-foliage tf1"></div>
-                    <div class="tree-foliage tf2"></div>
-                    <div class="tree-foliage tf3"></div>
-                </div>
-                <div id="tree"></div>
-                
-                <div id="lumberjack" class="left">
-                    <div class="lj-container">
-                        <img src="keone.png" alt="Lumberjack" id="keoneImg" onerror="this.style.background='#FFCCBC'">
-                        <div class="lumberjack-body"></div>
-                        <div class="lumberjack-legs"></div>
-                        <div id="axe">🪓</div>
-                    </div>
-                </div>
-                
-                <div id="groundTop"></div>
-                <div id="ground"></div>
-                
-                <div class="tap-zone left" id="tapLeft"></div>
-                <div class="tap-zone right" id="tapRight"></div>
-                
-                <div id="startOverlay">
-                    <h2>TAP TO CHOP</h2>
-                    <p>⬅️ Left side = move left & chop</p>
-                    <p>➡️ Right side = move right & chop</p>
-                    <p>🌿 Don't get hit by branches!</p>
-                    <div id="tapToStart">CONNECT WALLET TO PLAY</div>
-                </div>
-                
-                <div id="gameOver">
-                    <h2>GAME OVER</h2>
-                    <div id="finalScore">0</div>
-                    <div id="txSummary">⚡ 0 transactions</div>
-                    <div id="beatScore"></div>
-                    <div id="txLink"></div>
-                    <button id="restartBtn">PLAY AGAIN</button>
-                </div>
+        <div id="gameArea">
+            <div class="cloud cloud1"></div>
+            <div class="cloud cloud2"></div>
+            
+            <div id="timeBarContainer"><div id="timeBarFill"></div></div>
+            <div id="scoreDisplay">0</div>
+            
+            <div id="treeTop">
+                <div class="tree-foliage tf1"></div>
+                <div class="tree-foliage tf2"></div>
+                <div class="tree-foliage tf3"></div>
+            </div>
+            <div id="tree"></div>
+            
+            <div id="lumberjack" class="left">
+                <img src="keone.png" alt="" id="keoneImg" onerror="this.style.background='#FFCCBC'">
+                <div class="lumberjack-body"></div>
+                <div class="lumberjack-legs"></div>
+                <div id="axe">🪓</div>
+            </div>
+            
+            <div id="groundTop"></div>
+            <div id="ground"></div>
+            
+            <div class="tap-zone left" id="tapLeft"></div>
+            <div class="tap-zone right" id="tapRight"></div>
+            
+            <div id="startOverlay">
+                <h2>TAP TO CHOP</h2>
+                <p>⬅️ Left = move left & chop</p>
+                <p>➡️ Right = move right & chop</p>
+                <p>🌿 Avoid branches!</p>
+                <div id="tapToStart">CONNECT WALLET TO PLAY</div>
+            </div>
+            
+            <div id="gameOver">
+                <h2>GAME OVER</h2>
+                <div id="finalScore">0</div>
+                <div id="txSummary">⚡ 0 transactions</div>
+                <div id="beatScore"></div>
+                <div id="txLink"></div>
+                <button id="restartBtn">PLAY AGAIN</button>
             </div>
         </div>
         
@@ -496,349 +447,291 @@
                         <button class="fund-btn" data-amount="100">100 MON</button>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <input type="number" id="customAmount" placeholder="Custom" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 14px; width: 70px;">
+                        <input type="number" id="customAmount" placeholder="Custom" style="flex:1; padding:10px; border-radius:8px; border:none; font-size:14px;">
                         <button class="fund-btn" id="customFundBtn">Fund</button>
                     </div>
                 </div>
                 <div id="status">Connect wallet to play</div>
                 <div id="burnerInfo"></div>
                 <div id="withdrawSection">
-                    <div style="font-size: 11px; margin-bottom: 6px; opacity: 0.8;">Withdraw MON:</div>
-                    <input type="text" id="withdrawAddress" placeholder="Address (0x...)" style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 11px; margin-bottom: 6px;">
-                    <div style="display: flex; gap: 6px;">
-                        <input type="number" id="withdrawAmount" placeholder="Amount" style="flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 11px;">
-                        <button id="withdrawBtn" style="padding: 8px 12px; font-size: 11px; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;">Withdraw</button>
+                    <div style="font-size:11px; margin-bottom:6px; opacity:0.8;">Withdraw MON:</div>
+                    <input type="text" id="withdrawAddress" placeholder="Address (0x...)" style="width:100%; padding:8px; border-radius:6px; border:none; font-size:11px; margin-bottom:6px;">
+                    <div style="display:flex; gap:6px;">
+                        <input type="number" id="withdrawAmount" placeholder="Amount" style="flex:1; padding:8px; border-radius:6px; border:none; font-size:11px;">
+                        <button id="withdrawBtn" style="padding:8px 12px; font-size:11px; background:linear-gradient(135deg,#e74c3c,#c0392b); color:white; border:none; border-radius:6px; cursor:pointer;">Withdraw</button>
                     </div>
                 </div>
             </div>
             
             <div class="panel-section">
                 <button id="startBtn" disabled>START GAME</button>
-                <div style="font-size: 11px; text-align: center; opacity: 0.6; margin-top: 8px;">or press SPACE</div>
+                <div style="font-size:11px; text-align:center; opacity:0.6; margin-top:8px;">or press SPACE</div>
             </div>
             
             <div class="panel-section instructions">
                 <p><strong>How to Play:</strong></p>
-                <p>• Tap <span class="highlight">left</span> or <span class="highlight">right</span> to move & chop</p>
-                <p>• Don't stand under branches!</p>
-                <p>• Every chop = 1 transaction ⚡</p>
+                <p>• Tap <span class="highlight">left</span> or <span class="highlight">right</span></p>
+                <p>• Stay away from branches!</p>
+                <p>• Every chop = 1 tx ⚡</p>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
-        const CONTRACT_ADDRESS = "0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
-        const CONTRACT_ABI = [
-            "function startGame(address mainWallet) external",
-            "function chop(address mainWallet, uint256 chopNumber) external",
-            "function endGame(address mainWallet, uint256 finalScore) external"
-        ];
-        const MONAD_CHAIN_ID = '0x279f';
-        const MONAD_RPC = 'https://testnet-rpc.monad.xyz';
-        const MONAD_EXPLORER = 'https://testnet.monadexplorer.com';
+        const CONTRACT = "0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
+        const ABI = ["function startGame(address) external","function chop(address,uint256) external","function endGame(address,uint256) external"];
+        const CHAIN_ID = '0x279f', RPC = 'https://testnet-rpc.monad.xyz', EXPLORER = 'https://testnet.monadexplorer.com';
         
-        let score = 0, highScore = 0, gameActive = false, playerSide = 'left';
-        let branches = [], timeRemaining = 100, txCount = 0, currentNonce = null;
-        let provider, signer, userAddress, burnerWallet, burnerContract;
-        let animationFrameId, canRestart = true;
+        let score=0, highScore=0, gameActive=false, playerSide='left', branches=[], timeLeft=100, txCount=0, nonce=null, chopCount=0;
+        let provider, signer, userAddress, burner, contract, animFrame;
         
-        const $ = id => document.getElementById(id);
-        const walletBtn = $('wallet'), startBtn = $('startBtn'), statusDiv = $('status');
-        const burnerInfoDiv = $('burnerInfo'), scoreDisplay = $('scoreDisplay');
-        const timeBarFill = $('timeBarFill'), lumberjack = $('lumberjack'), axe = $('axe');
-        const gameArea = $('gameArea'), gameOverDiv = $('gameOver'), restartBtn = $('restartBtn');
-        const finalScoreDiv = $('finalScore'), txSummaryDiv = $('txSummary'), beatScoreDiv = $('beatScore');
-        const txLinkDiv = $('txLink'), highScoreDiv = $('highScoreTop'), startOverlay = $('startOverlay');
-        const tapToStart = $('tapToStart'), fundOptionsDiv = $('fundOptions');
-        const withdrawSection = $('withdrawSection');
+        const $=id=>document.getElementById(id);
+        const gameArea=$('gameArea'), scoreDisplay=$('scoreDisplay'), timeBar=$('timeBarFill');
+        const lumberjack=$('lumberjack'), axe=$('axe'), startOverlay=$('startOverlay');
+        const gameOver=$('gameOver'), startBtn=$('startBtn'), walletBtn=$('wallet');
+        const statusDiv=$('status'), burnerInfo=$('burnerInfo'), fundOptions=$('fundOptions');
+        const tapToStart=$('tapToStart'), highScoreEl=$('highScoreTop'), withdrawSection=$('withdrawSection');
         
-        if (localStorage.getItem('monadLumberjackHighScore')) {
-            highScore = parseInt(localStorage.getItem('monadLumberjackHighScore'));
-            highScoreDiv.textContent = highScore;
+        highScore = parseInt(localStorage.getItem('lumberjackHS')||'0');
+        highScoreEl.textContent = highScore;
+        
+        function getBurner() {
+            let pk = localStorage.getItem('lumberjackPK');
+            if (!pk) { pk = ethers.Wallet.createRandom().privateKey; localStorage.setItem('lumberjackPK', pk); }
+            return new ethers.Wallet(pk, new ethers.providers.JsonRpcProvider(RPC));
         }
         
-        function getOrCreateBurnerWallet() {
-            let pk = localStorage.getItem('monadLumberjackBurner');
-            if (!pk) {
-                const w = ethers.Wallet.createRandom();
-                pk = w.privateKey;
-                localStorage.setItem('monadLumberjackBurner', pk);
-            }
-            return new ethers.Wallet(pk, new ethers.providers.JsonRpcProvider(MONAD_RPC));
+        async function getBalance() {
+            if (!burner) return 0;
+            return parseFloat(ethers.utils.formatEther(await burner.getBalance()));
         }
         
-        async function checkBurnerBalance() {
-            if (!burnerWallet) return 0;
-            const bal = await burnerWallet.getBalance();
-            return parseFloat(ethers.utils.formatEther(bal));
-        }
-        
-        walletBtn.addEventListener('click', async () => {
-            if (!window.ethereum) { alert('Please install MetaMask!'); return; }
+        walletBtn.onclick = async () => {
+            if (!window.ethereum) { alert('Install MetaMask!'); return; }
             try {
                 statusDiv.textContent = 'Connecting...';
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                await window.ethereum.request({method:'eth_requestAccounts'});
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 const net = await provider.getNetwork();
                 if (net.chainId !== 10143) {
-                    try {
-                        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: MONAD_CHAIN_ID }] });
-                    } catch (e) {
-                        if (e.code === 4902) {
-                            await window.ethereum.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{ chainId: MONAD_CHAIN_ID, chainName: 'Monad Testnet', nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 }, rpcUrls: [MONAD_RPC], blockExplorerUrls: [MONAD_EXPLORER] }]
-                            });
-                        } else throw e;
-                    }
+                    try { await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_ID}]}); }
+                    catch(e) { if(e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:CHAIN_ID,chainName:'Monad Testnet',nativeCurrency:{name:'MON',symbol:'MON',decimals:18},rpcUrls:[RPC]}]}); }
                     provider = new ethers.providers.Web3Provider(window.ethereum);
                 }
                 signer = provider.getSigner();
                 userAddress = await signer.getAddress();
-                burnerWallet = getOrCreateBurnerWallet();
-                burnerContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, burnerWallet);
-                walletBtn.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+                burner = getBurner();
+                contract = new ethers.Contract(CONTRACT, ABI, burner);
+                
+                walletBtn.textContent = userAddress.slice(0,6)+'...'+userAddress.slice(-4);
                 walletBtn.classList.add('connected');
-                const bal = await checkBurnerBalance();
-                burnerInfoDiv.style.display = 'block';
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${bal.toFixed(4)} MON`;
-                burnerInfoDiv.onclick = () => { navigator.clipboard.writeText(burnerWallet.address); statusDiv.textContent = 'Copied!'; };
-                fundOptionsDiv.style.display = 'block';
+                
+                const bal = await getBalance();
+                burnerInfo.style.display = 'block';
+                burnerInfo.innerHTML = `🎮 Game Wallet:<br><b>${burner.address}</b><br>Balance: ${bal.toFixed(4)} MON`;
+                burnerInfo.onclick = () => { navigator.clipboard.writeText(burner.address); statusDiv.textContent='Copied!'; };
+                
+                fundOptions.style.display = 'block';
                 withdrawSection.style.display = 'block';
+                
                 if (bal < 0.01) {
-                    statusDiv.textContent = 'Fund game wallet to play';
+                    statusDiv.textContent = 'Fund wallet to play';
                     startBtn.disabled = true;
                     tapToStart.textContent = 'FUND WALLET TO PLAY';
                 } else {
                     statusDiv.textContent = `Ready! ${bal.toFixed(3)} MON`;
                     startBtn.disabled = false;
-                    tapToStart.textContent = 'TAP ANYWHERE TO START';
+                    tapToStart.textContent = 'TAP TO START';
                 }
-            } catch (e) { console.error(e); statusDiv.textContent = 'Connection failed'; }
-        });
+            } catch(e) { console.error(e); statusDiv.textContent='Failed'; }
+        };
         
-        async function fundBurnerWallet(amount) {
+        async function fund(amt) {
             try {
-                statusDiv.textContent = 'Confirm in wallet...';
-                const tx = await signer.sendTransaction({ to: burnerWallet.address, value: ethers.utils.parseEther(amount.toString()) });
+                statusDiv.textContent = 'Confirm...';
+                const tx = await signer.sendTransaction({to:burner.address, value:ethers.utils.parseEther(amt.toString())});
                 statusDiv.textContent = 'Funding...';
                 await tx.wait();
-                const bal = await checkBurnerBalance();
+                const bal = await getBalance();
                 statusDiv.textContent = `Ready! ${bal.toFixed(3)} MON`;
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${bal.toFixed(4)} MON`;
+                burnerInfo.innerHTML = `🎮 Game Wallet:<br><b>${burner.address}</b><br>Balance: ${bal.toFixed(4)} MON`;
                 startBtn.disabled = false;
-                tapToStart.textContent = 'TAP ANYWHERE TO START';
-            } catch (e) { console.error(e); statusDiv.textContent = 'Funding failed'; }
+                tapToStart.textContent = 'TAP TO START';
+            } catch(e) { statusDiv.textContent='Failed'; }
         }
         
-        document.querySelectorAll('.fund-btn[data-amount]').forEach(btn => {
-            btn.addEventListener('click', () => fundBurnerWallet(btn.getAttribute('data-amount')));
-        });
-        $('customFundBtn').addEventListener('click', () => {
-            const amt = parseFloat($('customAmount').value);
-            if (amt > 0) fundBurnerWallet(amt);
-        });
+        document.querySelectorAll('.fund-btn[data-amount]').forEach(b => b.onclick = () => fund(b.dataset.amount));
+        $('customFundBtn').onclick = () => { const a=parseFloat($('customAmount').value); if(a>0) fund(a); };
         
-        $('withdrawBtn').addEventListener('click', async () => {
-            const addr = $('withdrawAddress').value.trim();
-            const amt = parseFloat($('withdrawAmount').value);
-            if (!addr || !addr.startsWith('0x') || addr.length !== 42) { statusDiv.textContent = 'Invalid address'; return; }
-            if (!amt || amt <= 0) { statusDiv.textContent = 'Invalid amount'; return; }
+        $('withdrawBtn').onclick = async () => {
+            const addr=$('withdrawAddress').value.trim(), amt=parseFloat($('withdrawAmount').value);
+            if(!addr||!amt) return;
             try {
-                statusDiv.textContent = 'Withdrawing...';
-                const tx = await burnerWallet.sendTransaction({ to: addr, value: ethers.utils.parseEther(amt.toString()), gasLimit: 21000 });
-                await tx.wait();
-                const bal = await checkBurnerBalance();
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${bal.toFixed(4)} MON`;
-                statusDiv.textContent = `Withdrawn! ${bal.toFixed(3)} MON`;
-                if (bal < 0.01) { startBtn.disabled = true; tapToStart.textContent = 'FUND WALLET TO PLAY'; }
-            } catch (e) { console.error(e); statusDiv.textContent = 'Withdraw failed'; }
-        });
+                statusDiv.textContent='Withdrawing...';
+                await (await burner.sendTransaction({to:addr,value:ethers.utils.parseEther(amt.toString()),gasLimit:21000})).wait();
+                const bal = await getBalance();
+                burnerInfo.innerHTML = `🎮 Game Wallet:<br><b>${burner.address}</b><br>Balance: ${bal.toFixed(4)} MON`;
+                statusDiv.textContent = `Done! ${bal.toFixed(3)} MON`;
+            } catch(e) { statusDiv.textContent='Failed'; }
+        };
         
-        function createBranch(side, bottomPos) {
-            const branch = document.createElement('div');
-            branch.className = `branch ${side}`;
-            branch.style.bottom = `${bottomPos}px`;
-            branch.innerHTML = `
+        function createBranch(side, y) {
+            const el = document.createElement('div');
+            el.className = 'branch ' + side;
+            el.style.bottom = y + 'px';
+            el.innerHTML = `
                 <div class="branch-shrub">
                     <div class="shrub-top"></div>
-                    <div class="shrub-main"></div>
-                    <div class="shrub-accent left"></div>
-                    <div class="shrub-accent right"></div>
+                    <div class="shrub-base"></div>
+                    <div class="shrub-left"></div>
+                    <div class="shrub-right"></div>
                 </div>
                 <div class="branch-arm"></div>
             `;
-            gameArea.appendChild(branch);
-            return branch;
+            gameArea.appendChild(el);
+            return el;
         }
         
-        function generateBranches() {
-            document.querySelectorAll('.branch').forEach(b => b.remove());
+        function initBranches() {
+            document.querySelectorAll('.branch').forEach(b=>b.remove());
             branches = [];
-            for (let i = 0; i < 6; i++) {
-                const side = Math.random() > 0.5 ? 'left' : 'right';
-                const pos = 200 + i * 80;
-                branches.push({ side, pos, el: createBranch(side, pos) });
+            for (let i=0; i<6; i++) {
+                const side = Math.random()>0.5 ? 'left' : 'right';
+                const y = 180 + i*75;
+                branches.push({side, y, el: createBranch(side, y)});
             }
         }
         
-        let chopCount = 0; // Track chops for 2-chop-per-branch system
-        
-        function updatePlayerPosition() {
-            lumberjack.className = playerSide;
-        }
-        
         function startGame() {
-            if (!burnerWallet || startBtn.disabled) return;
-            if (gameOverDiv.style.display === 'flex' && !canRestart) return;
+            if (!burner || startBtn.disabled) return;
             
-            score = 0; txCount = 0; timeRemaining = 100; playerSide = 'left'; gameActive = true;
-            chopCount = 0; // Reset chop counter
+            score=0; txCount=0; timeLeft=100; playerSide='left'; gameActive=true; chopCount=0;
+            
             startOverlay.classList.add('hidden');
-            gameOverDiv.style.display = 'none';
+            gameOver.style.display = 'none';
             startBtn.disabled = true;
             
             scoreDisplay.textContent = '0';
-            updateTimeBar();
-            generateBranches();
-            updatePlayerPosition();
+            timeBar.style.width = '100%';
+            timeBar.className = '';
+            lumberjack.className = 'left';
             
-            burnerWallet.getTransactionCount('pending').then(n => {
-                currentNonce = n;
-                burnerContract.startGame(userAddress, { gasLimit: 100000, nonce: currentNonce }).catch(console.error);
-                currentNonce++;
+            initBranches();
+            
+            burner.getTransactionCount('pending').then(n => {
+                nonce = n;
+                contract.startGame(userAddress, {gasLimit:100000, nonce}).catch(console.error);
+                nonce++;
             });
             
-            gameLoop();
+            requestAnimationFrame(gameLoop);
         }
         
         function gameLoop() {
             if (!gameActive) return;
-            const decay = 0.12 * (1 + Math.floor(score / 20) * 0.12 + (score >= 100 ? 0.3 : 0) + (score >= 150 ? 0.4 : 0));
-            timeRemaining -= decay;
-            updateTimeBar();
-            if (timeRemaining <= 0) { endGame(); return; }
-            animationFrameId = requestAnimationFrame(gameLoop);
-        }
-        
-        function updateTimeBar() {
-            const pct = Math.max(0, timeRemaining);
-            timeBarFill.style.width = `${pct}%`;
-            timeBarFill.className = pct > 50 ? '' : pct > 25 ? 'warning' : 'danger';
+            
+            const decay = 0.12 * (1 + Math.floor(score/25)*0.15);
+            timeLeft -= decay;
+            
+            const pct = Math.max(0, timeLeft);
+            timeBar.style.width = pct + '%';
+            timeBar.className = pct > 50 ? '' : pct > 25 ? 'warning' : 'danger';
+            
+            if (timeLeft <= 0) { endGame(); return; }
+            animFrame = requestAnimationFrame(gameLoop);
         }
         
         function chop(side) {
             if (!gameActive) return;
             
-            // Move player to the side they're chopping
             playerSide = side;
-            updatePlayerPosition();
+            lumberjack.className = side;
             
-            // Swing animation
             axe.classList.remove('swing');
             void axe.offsetWidth;
             axe.classList.add('swing');
             
-            // Check collision - if branch is on same side as player, they die
-            const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.side === side) {
+            // Die if on same side as branch
+            if (branches[0] && branches[0].side === side) {
                 endGame();
                 return;
             }
             
-            // Increment chop counter
+            score++;
+            txCount++;
             chopCount++;
+            timeLeft = Math.min(100, timeLeft + 4);
+            scoreDisplay.textContent = score;
             
-            // Only remove branch and add new one every 2 chops
+            // Every 2 chops, remove bottom branch and add new one
             if (chopCount >= 2) {
                 chopCount = 0;
                 
-                // Remove lowest branch
-                if (branches.length > 0) {
-                    branches[0].el.remove();
-                    branches.shift();
-                    
-                    // Move all branches down
-                    branches.forEach(b => {
-                        b.pos -= 80;
-                        b.el.style.bottom = `${b.pos}px`;
-                    });
-                    
-                    // Add new branch at top
-                    const newSide = Math.random() > 0.5 ? 'left' : 'right';
-                    const newPos = 200 + 5 * 80;
-                    branches.push({ side: newSide, pos: newPos, el: createBranch(newSide, newPos) });
-                }
+                branches[0].el.remove();
+                branches.shift();
+                
+                branches.forEach(b => {
+                    b.y -= 75;
+                    b.el.style.bottom = b.y + 'px';
+                });
+                
+                const newSide = Math.random() > 0.5 ? 'left' : 'right';
+                const newY = 180 + 5*75;
+                branches.push({side: newSide, y: newY, el: createBranch(newSide, newY)});
             }
             
-            score++;
-            txCount++;
-            timeRemaining = Math.min(100, timeRemaining + 5);
-            scoreDisplay.textContent = score;
-            
-            // Send tx
-            burnerContract.chop(userAddress, score, { gasLimit: 100000, nonce: currentNonce }).catch(console.error);
-            currentNonce++;
+            contract.chop(userAddress, score, {gasLimit:100000, nonce}).catch(console.error);
+            nonce++;
         }
         
         function endGame() {
             gameActive = false;
-            cancelAnimationFrame(animationFrameId);
+            cancelAnimationFrame(animFrame);
             
             const isRecord = score > highScore;
             if (isRecord) {
                 highScore = score;
-                highScoreDiv.textContent = highScore;
-                localStorage.setItem('monadLumberjackHighScore', highScore.toString());
-                gameOverDiv.classList.add('newRecord');
-                gameOverDiv.querySelector('h2').textContent = '🎉 NEW RECORD!';
-                beatScoreDiv.textContent = '';
-            } else {
-                gameOverDiv.classList.remove('newRecord');
-                gameOverDiv.querySelector('h2').textContent = 'GAME OVER';
-                beatScoreDiv.textContent = highScore - score === 0 ? 'Tied your best!' : `${highScore - score} away from best`;
+                localStorage.setItem('lumberjackHS', highScore);
+                highScoreEl.textContent = highScore;
             }
             
-            finalScoreDiv.textContent = score;
-            txSummaryDiv.textContent = `⚡ ${txCount} transactions on Monad`;
-            txLinkDiv.innerHTML = '';
-            gameOverDiv.style.display = 'flex';
-            canRestart = false;
-            setTimeout(() => canRestart = true, 1000);
+            $('finalScore').textContent = score;
+            $('txSummary').textContent = `⚡ ${txCount} transactions`;
+            $('beatScore').textContent = isRecord ? '🎉 NEW RECORD!' : `Best: ${highScore}`;
+            gameOver.className = isRecord ? 'newRecord' : '';
+            gameOver.querySelector('h2').textContent = isRecord ? '🎉 NEW RECORD!' : 'GAME OVER';
+            gameOver.style.display = 'flex';
+            
             startBtn.disabled = false;
             
             (async () => {
                 try {
-                    await new Promise(r => setTimeout(r, 300));
-                    const n = await burnerWallet.getTransactionCount('pending');
-                    const tx = await burnerContract.endGame(userAddress, score, { gasLimit: 150000, nonce: n });
-                    const receipt = await tx.wait();
-                    txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank">View on Explorer →</a>`;
-                } catch (e) { console.error(e); }
-                const bal = await checkBurnerBalance();
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${bal.toFixed(4)} MON`;
-                statusDiv.textContent = `Ready! ${bal.toFixed(3)} MON`;
+                    const n = await burner.getTransactionCount('pending');
+                    const tx = await contract.endGame(userAddress, score, {gasLimit:150000, nonce:n});
+                    const r = await tx.wait();
+                    $('txLink').innerHTML = `<a href="${EXPLORER}/tx/${r.transactionHash}" target="_blank">View on Explorer →</a>`;
+                } catch(e) {}
+                const bal = await getBalance();
+                burnerInfo.innerHTML = `🎮 Game Wallet:<br><b>${burner.address}</b><br>Balance: ${bal.toFixed(4)} MON`;
             })();
         }
         
-        restartBtn.addEventListener('click', startGame);
-        startBtn.addEventListener('click', startGame);
+        $('restartBtn').onclick = startGame;
+        startBtn.onclick = startGame;
         
-        $('tapLeft').addEventListener('click', () => { if (!gameActive && !startBtn.disabled && !startOverlay.classList.contains('hidden')) startGame(); else chop('left'); });
-        $('tapRight').addEventListener('click', () => { if (!gameActive && !startBtn.disabled && !startOverlay.classList.contains('hidden')) startGame(); else chop('right'); });
-        $('tapLeft').addEventListener('touchstart', e => { e.preventDefault(); if (!gameActive && !startBtn.disabled) startGame(); else chop('left'); });
-        $('tapRight').addEventListener('touchstart', e => { e.preventDefault(); if (!gameActive && !startBtn.disabled) startGame(); else chop('right'); });
+        $('tapLeft').onclick = () => { if(!gameActive && !startBtn.disabled) startGame(); else chop('left'); };
+        $('tapRight').onclick = () => { if(!gameActive && !startBtn.disabled) startGame(); else chop('right'); };
+        $('tapLeft').ontouchstart = e => { e.preventDefault(); if(!gameActive && !startBtn.disabled) startGame(); else chop('left'); };
+        $('tapRight').ontouchstart = e => { e.preventDefault(); if(!gameActive && !startBtn.disabled) startGame(); else chop('right'); };
         
-        document.addEventListener('keydown', e => {
-            if (gameOverDiv.style.display === 'flex') {
-                if (e.key === ' ' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); startGame(); }
-                return;
-            }
-            if (e.key === ' ') { e.preventDefault(); if (!gameActive && !startBtn.disabled) startGame(); }
-            if (e.key === 'ArrowLeft') { e.preventDefault(); if (!gameActive && !startBtn.disabled) startGame(); else chop('left'); }
-            if (e.key === 'ArrowRight') { e.preventDefault(); if (!gameActive && !startBtn.disabled) startGame(); else chop('right'); }
-        });
+        document.onkeydown = e => {
+            if (e.key===' '||e.key==='ArrowLeft'||e.key==='ArrowRight') e.preventDefault();
+            if (gameOver.style.display==='flex' && (e.key===' '||e.key==='ArrowLeft'||e.key==='ArrowRight')) { startGame(); return; }
+            if (e.key===' ' && !gameActive && !startBtn.disabled) startGame();
+            if (e.key==='ArrowLeft') { if(!gameActive && !startBtn.disabled) startGame(); else chop('left'); }
+            if (e.key==='ArrowRight') { if(!gameActive && !startBtn.disabled) startGame(); else chop('right'); }
+        };
     </script>
 </body>
 </html>
