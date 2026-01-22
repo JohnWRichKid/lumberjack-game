@@ -91,20 +91,26 @@
         .tt2 { width: 65px; height: 50px; background: radial-gradient(ellipse at 50% 60%, #72C472, #4CAF50, #388E3C); left: -58px; top: 28px; }
         .tt3 { width: 65px; height: 50px; background: radial-gradient(ellipse at 50% 60%, #72C472, #4CAF50, #388E3C); left: -7px; top: 28px; }
         
-        /* Branches with green foliage */
+        /* Branches - simple and clean */
         .branch {
             position: absolute;
             left: 50%;
             height: 50px;
             z-index: 9;
-            transition: bottom 0.12s ease-out, opacity 0.1s;
+            transition: bottom 0.12s ease-out;
         }
         .branch.left { transform: translateX(-26px) translateX(-100%); }
         .branch.right { transform: translateX(26px); }
         
+        .branch-inner {
+            position: relative;
+            width: 95px;
+            height: 50px;
+        }
+        
         .branch-wood {
             position: absolute;
-            bottom: 15px;
+            bottom: 18px;
             width: 50px;
             height: 14px;
             background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 50%, #6D4C41 100%);
@@ -112,25 +118,16 @@
         .branch.left .branch-wood { right: 0; border-radius: 8px 0 0 8px; }
         .branch.right .branch-wood { left: 0; border-radius: 0 8px 8px 0; }
         
-        .branch-leaves {
+        .branch-leaf {
             position: absolute;
             bottom: 5px;
-            width: 55px;
+            width: 52px;
             height: 44px;
-        }
-        .branch.left .branch-leaves { left: -5px; }
-        .branch.right .branch-leaves { right: -5px; }
-        
-        .leaf-main {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 50px;
-            height: 42px;
-            background: radial-gradient(ellipse at 50% 65%, #7ED67E 0%, #5CB85C 35%, #4CAF50 60%, #388E3C 85%, #2E7D32 100%);
+            background: radial-gradient(ellipse at 50% 60%, #7ED67E 0%, #5CB85C 30%, #4CAF50 55%, #388E3C 80%, #2E7D32 100%);
             border-radius: 50%;
-            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.15), inset 3px 3px 8px rgba(255,255,255,0.1);
         }
+        .branch.left .branch-leaf { left: 0; }
+        .branch.right .branch-leaf { right: 0; }
         
         #ground {
             position: absolute;
@@ -532,29 +529,31 @@
             try {
                 const rpcProvider = new ethers.providers.JsonRpcProvider(RPC);
                 
-                // Query logs for GameEnded events
-                // Event signature hash for GameEnded(address,uint256)
+                // Get recent blocks only to avoid timeout
+                const currentBlock = await rpcProvider.getBlockNumber();
+                const fromBlock = Math.max(0, currentBlock - 100000);
+                
                 const logs = await rpcProvider.getLogs({
                     address: CONTRACT,
-                    fromBlock: 0,
-                    toBlock: 'latest',
-                    topics: [
-                        ethers.utils.id("GameEnded(address,uint256)")
-                    ]
+                    fromBlock: fromBlock,
+                    toBlock: 'latest'
                 });
                 
                 const scores = {};
                 logs.forEach(log => {
                     try {
-                        // Decode: first topic after event sig is indexed address
-                        // Data contains the score
-                        const player = '0x' + log.topics[1].slice(26);
-                        const score = parseInt(log.data, 16);
-                        
-                        if(!scores[player] || scores[player] < score) {
-                            scores[player] = score;
+                        // Check if this looks like a GameEnded event (has score data)
+                        if(log.data && log.data.length >= 66 && log.topics && log.topics.length >= 2) {
+                            const player = '0x' + log.topics[1].slice(26).toLowerCase();
+                            const score = parseInt(log.data.slice(0, 66), 16);
+                            
+                            if(score > 0 && score < 10000) {
+                                if(!scores[player] || scores[player] < score) {
+                                    scores[player] = score;
+                                }
+                            }
                         }
-                    } catch(e) { console.log('Parse error', e); }
+                    } catch(e) {}
                 });
                 
                 const sorted = Object.entries(scores)
@@ -562,7 +561,7 @@
                     .slice(0, 10);
                 
                 if(sorted.length === 0){
-                    $('leaderboardList').innerHTML = '<div style="opacity:0.5; font-size:10px;">No scores yet! Be the first!</div>';
+                    $('leaderboardList').innerHTML = '<div style="opacity:0.5; font-size:10px;">No scores yet!</div>';
                     return;
                 }
                 
@@ -576,7 +575,7 @@
                 
             } catch(e) {
                 console.error('Leaderboard error:', e);
-                $('leaderboardList').innerHTML = '<div style="opacity:0.5; font-size:10px;">Could not load leaderboard</div>';
+                $('leaderboardList').innerHTML = '<div style="opacity:0.5; font-size:10px;">Loading...</div>';
             }
         }
         fetchLeaderboard();
@@ -638,9 +637,9 @@
             el.className='branch '+side;
             el.style.bottom=y+'px';
             el.innerHTML=`
-                <div class="branch-wood"></div>
-                <div class="branch-leaves">
-                    <div class="leaf-main"></div>
+                <div class="branch-inner">
+                    <div class="branch-wood"></div>
+                    <div class="branch-leaf"></div>
                 </div>
             `;
             gameArea.appendChild(el);
