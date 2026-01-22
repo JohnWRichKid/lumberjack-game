@@ -182,43 +182,44 @@
         }
         
         .branch-main {
-            width: 90px;
-            height: 30px;
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-            border-radius: 15px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            width: 100px;
+            height: 22px;
+            background: linear-gradient(to bottom, #5d8a4a 0%, #4a7c3a 50%, #3d6830 100%);
+            border-radius: 30px 30px 30px 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             position: relative;
         }
         
         .branch-connector {
-            width: 35px;
-            height: 22px;
-            background: linear-gradient(to right, #5d4037, #27ae60);
+            width: 25px;
+            height: 20px;
+            background: linear-gradient(to bottom, #8d6e63 0%, #6d5043 100%);
             position: absolute;
-            top: 4px;
+            top: 1px;
+            border-radius: 3px;
         }
         
-        .branch.left .branch-main { left: -60px; }
-        .branch.left .branch-connector { left: 30px; }
-        .branch.right .branch-main { right: -60px; }
-        .branch.right .branch-connector { right: 30px; }
+        .branch.left .branch-main { left: -75px; }
+        .branch.left .branch-connector { left: 25px; right: auto; }
+        .branch.right .branch-main { right: -75px; }
+        .branch.right .branch-connector { right: 25px; left: auto; }
         
         .branch-leaves {
             position: absolute;
-            width: 20px;
-            height: 20px;
-            background: #2ecc71;
+            width: 35px;
+            height: 28px;
+            background: radial-gradient(ellipse at center, #6ab04c 0%, #4a8a3a 60%, #3d7830 100%);
             border-radius: 50%;
-            top: -5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            top: -8px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
         }
         
-        .branch.left .branch-leaves:nth-child(1) { left: 10px; }
-        .branch.left .branch-leaves:nth-child(2) { left: 35px; top: -8px; }
-        .branch.left .branch-leaves:nth-child(3) { left: 60px; }
-        .branch.right .branch-leaves:nth-child(1) { right: 10px; }
-        .branch.right .branch-leaves:nth-child(2) { right: 35px; top: -8px; }
-        .branch.right .branch-leaves:nth-child(3) { right: 60px; }
+        .branch.left .branch-leaves:nth-child(1) { left: -5px; }
+        .branch.left .branch-leaves:nth-child(2) { left: 25px; top: -12px; width: 40px; height: 32px; }
+        .branch.left .branch-leaves:nth-child(3) { left: 55px; top: -6px; }
+        .branch.right .branch-leaves:nth-child(1) { right: -5px; }
+        .branch.right .branch-leaves:nth-child(2) { right: 25px; top: -12px; width: 40px; height: 32px; }
+        .branch.right .branch-leaves:nth-child(3) { right: 55px; top: -6px; }
         
         /* Bottom HUD Container */
         #bottomHUD {
@@ -644,7 +645,7 @@
         // Music setup
         let musicOn = false;
         let musicStarted = false;
-        let bassLine, kick, hihat, synth;
+        let kick, hihat, snare, bass, lead, arp;
         
         const musicToggle = document.getElementById('musicToggle');
         
@@ -652,67 +653,106 @@
             if (musicStarted) return;
             await Tone.start();
             
-            // Kick drum
+            // Punchy kick
             kick = new Tone.MembraneSynth({
                 pitchDecay: 0.05,
-                octaves: 6,
+                octaves: 8,
                 oscillator: { type: 'sine' },
-                envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.1 }
+                envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 }
             }).toDestination();
-            kick.volume.value = -8;
+            kick.volume.value = -6;
+            
+            // Snare
+            snare = new Tone.NoiseSynth({
+                noise: { type: 'pink' },
+                envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
+            }).toDestination();
+            snare.volume.value = -10;
             
             // Hi-hat
-            hihat = new Tone.NoiseSynth({
-                noise: { type: 'white' },
-                envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.05 }
+            hihat = new Tone.MetalSynth({
+                frequency: 250,
+                envelope: { attack: 0.001, decay: 0.05, release: 0.01 },
+                harmonicity: 5.1,
+                modulationIndex: 32,
+                resonance: 4000,
+                octaves: 1.5
             }).toDestination();
-            hihat.volume.value = -18;
+            hihat.volume.value = -20;
             
-            // Bass synth
-            bassLine = new Tone.Synth({
-                oscillator: { type: 'triangle' },
-                envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.1 }
+            // Bass
+            bass = new Tone.MonoSynth({
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 0.1 },
+                filterEnvelope: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1, baseFrequency: 200, octaves: 2.5 }
             }).toDestination();
-            bassLine.volume.value = -10;
+            bass.volume.value = -12;
             
-            // Lead synth for melody
-            synth = new Tone.Synth({
+            // Lead synth
+            lead = new Tone.PolySynth(Tone.Synth, {
                 oscillator: { type: 'square' },
-                envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.3 }
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 0.2 }
             }).toDestination();
-            synth.volume.value = -14;
+            lead.volume.value = -14;
             
-            // Kick pattern - four on the floor
-            new Tone.Loop((time) => {
-                if (musicOn) kick.triggerAttackRelease('C1', '8n', time);
-            }, '4n').start(0);
+            // Arpeggiator
+            arp = new Tone.Synth({
+                oscillator: { type: 'triangle' },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 }
+            }).toDestination();
+            arp.volume.value = -16;
             
-            // Hi-hat pattern - offbeats
-            new Tone.Loop((time) => {
-                if (musicOn) hihat.triggerAttackRelease('16n', time);
-            }, '8n').start('8n');
+            // Kick pattern - four on floor with extra hits
+            new Tone.Sequence((time, note) => {
+                if (musicOn && note) kick.triggerAttackRelease('C1', '8n', time);
+            }, [1, 0, 1, 0, 1, 0, 1, 1], '8n').start(0);
             
-            // Bass pattern
-            const bassNotes = ['C2', 'C2', 'G2', 'G2', 'A2', 'A2', 'F2', 'F2'];
-            let bassIndex = 0;
+            // Snare on 2 and 4
+            new Tone.Sequence((time, note) => {
+                if (musicOn && note) snare.triggerAttackRelease('8n', time);
+            }, [0, 0, 1, 0, 0, 0, 1, 0], '8n').start(0);
+            
+            // Hi-hat pattern - busy 16ths
+            new Tone.Sequence((time, note) => {
+                if (musicOn && note) hihat.triggerAttackRelease('32n', time);
+            }, [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], '16n').start(0);
+            
+            // Bass line - energetic
+            const bassPattern = ['C2', 'C2', 'G2', 'G2', 'A2', 'A2', 'F2', 'G2',
+                                 'C2', 'C2', 'E2', 'E2', 'F2', 'G2', 'A2', 'G2'];
+            new Tone.Sequence((time, note) => {
+                if (musicOn) bass.triggerAttackRelease(note, '16n', time);
+            }, bassPattern, '8n').start(0);
+            
+            // Lead melody - catchy and upbeat
+            const melodyPattern = [
+                ['C4', 'E4'], null, 'G4', null, 'A4', 'G4', 'E4', null,
+                ['C4', 'E4'], null, 'G4', 'A4', 'B4', null, 'A4', 'G4',
+                ['F4', 'A4'], null, 'C5', null, 'A4', 'G4', 'F4', null,
+                'E4', 'D4', 'C4', null, 'D4', 'E4', 'G4', null
+            ];
+            new Tone.Sequence((time, note) => {
+                if (musicOn && note) {
+                    if (Array.isArray(note)) {
+                        lead.triggerAttackRelease(note, '8n', time);
+                    } else {
+                        lead.triggerAttackRelease(note, '8n', time);
+                    }
+                }
+            }, melodyPattern, '8n').start(0);
+            
+            // Arpeggio - adds excitement
+            const arpPattern = ['C5', 'E5', 'G5', 'E5', 'C5', 'E5', 'G5', 'B5',
+                               'A4', 'C5', 'E5', 'C5', 'A4', 'C5', 'E5', 'G5'];
+            let arpIndex = 0;
             new Tone.Loop((time) => {
                 if (musicOn) {
-                    bassLine.triggerAttackRelease(bassNotes[bassIndex % bassNotes.length], '8n', time);
-                    bassIndex++;
+                    arp.triggerAttackRelease(arpPattern[arpIndex % arpPattern.length], '32n', time);
+                    arpIndex++;
                 }
-            }, '4n').start(0);
+            }, '16n').start('2m');
             
-            // Simple melody
-            const melodyNotes = ['C4', 'E4', 'G4', 'E4', 'A4', 'G4', 'E4', 'D4'];
-            let melodyIndex = 0;
-            new Tone.Loop((time) => {
-                if (musicOn) {
-                    synth.triggerAttackRelease(melodyNotes[melodyIndex % melodyNotes.length], '16n', time);
-                    melodyIndex++;
-                }
-            }, '2n').start('1n');
-            
-            Tone.Transport.bpm.value = 128;
+            Tone.Transport.bpm.value = 140;
             Tone.Transport.start();
             musicStarted = true;
         }
@@ -1086,9 +1126,9 @@
         function generateBranches() {
             document.querySelectorAll('.branch').forEach(b => b.remove());
             branches = [];
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 6; i++) {
                 const side = Math.random() > 0.5 ? 'left' : 'right';
-                const position = 220 + (i * 65);
+                const position = 220 + (i * 85);
                 branches.push({ side, position });
                 createBranch(side, position);
             }
@@ -1160,13 +1200,13 @@
                 if (branchEls[0]) branchEls[0].remove();
                 
                 branches.forEach((branch, index) => {
-                    branch.position -= 65;
+                    branch.position -= 85;
                     const branchEl = branchEls[index + 1];
                     if (branchEl) branchEl.style.bottom = `${branch.position}px`;
                 });
                 
                 const newSide = Math.random() > 0.5 ? 'left' : 'right';
-                const newPosition = 220 + (branches.length * 65);
+                const newPosition = 220 + (branches.length * 85);
                 branches.push({ side: newSide, position: newPosition });
                 createBranch(newSide, newPosition);
             }
