@@ -4,873 +4,1374 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Monad Lumberjack</title>
-    <!-- Copy this entire file to your index.html on GitHub -->
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
         body {
             font-family: 'Arial Black', Arial, sans-serif;
-            background: linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 50%, #87CEEB 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            padding: 10px;
+            overflow-x: hidden;
             user-select: none;
-        }
-        #gameContainer {
-            width: 400px;
-            height: 700px;
             position: relative;
-            background: linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 100%);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        /* Clouds */
-        .cloud {
-            position: absolute;
-            background: white;
-            border-radius: 50px;
-            opacity: 0.9;
-        }
-        .cloud::before, .cloud::after {
+        
+        body::before {
             content: '';
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-        }
-        .cloud1 { width: 80px; height: 30px; top: 60px; left: 20px; }
-        .cloud1::before { width: 40px; height: 40px; top: -20px; left: 10px; }
-        .cloud1::after { width: 50px; height: 50px; top: -25px; left: 35px; }
-        .cloud2 { width: 60px; height: 25px; top: 120px; right: 30px; }
-        .cloud2::before { width: 35px; height: 35px; top: -18px; left: 8px; }
-        .cloud2::after { width: 40px; height: 40px; top: -20px; left: 28px; }
-        .cloud3 { width: 70px; height: 28px; top: 200px; left: 50px; }
-        .cloud3::before { width: 38px; height: 38px; top: -19px; left: 10px; }
-        .cloud3::after { width: 45px; height: 45px; top: -22px; left: 32px; }
-        /* Timer bar */
-        #timerContainer {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 20px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 3px solid #5D4037;
-            z-index: 100;
-        }
-        #timerBar {
-            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            background: linear-gradient(to right, #4CAF50, #8BC34A);
-            transition: width 0.1s linear;
-            border-radius: 7px;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5 L35 25 L55 30 L35 35 L30 55 L25 35 L5 30 L25 25 Z' fill='%236E54FF' fill-opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
         }
-        #timerBar.warning { background: linear-gradient(to right, #FF9800, #FFC107); }
-        #timerBar.danger { background: linear-gradient(to right, #f44336, #FF5722); }
-        /* Score */
-        #score {
-            position: absolute;
-            top: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 48px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 3px 3px 0 #5D4037, -1px -1px 0 #5D4037, 1px -1px 0 #5D4037, -1px 1px 0 #5D4037;
-            z-index: 100;
+        
+        #header, #mainContainer {
+            position: relative;
+            z-index: 1;
         }
-        /* Ground */
+        
+        #header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin: 10px 0 5px 0;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8), 2px 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        #highScoreDisplay {
+            font-size: 16px;
+            color: #feca57;
+            text-shadow: 0 0 10px rgba(254, 202, 87, 0.5);
+        }
+        
+        #mainContainer {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            max-width: 100%;
+        }
+        
+        #gameWrapper {
+            position: relative;
+        }
+        
+        #gameArea {
+            background: linear-gradient(to bottom, #1a1a2e 0%, #2d3436 100%);
+            width: 380px;
+            height: 640px;
+            position: relative;
+            border: 3px solid #9c27b0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(156, 39, 176, 0.4), inset 0 0 60px rgba(0,0,0,0.5);
+        }
+        
         #ground {
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 120px;
-            background: linear-gradient(to bottom, #7CB342 0%, #558B2F 30%, #33691E 100%);
-            z-index: 10;
+            height: 80px;
+            background: linear-gradient(to bottom, #4a7c59 0%, #2d5a3d 100%);
+            z-index: 1;
         }
-        #groundTop {
-            position: absolute;
-            bottom: 120px;
-            width: 100%;
-            height: 20px;
-            background: #8BC34A;
-            border-radius: 50% 50% 0 0;
-            z-index: 10;
-        }
-        /* Rocks */
-        .rock {
-            position: absolute;
-            bottom: 125px;
-            background: linear-gradient(135deg, #9E9E9E 0%, #757575 50%, #616161 100%);
-            border-radius: 50% 50% 45% 45%;
-            z-index: 11;
-        }
-        .rock1 { width: 30px; height: 20px; left: 30px; }
-        .rock2 { width: 25px; height: 18px; right: 50px; }
-        .rock3 { width: 20px; height: 15px; left: 80px; bottom: 122px; }
-        /* Tree trunk */
-        #trunk {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 130px;
-            width: 60px;
-            height: 450px;
-            background: linear-gradient(to right, #6D4C41 0%, #8D6E63 30%, #A1887F 50%, #8D6E63 70%, #6D4C41 100%);
-            z-index: 20;
-            border-radius: 5px;
-        }
-        /* Tree top */
-        #treeTop {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 20px;
-            z-index: 25;
-        }
-        .foliage {
-            position: absolute;
-            background: radial-gradient(ellipse at 50% 60%, #66BB6A 0%, #43A047 50%, #388E3C 100%);
-            border-radius: 50%;
-        }
-        .foliage1 { width: 90px; height: 70px; left: -45px; top: 0; }
-        .foliage2 { width: 70px; height: 55px; left: -55px; top: 30px; }
-        .foliage3 { width: 70px; height: 55px; left: -15px; top: 30px; }
-        /* Branches */
-        .branch {
-            position: absolute;
-            z-index: 19;
-            left: 50%;
-        }
-        .branch.left { transform: translateX(-100%) translateX(-30px); }
-        .branch.right { transform: translateX(30px); }
-        .branch-arm {
-            width: 80px;
-            height: 18px;
-            background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 50%, #6D4C41 100%);
-            border-radius: 10px;
-            position: relative;
-        }
-        .branch.left .branch-arm { border-radius: 10px 0 0 10px; }
-        .branch.right .branch-arm { border-radius: 0 10px 10px 0; }
-        .branch-foliage {
-            position: absolute;
-            width: 65px;
-            height: 50px;
-            background: radial-gradient(ellipse at 50% 60%, #66BB6A 0%, #43A047 50%, #388E3C 100%);
-            border-radius: 50%;
-            top: -16px;
-        }
-        .branch.left .branch-foliage { left: -30px; }
-        .branch.right .branch-foliage { right: -30px; }
-        /* Lumberjack */
-        #lumberjack {
-            position: absolute;
-            bottom: 140px;
-            width: 70px;
-            height: 90px;
-            z-index: 30;
-            transition: left 0.05s ease-out;
-        }
-        #lumberjack.left { left: 70px; }
-        #lumberjack.right { left: 260px; }
-        .lj-head {
-            width: 35px;
-            height: 35px;
-            background: #FFCCBC;
-            border-radius: 50%;
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .lj-hat {
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 15px;
-            background: #2E7D32;
-            border-radius: 5px 5px 0 0;
-        }
-        .lj-hat::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: -3px;
-            width: 46px;
-            height: 8px;
-            background: #1B5E20;
-            border-radius: 3px;
-        }
-        .lj-beard {
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 20px;
-            background: #4E342E;
-            border-radius: 0 0 15px 15px;
-        }
-        .lj-body {
-            position: absolute;
-            top: 35px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 35px;
-            background: linear-gradient(to right, #C62828 0%, #E53935 50%, #C62828 100%);
-            border-radius: 5px;
-        }
-        .lj-body::before {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 25px;
-            background: repeating-linear-gradient(90deg, #C62828 0px, #C62828 4px, #1A1A1A 4px, #1A1A1A 8px);
-            border-radius: 3px;
-        }
-        .lj-legs {
-            position: absolute;
-            top: 68px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 35px;
-            height: 22px;
-            background: #1565C0;
-            border-radius: 0 0 5px 5px;
-        }
-        .lj-axe {
-            position: absolute;
-            top: 30px;
+        
+        #tree {
             width: 50px;
-            height: 50px;
-            font-size: 40px;
-            transition: transform 0.08s ease-out;
+            background: linear-gradient(to right, #5d4037 0%, #8d6e63 50%, #5d4037 100%);
+            height: 100%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: inset -5px 0 15px rgba(0,0,0,0.4);
+            z-index: 2;
         }
-        #lumberjack.left .lj-axe { right: -15px; transform: scaleX(-1); }
-        #lumberjack.right .lj-axe { left: -15px; transform: scaleX(1); }
-        #lumberjack.chopping .lj-axe { animation: swing 0.1s ease-out; }
-        @keyframes swing {
+        
+        #lumberjack {
+            width: 60px;
+            height: 75px;
+            position: absolute;
+            bottom: 130px;
+            left: 75px;
+            transition: left 0.04s ease-out;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #keoneImg {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #9c27b0;
+            box-shadow: 0 0 15px rgba(156, 39, 176, 0.6);
+            margin-bottom: -8px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .lumberjack-body {
+            width: 30px;
+            height: 38px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            border-radius: 5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .lumberjack-body::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 18px;
+            background: #3498db;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 0 0 3px 3px;
+        }
+        
+        #axe {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            top: 15px;
+            right: -20px;
+            font-size: 32px;
+            transition: transform 0.08s;
+            z-index: 3;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+        }
+        
+        #axe.swing {
+            animation: swingAxe 0.12s ease-out;
+        }
+        
+        @keyframes swingAxe {
             0% { transform: rotate(0deg); }
-            50% { transform: rotate(-45deg); }
+            50% { transform: rotate(-60deg); }
             100% { transform: rotate(0deg); }
         }
-        #lumberjack.right.chopping .lj-axe { animation: swingRight 0.1s ease-out; }
-        @keyframes swingRight {
-            0% { transform: scaleX(1) rotate(0deg); }
-            50% { transform: scaleX(1) rotate(45deg); }
-            100% { transform: scaleX(1) rotate(0deg); }
-        }
-        /* Arrow buttons */
-        #controls {
+        
+        .branch {
             position: absolute;
-            bottom: 20px;
+            z-index: 3;
+            transition: bottom 0.05s ease-out;
+        }
+        
+        .branch-main {
+            position: relative;
+        }
+        
+        /* The narrow horizontal branch arm */
+        .branch-arm {
+            width: 70px;
+            height: 12px;
+            background: linear-gradient(to bottom, #8B7355 0%, #6B5344 50%, #5a4636 100%);
+            border-radius: 6px;
+            position: absolute;
+            top: 20px;
+            box-shadow: 0 3px 4px rgba(0,0,0,0.3);
+        }
+        
+        /* The bush/foliage at the end */
+        .branch-foliage {
+            width: 55px;
+            height: 45px;
+            background: radial-gradient(ellipse at 50% 60%, #7cb860 0%, #5a9a45 40%, #4a8a38 70%, #3d7830 100%);
+            border-radius: 50% 50% 45% 45%;
+            position: absolute;
+            top: 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+        }
+        
+        /* Small accent leaves */
+        .branch-leaf-accent {
+            width: 20px;
+            height: 16px;
+            background: radial-gradient(ellipse at center, #8cd070 0%, #6ab050 100%);
+            border-radius: 50%;
+            position: absolute;
+            top: -5px;
+        }
+        
+        .branch.left .branch-arm { 
+            right: 0;
+        }
+        .branch.left .branch-foliage { 
+            left: 0; 
+        }
+        .branch.left .branch-leaf-accent {
+            left: 10px;
+        }
+        
+        .branch.right .branch-arm { 
+            left: 0;
+        }
+        .branch.right .branch-foliage { 
+            right: 0; 
+        }
+        .branch.right .branch-leaf-accent {
+            right: 10px;
+        }
+        
+        /* Bottom HUD Container */
+        #bottomHUD {
+            position: absolute;
+            bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 40px;
-            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            z-index: 20;
         }
-        .arrow-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #DEB887 0%, #D2691E 50%, #8B4513 100%);
-            border: 4px solid #5D4037;
+        
+        #scoreDisplay {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px rgba(156, 39, 176, 0.9), 0 0 20px rgba(156, 39, 176, 0.6), 2px 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 2px;
+        }
+        
+        #timeBarContainer {
+            width: 200px;
+            height: 12px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid rgba(156, 39, 176, 0.6);
+            box-shadow: 0 0 15px rgba(156, 39, 176, 0.3);
+        }
+        
+        #timeBarFill {
+            height: 100%;
+            background: linear-gradient(to right, #00d2d3 0%, #54a0ff 100%);
+            width: 100%;
+            transition: width 0.1s linear, background 0.3s;
+            border-radius: 4px;
+        }
+        
+        /* Tap zones for mobile */
+        .tap-zone {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 30;
             cursor: pointer;
+        }
+        
+        .tap-zone.left { left: 0; }
+        .tap-zone.right { right: 0; }
+        
+        .tap-zone:active {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        /* Side panel */
+        #sidePanel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 280px;
+        }
+        
+        .panel-section {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        
+        #wallet {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        #wallet:hover { transform: translateY(-2px); }
+        #wallet.connected {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+        }
+        
+        .fund-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 10px 8px;
+            font-size: 12px;
+            flex: 1;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+        }
+        
+        .fund-btn:hover { transform: translateY(-2px); }
+        
+        #startBtn {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            color: white;
+            font-size: 20px;
+            padding: 15px;
+            box-shadow: 0 4px 20px rgba(245, 87, 108, 0.5);
+        }
+        
+        #startBtn:hover:not(:disabled) { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(245, 87, 108, 0.6);
+        }
+        
+        #startBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #status {
+            font-size: 13px;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.2);
-            transition: transform 0.1s, box-shadow 0.1s;
         }
-        .arrow-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        
+        #fundOptions {
+            display: none;
+            margin-top: 10px;
         }
-        .arrow-btn svg {
-            width: 35px;
-            height: 35px;
-            fill: #3E2723;
+        
+        #burnerInfo {
+            font-size: 11px;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            word-break: break-all;
+            cursor: pointer;
+            transition: background 0.2s;
         }
-        /* Overlays */
-        .overlay {
+        
+        #burnerInfo:hover { background: rgba(0,0,0,0.5); }
+        
+        .instructions {
+            font-size: 13px;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+        
+        .instructions p { margin: 5px 0; }
+        .highlight { color: #feca57; }
+        
+        /* Game Over Overlay */
+        #gameOver {
+            display: none;
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 200;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            animation: fadeInOverlay 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeInOverlay {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        #gameOver h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #f5576c;
+            opacity: 0;
+            animation: slideDown 0.4s ease-out 0.3s forwards;
+        }
+        
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        #gameOver.newRecord h2 {
+            color: #feca57;
+            text-shadow: 0 0 20px rgba(254, 202, 87, 0.8);
+        }
+        
+        #finalScore {
+            font-size: 64px;
+            font-weight: bold;
+            color: white;
+            margin: 10px 0;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            opacity: 0;
+            animation: popIn 0.5s ease-out 0.5s forwards;
+        }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            70% { transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        #txSummary {
+            font-size: 18px;
+            color: #9c27b0;
+            margin: 10px 0;
+            padding: 10px 20px;
+            background: rgba(156, 39, 176, 0.2);
+            border-radius: 20px;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 0.7s forwards;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        #beatScore {
+            font-size: 14px;
+            color: #feca57;
+            margin: 10px 0;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 0.8s forwards;
+        }
+        
+        #restartBtn {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            color: white;
+            margin-top: 20px;
+            font-size: 18px;
+            padding: 15px 40px;
+            width: auto;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out 1s forwards;
+        }
+        
+        #txLink {
+            margin-top: 15px;
+        }
+        
+        #txLink a {
+            color: #54a0ff;
+            text-decoration: none;
+        }
+        
+        /* Particles */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 50;
+            font-size: 20px;
+        }
+        
+        /* Start overlay */
+        #startOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 50;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
             text-align: center;
         }
-        .overlay.hidden { display: none; }
-        .overlay h1 {
-            color: #8BC34A;
-            font-size: 32px;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 0 #33691E;
-        }
-        .overlay h2 {
-            color: white;
+        
+        #startOverlay h2 {
             font-size: 24px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        .overlay p {
-            color: #ccc;
-            font-size: 14px;
+        
+        #startOverlay p {
+            font-size: 16px;
+            opacity: 0.8;
             margin: 5px 0;
         }
-        .overlay-btn {
-            padding: 15px 40px;
+        
+        #tapToStart {
+            margin-top: 20px;
             font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            margin: 10px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            color: #feca57;
+            animation: pulse 1.5s infinite;
         }
-        .overlay-btn:hover { transform: translateY(-2px); }
-        .btn-primary {
-            background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(67, 160, 71, 0.4);
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
         }
-        .btn-secondary {
-            background: linear-gradient(135deg, #7E57C2 0%, #5E35B1 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(94, 53, 177, 0.4);
-        }
-        .btn-danger {
-            background: linear-gradient(135deg, #EF5350 0%, #E53935 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
-        }
-        /* Wallet info */
-        #walletInfo {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            font-size: 12px;
-            color: #aaa;
-            max-width: 300px;
-            word-break: break-all;
-        }
-        #walletInfo strong { color: #8BC34A; }
-        /* Fund options */
-        .fund-row {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .fund-btn {
-            padding: 10px 15px;
-            font-size: 14px;
-            font-weight: bold;
-            border: none;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
-            color: white;
-            cursor: pointer;
-        }
-        .fund-input {
-            padding: 10px;
-            border-radius: 20px;
-            border: none;
-            font-size: 14px;
-            width: 80px;
-            text-align: center;
-        }
-        /* Game over */
-        #gameOver h2 { color: #EF5350; }
-        #gameOver.newRecord h2 { color: #FFC107; text-shadow: 0 0 20px rgba(255, 193, 7, 0.5); }
-        #finalScore {
-            font-size: 72px;
-            color: white;
-            text-shadow: 3px 3px 0 #333;
-            margin: 10px 0;
-        }
-        #txCount {
-            color: #7E57C2;
-            font-size: 18px;
-            margin: 10px 0;
-        }
-        #highScoreText {
-            color: #FFC107;
-            font-size: 14px;
-        }
-        /* Settings button */
-        #settingsBtn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 40px;
-            height: 40px;
-            background: rgba(0,0,0,0.3);
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 150;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-        /* How to play */
-        .how-to-play {
-            display: flex;
-            gap: 30px;
-            margin: 20px 0;
-        }
-        .how-to-play div {
-            text-align: center;
-        }
-        .how-to-play span {
-            font-size: 40px;
-            display: block;
-            margin-bottom: 5px;
-        }
-        .how-to-play p {
-            font-size: 12px;
-            color: #aaa;
-        }
-        /* Input styling */
-        input[type="text"], input[type="number"] {
-            padding: 10px;
-            border-radius: 10px;
-            border: none;
-            font-size: 14px;
-            margin: 5px 0;
-        }
-        .withdraw-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.2);
-        }
-        .withdraw-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .withdraw-row input {
-            flex: 1;
-            min-width: 0;
+        
+        #startOverlay.hidden { display: none; }
+        
+        @media (max-width: 750px) {
+            #mainContainer {
+                flex-direction: column;
+                align-items: center;
+            }
+            #sidePanel {
+                width: 380px;
+                max-width: 100%;
+            }
+            h1 { font-size: 28px; }
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <!-- Clouds -->
-        <div class="cloud cloud1"></div>
-        <div class="cloud cloud2"></div>
-        <div class="cloud cloud3"></div>
-        
-        <!-- Timer -->
-        <div id="timerContainer">
-            <div id="timerBar"></div>
-        </div>
-        
-        <!-- Score -->
-        <div id="score">0</div>
-        
-        <!-- Settings -->
-        <button id="settingsBtn">⚙️</button>
-        
-        <!-- Tree top -->
-        <div id="treeTop">
-            <div class="foliage foliage1"></div>
-            <div class="foliage foliage2"></div>
-            <div class="foliage foliage3"></div>
-        </div>
-        
-        <!-- Tree trunk -->
-        <div id="trunk"></div>
-        
-        <!-- Branches container -->
-        <div id="branchesContainer"></div>
-        
-        <!-- Lumberjack -->
-        <div id="lumberjack" class="left">
-            <div class="lj-hat"></div>
-            <div class="lj-head"></div>
-            <div class="lj-beard"></div>
-            <div class="lj-body"></div>
-            <div class="lj-legs"></div>
-            <div class="lj-axe">🪓</div>
-        </div>
-        
-        <!-- Ground -->
-        <div id="groundTop"></div>
-        <div id="ground"></div>
-        <div class="rock rock1"></div>
-        <div class="rock rock2"></div>
-        <div class="rock rock3"></div>
-        
-        <!-- Controls -->
-        <div id="controls">
-            <div class="arrow-btn" id="btnLeft">
-                <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-            </div>
-            <div class="arrow-btn" id="btnRight">
-                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
-            </div>
-        </div>
-        
-        <!-- Start Overlay -->
-        <div class="overlay" id="startOverlay">
-            <h1>🪓 LUMBERJACK</h1>
-            <h2>Monad Testnet</h2>
-            <div class="how-to-play">
-                <div><span>⬅️</span><p>Tap left to<br>chop left</p></div>
-                <div><span>🌿</span><p>Avoid the<br>branches!</p></div>
-                <div><span>➡️</span><p>Tap right to<br>chop right</p></div>
-            </div>
-            <button class="overlay-btn btn-secondary" id="connectBtn">Connect Wallet</button>
-            <p id="startHint" style="color: #666; margin-top: 10px;">Connect wallet to play</p>
-        </div>
-        
-        <!-- Wallet Overlay -->
-        <div class="overlay hidden" id="walletOverlay">
-            <h2>⚡ Wallet</h2>
-            <div id="walletInfo">
-                <p>Game Wallet:</p>
-                <strong id="burnerAddr">-</strong>
-                <p style="margin-top: 10px;">Balance: <strong id="burnerBal">0</strong> MON</p>
-            </div>
-            <p style="margin-bottom: 10px;">Fund your game wallet:</p>
-            <div class="fund-row">
-                <button class="fund-btn" data-amount="1">1 MON</button>
-                <button class="fund-btn" data-amount="5">5 MON</button>
-                <button class="fund-btn" data-amount="10">10 MON</button>
-            </div>
-            <div class="fund-row">
-                <input type="number" class="fund-input" id="customAmount" placeholder="Custom">
-                <button class="fund-btn" id="customFund">Fund</button>
-            </div>
-            <div class="withdraw-section">
-                <p style="font-size: 12px; color: #888;">Withdraw MON:</p>
-                <input type="text" id="withdrawAddr" placeholder="Address (0x...)" style="width: 100%;">
-                <div class="withdraw-row">
-                    <input type="number" id="withdrawAmt" placeholder="Amount">
-                    <button class="fund-btn" id="withdrawBtn" style="background: linear-gradient(135deg, #EF5350, #E53935);">Withdraw</button>
+    <div id="header">
+        <h1>🪓 MONAD LUMBERJACK</h1>
+        <div id="highScoreDisplay">🏆 Best: <span id="highScoreTop">0</span></div>
+        <button id="musicToggle" style="margin-top: 8px; padding: 8px 16px; font-size: 12px; background: rgba(156, 39, 176, 0.3); border: 1px solid rgba(156, 39, 176, 0.5); color: white; border-radius: 20px; cursor: pointer;">🔇 Music Off</button>
+    </div>
+    
+    <div id="mainContainer">
+        <div id="gameWrapper">
+            <div id="gameArea">
+                <div id="tree"></div>
+                
+                <div id="lumberjack">
+                    <img src="keone.png" alt="Lumberjack" id="keoneImg">
+                    <div class="lumberjack-body"></div>
+                    <div id="axe">🪓</div>
+                </div>
+                <div id="ground"></div>
+                
+                <div id="bottomHUD">
+                    <div id="scoreDisplay">0</div>
+                    <div id="timeBarContainer">
+                        <div id="timeBarFill"></div>
+                    </div>
+                </div>
+                
+                <div class="tap-zone left" id="tapLeft"></div>
+                <div class="tap-zone right" id="tapRight"></div>
+                
+                <div id="startOverlay">
+                    <h2>TAP TO CHOP</h2>
+                    <p>⬅️ Left side = chop left</p>
+                    <p>➡️ Right side = chop right</p>
+                    <p>🌿 Avoid the branches!</p>
+                    <div id="tapToStart">CONNECT WALLET TO PLAY</div>
+                </div>
+                
+                <div id="gameOver">
+                    <h2>GAME OVER</h2>
+                    <div id="finalScore">0</div>
+                    <div id="txSummary">⚡ 0 transactions</div>
+                    <div id="beatScore"></div>
+                    <div id="txLink"></div>
+                    <button id="restartBtn">PRESS SPACE TO RETRY</button>
                 </div>
             </div>
-            <button class="overlay-btn btn-primary" id="playBtn" style="margin-top: 20px;" disabled>Play Game</button>
-            <button class="overlay-btn" id="backBtn" style="background: transparent; color: #888; font-size: 14px;">← Back</button>
         </div>
         
-        <!-- Game Over Overlay -->
-        <div class="overlay hidden" id="gameOver">
-            <h2>GAME OVER</h2>
-            <div id="finalScore">0</div>
-            <div id="txCount">⚡ 0 chops on Monad</div>
-            <div id="highScoreText"></div>
-            <button class="overlay-btn btn-primary" id="restartBtn">Play Again</button>
-            <button class="overlay-btn" id="menuBtn" style="background: transparent; color: #888; font-size: 14px;">Main Menu</button>
+        <div id="sidePanel">
+            <div class="panel-section">
+                <button id="wallet">Connect Wallet</button>
+                <div id="fundOptions">
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <button class="fund-btn" data-amount="1">1 MON</button>
+                        <button class="fund-btn" data-amount="10">10 MON</button>
+                        <button class="fund-btn" data-amount="100">100 MON</button>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="customAmount" placeholder="Custom" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 14px; width: 70px;">
+                        <button class="fund-btn" id="customFundBtn">Fund</button>
+                    </div>
+                </div>
+                <div id="status">Connect wallet to play</div>
+                <div id="burnerInfo"></div>
+                <div id="withdrawSection" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 11px; margin-bottom: 6px; opacity: 0.8;">Withdraw MON:</div>
+                    <input type="text" id="withdrawAddress" placeholder="Address (0x...)" style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 11px; margin-bottom: 6px;">
+                    <div style="display: flex; gap: 6px;">
+                        <input type="number" id="withdrawAmount" placeholder="Amount" style="flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 11px;">
+                        <button id="withdrawBtn" style="padding: 8px 12px; font-size: 11px; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); white-space: nowrap;">Withdraw</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <button id="startBtn" disabled>START GAME</button>
+                <div style="font-size: 11px; text-align: center; opacity: 0.6; margin-top: 8px;">or press SPACE</div>
+            </div>
+            
+            <div class="panel-section instructions">
+                <p><strong>How to Play:</strong></p>
+                <p>• Tap <span class="highlight">left</span> or <span class="highlight">right</span> to chop</p>
+                <p>• Don't hit the branches!</p>
+                <p>• Every chop = 1 transaction ⚡</p>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
+        // Music setup
+        let musicOn = false;
+        let musicStarted = false;
+        let kick, hihat, snare, bass, lead, arp;
+        
+        const musicToggle = document.getElementById('musicToggle');
+        
+        async function initMusic() {
+            if (musicStarted) return;
+            await Tone.start();
+            
+            // Punchy kick
+            kick = new Tone.MembraneSynth({
+                pitchDecay: 0.05,
+                octaves: 8,
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 }
+            }).toDestination();
+            kick.volume.value = -6;
+            
+            // Snare
+            snare = new Tone.NoiseSynth({
+                noise: { type: 'pink' },
+                envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
+            }).toDestination();
+            snare.volume.value = -10;
+            
+            // Hi-hat
+            hihat = new Tone.MetalSynth({
+                frequency: 250,
+                envelope: { attack: 0.001, decay: 0.05, release: 0.01 },
+                harmonicity: 5.1,
+                modulationIndex: 32,
+                resonance: 4000,
+                octaves: 1.5
+            }).toDestination();
+            hihat.volume.value = -20;
+            
+            // Bass
+            bass = new Tone.MonoSynth({
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 0.1 },
+                filterEnvelope: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1, baseFrequency: 200, octaves: 2.5 }
+            }).toDestination();
+            bass.volume.value = -12;
+            
+            // Lead synth
+            lead = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: 'square' },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 0.2 }
+            }).toDestination();
+            lead.volume.value = -14;
+            
+            // Arpeggiator
+            arp = new Tone.Synth({
+                oscillator: { type: 'triangle' },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 }
+            }).toDestination();
+            arp.volume.value = -16;
+            
+            // Kick pattern - four on floor with extra hits
+            new Tone.Sequence((time, note) => {
+                if (musicOn && note) kick.triggerAttackRelease('C1', '8n', time);
+            }, [1, 0, 1, 0, 1, 0, 1, 1], '8n').start(0);
+            
+            // Snare on 2 and 4
+            new Tone.Sequence((time, note) => {
+                if (musicOn && note) snare.triggerAttackRelease('8n', time);
+            }, [0, 0, 1, 0, 0, 0, 1, 0], '8n').start(0);
+            
+            // Hi-hat pattern - busy 16ths
+            new Tone.Sequence((time, note) => {
+                if (musicOn && note) hihat.triggerAttackRelease('32n', time);
+            }, [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], '16n').start(0);
+            
+            // Bass line - energetic
+            const bassPattern = ['C2', 'C2', 'G2', 'G2', 'A2', 'A2', 'F2', 'G2',
+                                 'C2', 'C2', 'E2', 'E2', 'F2', 'G2', 'A2', 'G2'];
+            new Tone.Sequence((time, note) => {
+                if (musicOn) bass.triggerAttackRelease(note, '16n', time);
+            }, bassPattern, '8n').start(0);
+            
+            // Lead melody - catchy and upbeat
+            const melodyPattern = [
+                ['C4', 'E4'], null, 'G4', null, 'A4', 'G4', 'E4', null,
+                ['C4', 'E4'], null, 'G4', 'A4', 'B4', null, 'A4', 'G4',
+                ['F4', 'A4'], null, 'C5', null, 'A4', 'G4', 'F4', null,
+                'E4', 'D4', 'C4', null, 'D4', 'E4', 'G4', null
+            ];
+            new Tone.Sequence((time, note) => {
+                if (musicOn && note) {
+                    if (Array.isArray(note)) {
+                        lead.triggerAttackRelease(note, '8n', time);
+                    } else {
+                        lead.triggerAttackRelease(note, '8n', time);
+                    }
+                }
+            }, melodyPattern, '8n').start(0);
+            
+            // Arpeggio - adds excitement
+            const arpPattern = ['C5', 'E5', 'G5', 'E5', 'C5', 'E5', 'G5', 'B5',
+                               'A4', 'C5', 'E5', 'C5', 'A4', 'C5', 'E5', 'G5'];
+            let arpIndex = 0;
+            new Tone.Loop((time) => {
+                if (musicOn) {
+                    arp.triggerAttackRelease(arpPattern[arpIndex % arpPattern.length], '32n', time);
+                    arpIndex++;
+                }
+            }, '16n').start('2m');
+            
+            Tone.Transport.bpm.value = 140;
+            Tone.Transport.start();
+            musicStarted = true;
+        }
+        
+        musicToggle.addEventListener('click', async () => {
+            if (!musicStarted) {
+                await initMusic();
+            }
+            musicOn = !musicOn;
+            musicToggle.textContent = musicOn ? '🔊 Music On' : '🔇 Music Off';
+            musicToggle.style.background = musicOn ? 'rgba(156, 39, 176, 0.6)' : 'rgba(156, 39, 176, 0.3)';
+        });
+
         const CONTRACT_ADDRESS = "0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
         const CONTRACT_ABI = [
             "function startGame(address mainWallet) external",
             "function chop(address mainWallet, uint256 chopNumber) external",
             "function endGame(address mainWallet, uint256 finalScore) external",
+            "function getHighScore(address player) external view returns (uint256)",
+            "function totalChops() external view returns (uint256)"
         ];
+        
         const MONAD_CHAIN_ID = '0x279f';
         const MONAD_RPC = 'https://testnet-rpc.monad.xyz';
+        const MONAD_EXPLORER = 'https://testnet.monadexplorer.com';
         
-        // State
-        let gameActive = false;
         let score = 0;
-        let highScore = parseInt(localStorage.getItem('lumberjackHigh') || '0');
-        let timeLeft = 100;
+        let highScore = 0;
+        let gameActive = false;
+        let lumberjackSide = 'left';
         let branches = [];
-        let playerSide = 'left';
+        let provider, signer, userAddress;
+        let burnerWallet, burnerContract;
+        let timeRemaining = 100;
+        let baseTimeDecay = 0.12;
+        let currentTimeDecay = 0.12;
+        let timeAddPerChop = 5;
+        let animationFrameId;
         let txCount = 0;
+        let pendingTxs = [];
         let currentNonce = null;
+        let txQueue = [];
+        let isProcessingQueue = false;
+        let canRestart = true;
         
-        // Wallet
-        let provider, signer, userAddress, burnerWallet, burnerContract;
-        
-        // Elements
         const $ = id => document.getElementById(id);
-        const scoreEl = $('score');
-        const timerBar = $('timerBar');
+        const walletBtn = $('wallet');
+        const fundOptionsDiv = $('fundOptions');
+        const customAmountInput = $('customAmount');
+        const customFundBtn = $('customFundBtn');
+        const startBtn = $('startBtn');
+        const statusDiv = $('status');
+        const burnerInfoDiv = $('burnerInfo');
+        const scoreDisplay = $('scoreDisplay');
+        const timeBarFill = $('timeBarFill');
         const lumberjack = $('lumberjack');
-        const branchesContainer = $('branchesContainer');
-        const startOverlay = $('startOverlay');
-        const walletOverlay = $('walletOverlay');
-        const gameOverlay = $('gameOver');
-        const connectBtn = $('connectBtn');
-        const playBtn = $('playBtn');
-        const backBtn = $('backBtn');
+        const keoneImg = $('keoneImg');
+        const axe = $('axe');
+        const gameArea = $('gameArea');
+        const gameOverDiv = $('gameOver');
         const restartBtn = $('restartBtn');
-        const menuBtn = $('menuBtn');
-        const settingsBtn = $('settingsBtn');
-        const btnLeft = $('btnLeft');
-        const btnRight = $('btnRight');
-        const burnerAddrEl = $('burnerAddr');
-        const burnerBalEl = $('burnerBal');
-        const finalScoreEl = $('finalScore');
-        const txCountEl = $('txCount');
-        const highScoreText = $('highScoreText');
-        const startHint = $('startHint');
+        const finalScoreDiv = $('finalScore');
+        const txSummaryDiv = $('txSummary');
+        const beatScoreDiv = $('beatScore');
+        const txLinkDiv = $('txLink');
+        const highScoreDiv = $('highScoreTop');
+        const startOverlay = $('startOverlay');
+        const tapToStart = $('tapToStart');
+        const tapLeft = $('tapLeft');
+        const tapRight = $('tapRight');
+        const withdrawSection = $('withdrawSection');
+        const withdrawAddress = $('withdrawAddress');
+        const withdrawAmount = $('withdrawAmount');
+        const withdrawBtn = $('withdrawBtn');
         
-        // Burner wallet
-        function getOrCreateBurner() {
-            let pk = localStorage.getItem('lumberjackBurner');
+        if (localStorage.getItem('monadLumberjackHighScore')) {
+            highScore = parseInt(localStorage.getItem('monadLumberjackHighScore'));
+            highScoreDiv.textContent = highScore;
+        }
+        
+        function getOrCreateBurnerWallet() {
+            let pk = localStorage.getItem('monadLumberjackBurner');
             if (!pk) {
-                const w = ethers.Wallet.createRandom();
-                pk = w.privateKey;
-                localStorage.setItem('lumberjackBurner', pk);
+                const newWallet = ethers.Wallet.createRandom();
+                pk = newWallet.privateKey;
+                localStorage.setItem('monadLumberjackBurner', pk);
             }
-            return new ethers.Wallet(pk, new ethers.providers.JsonRpcProvider(MONAD_RPC));
+            const rpcProvider = new ethers.providers.JsonRpcProvider(MONAD_RPC);
+            return new ethers.Wallet(pk, rpcProvider);
         }
         
-        async function updateBalance() {
+        async function checkBurnerBalance() {
             if (!burnerWallet) return 0;
-            const bal = await burnerWallet.getBalance();
-            const formatted = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
-            burnerBalEl.textContent = formatted;
-            return parseFloat(formatted);
+            const balance = await burnerWallet.getBalance();
+            return parseFloat(ethers.utils.formatEther(balance));
         }
         
-        // Wallet connection
-        connectBtn.addEventListener('click', async () => {
-            if (!window.ethereum) { alert('Install MetaMask!'); return; }
+        walletBtn.addEventListener('click', async () => {
+            if (typeof window.ethereum === 'undefined') {
+                alert('Please install MetaMask!');
+                return;
+            }
+            
             try {
+                statusDiv.textContent = 'Connecting...';
                 await window.ethereum.request({ method: 'eth_requestAccounts' });
                 provider = new ethers.providers.Web3Provider(window.ethereum);
-                const net = await provider.getNetwork();
-                if (net.chainId !== 10143) {
+                
+                const network = await provider.getNetwork();
+                if (network.chainId !== 10143) {
                     try {
-                        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: MONAD_CHAIN_ID }] });
-                    } catch (e) {
-                        if (e.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: MONAD_CHAIN_ID }],
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
                             await window.ethereum.request({
                                 method: 'wallet_addEthereumChain',
-                                params: [{ chainId: MONAD_CHAIN_ID, chainName: 'Monad Testnet', nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 }, rpcUrls: [MONAD_RPC] }]
+                                params: [{
+                                    chainId: MONAD_CHAIN_ID,
+                                    chainName: 'Monad Testnet',
+                                    nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
+                                    rpcUrls: [MONAD_RPC],
+                                    blockExplorerUrls: [MONAD_EXPLORER]
+                                }]
                             });
+                        } else {
+                            throw switchError;
                         }
                     }
                     provider = new ethers.providers.Web3Provider(window.ethereum);
                 }
+                
                 signer = provider.getSigner();
                 userAddress = await signer.getAddress();
-                burnerWallet = getOrCreateBurner();
+                
+                burnerWallet = getOrCreateBurnerWallet();
                 burnerContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, burnerWallet);
-                burnerAddrEl.textContent = burnerWallet.address;
-                const bal = await updateBalance();
-                playBtn.disabled = bal < 0.001;
-                startOverlay.classList.add('hidden');
-                walletOverlay.classList.remove('hidden');
-            } catch (e) { console.error(e); }
+                
+                walletBtn.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                walletBtn.classList.add('connected');
+                
+                const burnerBalance = await checkBurnerBalance();
+                burnerInfoDiv.style.display = 'block';
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                burnerInfoDiv.onclick = () => {
+                    navigator.clipboard.writeText(burnerWallet.address);
+                    statusDiv.textContent = 'Copied!';
+                    setTimeout(async () => {
+                        const bal = await checkBurnerBalance();
+                        statusDiv.textContent = bal < 0.01 ? 'Fund wallet to play' : `Ready! ${bal.toFixed(3)} MON`;
+                    }, 1000);
+                };
+                
+                fundOptionsDiv.style.display = 'block';
+                withdrawSection.style.display = 'block';
+                
+                if (burnerBalance < 0.01) {
+                    statusDiv.textContent = 'Fund game wallet to play';
+                    startBtn.disabled = true;
+                    tapToStart.textContent = 'FUND WALLET TO PLAY';
+                } else {
+                    statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
+                    startBtn.disabled = false;
+                    tapToStart.textContent = 'TAP ANYWHERE TO START';
+                }
+                
+            } catch (error) {
+                console.error('Connection error:', error);
+                statusDiv.textContent = 'Connection failed';
+            }
         });
         
-        // Funding
-        document.querySelectorAll('.fund-btn[data-amount]').forEach(btn => {
-            btn.addEventListener('click', () => fundWallet(btn.dataset.amount));
-        });
-        $('customFund').addEventListener('click', () => {
-            const amt = parseFloat($('customAmount').value);
-            if (amt > 0) fundWallet(amt);
-        });
-        
-        async function fundWallet(amount) {
+        async function fundBurnerWallet(amount) {
             try {
-                const tx = await signer.sendTransaction({ to: burnerWallet.address, value: ethers.utils.parseEther(amount.toString()) });
+                statusDiv.textContent = 'Confirm in wallet...';
+                const tx = await signer.sendTransaction({
+                    to: burnerWallet.address,
+                    value: ethers.utils.parseEther(amount.toString())
+                });
+                statusDiv.textContent = 'Funding...';
                 await tx.wait();
-                const bal = await updateBalance();
-                playBtn.disabled = bal < 0.001;
-            } catch (e) { console.error(e); }
+                const burnerBalance = await checkBurnerBalance();
+                statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                startBtn.disabled = false;
+                tapToStart.textContent = 'TAP ANYWHERE TO START';
+            } catch (error) {
+                console.error('Funding error:', error);
+                statusDiv.textContent = 'Funding failed';
+            }
         }
         
-        // Withdraw
-        $('withdrawBtn').addEventListener('click', async () => {
-            const addr = $('withdrawAddr').value.trim();
-            const amt = parseFloat($('withdrawAmt').value);
-            if (!addr || !amt) return;
-            try {
-                const tx = await burnerWallet.sendTransaction({ to: addr, value: ethers.utils.parseEther(amt.toString()), gasLimit: 21000 });
-                await tx.wait();
-                await updateBalance();
-            } catch (e) { console.error(e); }
+        document.querySelectorAll('.fund-btn[data-amount]').forEach(btn => {
+            btn.addEventListener('click', () => fundBurnerWallet(btn.getAttribute('data-amount')));
         });
         
-        // Navigation
-        backBtn.addEventListener('click', () => { walletOverlay.classList.add('hidden'); startOverlay.classList.remove('hidden'); });
-        menuBtn.addEventListener('click', () => { gameOverlay.classList.add('hidden'); startOverlay.classList.remove('hidden'); });
-        settingsBtn.addEventListener('click', () => { if (!gameActive) { walletOverlay.classList.remove('hidden'); } });
+        customFundBtn.addEventListener('click', () => {
+            const amount = parseFloat(customAmountInput.value);
+            if (amount && amount > 0) fundBurnerWallet(amount);
+        });
         
-        // Start game
-        playBtn.addEventListener('click', startGame);
-        restartBtn.addEventListener('click', startGame);
-        
-        function startGame() {
-            score = 0;
-            txCount = 0;
-            timeLeft = 100;
-            playerSide = 'left';
-            branches = [];
-            gameActive = true;
+        withdrawBtn.addEventListener('click', async () => {
+            const toAddress = withdrawAddress.value.trim();
+            const amount = parseFloat(withdrawAmount.value);
             
-            walletOverlay.classList.add('hidden');
-            gameOverlay.classList.add('hidden');
-            startOverlay.classList.add('hidden');
-            
-            branchesContainer.innerHTML = '';
-            updateScore();
-            updateTimer();
-            updatePlayer();
-            
-            // Generate initial branches
-            for (let i = 0; i < 6; i++) {
-                const side = Math.random() > 0.5 ? 'left' : 'right';
-                branches.push(side);
-                createBranchElement(side, i);
+            if (!toAddress || !toAddress.startsWith('0x') || toAddress.length !== 42) {
+                statusDiv.textContent = 'Invalid address';
+                return;
+            }
+            if (!amount || amount <= 0) {
+                statusDiv.textContent = 'Invalid amount';
+                return;
             }
             
-            // Start game tx
-            burnerWallet.getTransactionCount('pending').then(n => {
-                currentNonce = n;
+            try {
+                withdrawBtn.disabled = true;
+                withdrawBtn.textContent = 'Sending...';
+                statusDiv.textContent = 'Withdrawing...';
+                
+                const tx = await burnerWallet.sendTransaction({
+                    to: toAddress,
+                    value: ethers.utils.parseEther(amount.toString()),
+                    gasLimit: 21000
+                });
+                
+                await tx.wait();
+                
+                const newBalance = await checkBurnerBalance();
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${newBalance.toFixed(4)} MON`;
+                statusDiv.textContent = `Withdrawn! Balance: ${newBalance.toFixed(3)} MON`;
+                withdrawAddress.value = '';
+                withdrawAmount.value = '';
+                
+                if (newBalance < 0.01) {
+                    startBtn.disabled = true;
+                    tapToStart.textContent = 'FUND WALLET TO PLAY';
+                }
+                
+            } catch (error) {
+                console.error('Withdraw error:', error);
+                statusDiv.textContent = 'Withdraw failed';
+            }
+            
+            withdrawBtn.disabled = false;
+            withdrawBtn.textContent = 'Withdraw';
+        });
+        
+        async function processQueue() {
+            if (isProcessingQueue) return;
+            isProcessingQueue = true;
+            
+            while (txQueue.length > 0) {
+                const chopNumber = txQueue.shift();
+                try {
+                    const tx = await burnerContract.chop(userAddress, chopNumber, { 
+                        gasLimit: 100000,
+                        nonce: currentNonce
+                    });
+                    currentNonce++;
+                    pendingTxs.push(tx.hash);
+                } catch (error) {
+                    console.error('Chop tx error:', error);
+                    if (error.message && error.message.includes('nonce')) {
+                        currentNonce = await burnerWallet.getTransactionCount('pending');
+                    }
+                }
+            }
+            isProcessingQueue = false;
+        }
+        
+        function sendChopTx(chopNumber) {
+            txQueue.push(chopNumber);
+            processQueue();
+        }
+        
+        function spawnParticles(x, y) {
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = '🍃';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                gameArea.appendChild(particle);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 50 + Math.random() * 100;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+                
+                let px = x, py = y, opacity = 1;
+                const animate = () => {
+                    px += vx * 0.02;
+                    py += vy * 0.02 + 2;
+                    opacity -= 0.03;
+                    particle.style.left = px + 'px';
+                    particle.style.top = py + 'px';
+                    particle.style.opacity = opacity;
+                    if (opacity > 0) requestAnimationFrame(animate);
+                    else particle.remove();
+                };
+                requestAnimationFrame(animate);
+            }
+        }
+        
+        function startGame() {
+            if (!burnerWallet || startBtn.disabled) return;
+            if (gameOverDiv.style.display === 'flex' && !canRestart) return;
+            
+            score = 0;
+            txCount = 0;
+            pendingTxs = [];
+            txQueue = [];
+            isProcessingQueue = false;
+            timeRemaining = 100;
+            currentTimeDecay = baseTimeDecay;
+            branches = [];
+            lumberjackSide = 'left';
+            gameActive = true;
+            
+            startOverlay.classList.add('hidden');
+            gameOverDiv.style.display = 'none';
+            startBtn.disabled = true;
+            
+            updateScore();
+            updateTimeBar();
+            generateBranches();
+            updateLumberjackPosition();
+            
+            burnerWallet.getTransactionCount('pending').then(nonce => {
+                currentNonce = nonce;
                 burnerContract.startGame(userAddress, { gasLimit: 100000, nonce: currentNonce }).catch(console.error);
                 currentNonce++;
             });
             
-            requestAnimationFrame(gameLoop);
+            gameLoop();
         }
         
-        let lastTime = 0;
-        function gameLoop(timestamp) {
+        function gameLoop() {
             if (!gameActive) return;
-            const dt = lastTime ? (timestamp - lastTime) / 1000 : 0.016;
-            lastTime = timestamp;
             
-            // Speed increases with score
-            const speed = 3 + Math.floor(score / 15) * 0.8;
-            timeLeft -= speed * dt;
-            updateTimer();
+            const milestones = Math.floor(score / 20);
+            let speedMultiplier = 1 + (milestones * 0.12);
             
-            if (timeLeft <= 0) { endGame(); return; }
-            requestAnimationFrame(gameLoop);
+            // Extra hard mode at 100+
+            if (score >= 100) {
+                speedMultiplier += 0.3;
+            }
+            // Insane mode at 150+
+            if (score >= 150) {
+                speedMultiplier += 0.4;
+            }
+            // Brutal mode at 200+
+            if (score >= 200) {
+                speedMultiplier += 0.5;
+            }
+            
+            currentTimeDecay = baseTimeDecay * speedMultiplier;
+            
+            timeRemaining -= currentTimeDecay;
+            updateTimeBar();
+            
+            if (timeRemaining <= 0) {
+                endGame();
+                return;
+            }
+            animationFrameId = requestAnimationFrame(gameLoop);
         }
         
-        function createBranchElement(side, index) {
+        function generateBranches() {
+            document.querySelectorAll('.branch').forEach(b => b.remove());
+            branches = [];
+            for (let i = 0; i < 6; i++) {
+                const side = Math.random() > 0.5 ? 'left' : 'right';
+                const position = 210 + (i * 90);
+                branches.push({ side, position });
+                createBranch(side, position);
+            }
+        }
+        
+        function createBranch(side, position) {
             const branch = document.createElement('div');
             branch.className = `branch ${side}`;
-            branch.style.bottom = `${235 + index * 75}px`;
-            branch.innerHTML = `<div class="branch-arm"></div><div class="branch-foliage"></div>`;
-            branchesContainer.appendChild(branch);
+            branch.style.bottom = `${position}px`;
+            
+            if (side === 'left') {
+                branch.style.left = '90px';
+            } else {
+                branch.style.left = '190px';
+            }
+            
+            const main = document.createElement('div');
+            main.className = 'branch-main';
+            main.style.width = '120px';
+            main.style.height = '50px';
+            main.style.position = 'relative';
+            
+            const arm = document.createElement('div');
+            arm.className = 'branch-arm';
+            main.appendChild(arm);
+            
+            const foliage = document.createElement('div');
+            foliage.className = 'branch-foliage';
+            main.appendChild(foliage);
+            
+            const leafAccent = document.createElement('div');
+            leafAccent.className = 'branch-leaf-accent';
+            main.appendChild(leafAccent);
+            
+            branch.appendChild(main);
+            gameArea.appendChild(branch);
+        }
+        
+        function updateLumberjackPosition() {
+            if (lumberjackSide === 'left') {
+                lumberjack.style.left = '65px';
+                keoneImg.style.transform = 'scaleX(1)';
+                axe.style.right = '-20px';
+                axe.style.left = 'auto';
+                axe.style.transform = 'scaleX(-1)';
+            } else {
+                lumberjack.style.left = '255px';
+                keoneImg.style.transform = 'scaleX(-1)';
+                axe.style.left = '-20px';
+                axe.style.right = 'auto';
+                axe.style.transform = 'scaleX(1)';
+            }
         }
         
         function chop(side) {
             if (!gameActive) return;
             
-            // Move player
-            playerSide = side;
-            updatePlayer();
-            
-            // Check collision - player dies if on SAME side as lowest branch
-            if (branches[0] === side) {
+            const lowestBranch = branches[0];
+            if (lowestBranch && lowestBranch.position < 215 && lowestBranch.side === side) {
                 endGame();
                 return;
             }
             
-            // Chop animation
-            lumberjack.classList.add('chopping');
-            setTimeout(() => lumberjack.classList.remove('chopping'), 100);
+            lumberjackSide = side;
+            updateLumberjackPosition();
             
-            // Remove bottom branch, add new one at top
-            branches.shift();
-            const newSide = Math.random() > 0.5 ? 'left' : 'right';
-            branches.push(newSide);
+            axe.classList.remove('swing');
+            void axe.offsetWidth;
+            axe.classList.add('swing');
             
-            // Update DOM
-            const branchEls = branchesContainer.children;
-            if (branchEls[0]) branchEls[0].remove();
-            createBranchElement(newSide, 5);
-            
-            // Update branch positions
-            Array.from(branchesContainer.children).forEach((el, i) => {
-                el.style.bottom = `${235 + i * 75}px`;
-            });
+            if (branches.length > 0) {
+                const branchEl = document.querySelector('.branch');
+                if (branchEl) {
+                    const rect = branchEl.getBoundingClientRect();
+                    const gameRect = gameArea.getBoundingClientRect();
+                    spawnParticles(rect.left - gameRect.left + 50, rect.top - gameRect.top + 15);
+                }
+                
+                branches.shift();
+                const branchEls = document.querySelectorAll('.branch');
+                if (branchEls[0]) branchEls[0].remove();
+                
+                branches.forEach((branch, index) => {
+                    branch.position -= 90;
+                    const branchEl = branchEls[index + 1];
+                    if (branchEl) branchEl.style.bottom = `${branch.position}px`;
+                });
+                
+                const newSide = Math.random() > 0.5 ? 'left' : 'right';
+                const newPosition = 210 + (branches.length * 90);
+                branches.push({ side: newSide, position: newPosition });
+                createBranch(newSide, newPosition);
+            }
             
             score++;
             txCount++;
-            timeLeft = Math.min(100, timeLeft + 8);
-            updateScore();
+            timeRemaining = Math.min(100, timeRemaining + timeAddPerChop);
             
-            // Send chop tx
-            burnerContract.chop(userAddress, score, { gasLimit: 100000, nonce: currentNonce }).catch(console.error);
-            currentNonce++;
-        }
-        
-        function updatePlayer() {
-            lumberjack.className = playerSide;
+            updateScore();
+            updateTimeBar();
+            sendChopTx(score);
         }
         
         function updateScore() {
-            scoreEl.textContent = score;
+            scoreDisplay.textContent = score;
         }
         
-        function updateTimer() {
-            const pct = Math.max(0, timeLeft);
-            timerBar.style.width = `${pct}%`;
-            timerBar.className = pct > 50 ? '' : pct > 25 ? 'warning' : 'danger';
-        }
-        
-        function endGame() {
-            gameActive = false;
-            lastTime = 0;
+        function updateTimeBar() {
+            const pct = Math.max(0, timeRemaining);
+            timeBarFill.style.width = `${pct}%`;
             
-            const isRecord = score > highScore;
-            if (isRecord) {
+            if (pct > 60) {
+                timeBarFill.style.background = 'linear-gradient(to right, #00d2d3 0%, #54a0ff 100%)';
+            } else if (pct > 30) {
+                timeBarFill.style.background = 'linear-gradient(to right, #feca57 0%, #ff9f43 100%)';
+            } else {
+                timeBarFill.style.background = 'linear-gradient(to right, #ff6b6b 0%, #ee5a6f 100%)';
+            }
+        }
+        
+        async function endGame() {
+            gameActive = false;
+            cancelAnimationFrame(animationFrameId);
+            
+            const isNewRecord = score > highScore;
+            const finalScore = score;
+            const finalTxCount = txCount;
+            
+            if (isNewRecord) {
                 highScore = score;
-                localStorage.setItem('lumberjackHigh', highScore.toString());
+                highScoreDiv.textContent = highScore;
+                localStorage.setItem('monadLumberjackHighScore', highScore.toString());
+                gameOverDiv.classList.add('newRecord');
+                gameOverDiv.querySelector('h2').textContent = '🎉 NEW RECORD!';
+                beatScoreDiv.textContent = '';
+            } else {
+                gameOverDiv.classList.remove('newRecord');
+                gameOverDiv.querySelector('h2').textContent = 'GAME OVER';
+                const diff = highScore - score;
+                beatScoreDiv.textContent = diff === 0 ? 'You tied your best!' : `${diff} away from your best`;
             }
             
-            finalScoreEl.textContent = score;
-            txCountEl.textContent = `⚡ ${txCount} chops on Monad`;
-            highScoreText.textContent = isRecord ? '🎉 NEW RECORD!' : `Best: ${highScore}`;
-            gameOverlay.className = `overlay ${isRecord ? 'newRecord' : ''}`;
-            gameOverlay.classList.remove('hidden');
+            finalScoreDiv.textContent = finalScore;
+            txSummaryDiv.textContent = `⚡ ${finalTxCount} transactions on Monad`;
+            txLinkDiv.innerHTML = '';
+            gameOverDiv.style.display = 'flex';
             
-            // End game tx
-            burnerWallet.getTransactionCount('pending').then(n => {
-                burnerContract.endGame(userAddress, score, { gasLimit: 150000, nonce: n }).catch(console.error);
-            });
-            updateBalance();
+            canRestart = false;
+            setTimeout(() => { canRestart = true; }, 1000);
+            
+            startBtn.disabled = false;
+            
+            (async () => {
+                try {
+                    await new Promise(r => setTimeout(r, 300));
+                    const freshNonce = await burnerWallet.getTransactionCount('pending');
+                    const tx = await burnerContract.endGame(userAddress, finalScore, { 
+                        gasLimit: 150000,
+                        nonce: freshNonce
+                    });
+                    const receipt = await tx.wait();
+                    txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank">View on Explorer →</a>`;
+                } catch (error) {
+                    console.error('End game error:', error);
+                }
+                
+                const burnerBalance = await checkBurnerBalance();
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
+                statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
+            })();
         }
         
-        // Controls
-        btnLeft.addEventListener('click', () => chop('left'));
-        btnRight.addEventListener('click', () => chop('right'));
-        btnLeft.addEventListener('touchstart', e => { e.preventDefault(); chop('left'); });
-        btnRight.addEventListener('touchstart', e => { e.preventDefault(); chop('right'); });
+        restartBtn.addEventListener('click', startGame);
+        startBtn.addEventListener('click', startGame);
         
-        document.addEventListener('keydown', e => {
-            if (e.key === 'ArrowLeft') { e.preventDefault(); chop('left'); }
-            if (e.key === 'ArrowRight') { e.preventDefault(); chop('right'); }
-            if (e.key === ' ' && !gameActive && burnerWallet) { e.preventDefault(); startGame(); }
+        document.addEventListener('keydown', (e) => {
+            if (gameOverDiv.style.display === 'flex') {
+                if (e.key === ' ' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    startGame();
+                }
+            }
+        });
+        
+        tapLeft.addEventListener('click', () => {
+            if (!gameActive && !startBtn.disabled && !startOverlay.classList.contains('hidden')) {
+                startGame();
+            } else {
+                chop('left');
+            }
+        });
+        
+        tapRight.addEventListener('click', () => {
+            if (!gameActive && !startBtn.disabled && !startOverlay.classList.contains('hidden')) {
+                startGame();
+            } else {
+                chop('right');
+            }
+        });
+        
+        tapLeft.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameActive && !startBtn.disabled) startGame();
+            else chop('left');
+        });
+        
+        tapRight.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameActive && !startBtn.disabled) startGame();
+            else chop('right');
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                if (!gameActive && !startBtn.disabled) startGame();
+            }
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (!gameActive && !startBtn.disabled) startGame();
+                else chop('left');
+            }
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (!gameActive && !startBtn.disabled) startGame();
+                else chop('right');
+            }
         });
     </script>
 </body>
