@@ -101,7 +101,6 @@
         
         #connectBtn { background: linear-gradient(135deg, #667eea, #764ba2); }
         #connectBtn.connected { background: linear-gradient(135deg, #11998e, #38ef7d); font-size: 11px; }
-        #startBtn { background: linear-gradient(135deg, #f5576c, #f093fb); font-size: 14px; }
         
         .wallet-info { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 10px; text-align: center; }
         .wallet-info .balance { font-size: 18px; font-weight: bold; color: #8BC34A; margin: 6px 0; }
@@ -304,7 +303,6 @@
         var branches = [];
         var timeLeft = 100;
         var txCount = 0;
-        var nonce = null;
         var canRestart = false;
         var provider, signer, userAddress, burner, contract, animFrame;
         var lastChopTime = 0;
@@ -324,7 +322,6 @@
         var axe = $("axe");
         var startOverlay = $("startOverlay");
         var gameOver = $("gameOver");
-        var startBtn = null;
         var connectBtn = $("connectBtn");
         var tapToStart = $("tapToStart");
         var highScoreEl = $("highScoreTop");
@@ -338,18 +335,17 @@
         highScore = parseInt(localStorage.getItem("lumberjackHS") || "0");
         highScoreEl.textContent = highScore;
         
-        var deathSound;
+        var deathSound = null;
         
-        async function initAudio() {
-            try {
-                await Tone.start();
+        function initAudio() {
+            Tone.start().then(function() {
                 deathSound = new Tone.MembraneSynth({
                     pitchDecay: 0.05,
                     octaves: 4,
                     envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.3 }
                 }).toDestination();
                 deathSound.volume.value = -8;
-            } catch(e) { console.error(e); }
+            }).catch(function(e) { console.error(e); });
         }
         
         function playDeathSound() {
@@ -407,13 +403,15 @@
             return new ethers.Wallet(pk, new ethers.providers.JsonRpcProvider(RPC));
         }
         
-        async function updateBal() {
-            if (!burner) return 0;
-            var b = parseFloat(ethers.utils.formatEther(await burner.getBalance()));
-            balanceAmt.textContent = b.toFixed(3);
-            joinBtn.disabled = b < 10 || isRegistered || tournamentPhase !== 0;
-            updateTapToStart(b);
-            return b;
+        function updateBal() {
+            if (!burner) return Promise.resolve(0);
+            return burner.getBalance().then(function(bal) {
+                var b = parseFloat(ethers.utils.formatEther(bal));
+                balanceAmt.textContent = b.toFixed(3);
+                joinBtn.disabled = b < 10 || isRegistered || tournamentPhase !== 0;
+                updateTapToStart(b);
+                return b;
+            });
         }
         
         function updateTapToStart(bal) {
@@ -428,10 +426,10 @@
             return addr.slice(0, 6) + "..." + addr.slice(-4);
         }
         
-        async function updateTournamentInfo() {
-            if (!contract) return;
-            try {
-                var info = await contract.getTournamentInfo();
+        function updateTournamentInfo() {
+            if (!contract) return Promise.resolve();
+            
+            return contract.getTournamentInfo().then(function(info) {
                 currentTournamentId = info[0].toNumber();
                 signupEndTime = info[1].toNumber() * 1000;
                 playEndTime = info[2].toNumber() * 1000;
@@ -461,84 +459,65 @@
                 }
                 
                 if (burner) {
-                    isRegistered = await contract.isPlayerRegistered(currentTournamentId, burner.address);
-                    joinBtn.classList.toggle("joined", isRegistered);
-                    
-                    if (isRegistered) {
-                        var myScore = await contract.getPlayerScore(currentTournamentId, burner.address);
-                        myCurrentTournamentScore = myScore.toNumber();
-                        $("myScoreVal").textContent = myCurrentTournamentScore;
-                        $("myTournamentScore").classList.add("show");
-                    } else {
-                        myCurrentTournamentScore = 0;
-                        $("myTournamentScore").classList.remove("show");
-                    }
-                }
-                
-                // Update game hint
-                var hintText = "";
-                if (tournamentPhase === 1 && isRegistered) {
-                    hintText = "🏆 TOURNAMENT MODE - beat " + myCurrentTournamentScore;
-                } else if (tournamentPhase === 0 && isRegistered) {
-                    hintText = "⏳ Registered! Waiting for play phase...";
-                } else if (tournamentPhase === 1 && !isRegistered) {
-                    hintText = "🎮 Free play (tournament in progress)";
-                } else {
-                    hintText = "🎮 Free play - join tournament above!";
-                }
-                
-                // Show hint in myTournamentScore area or create new element
-                if (!isRegistered && tournamentPhase !== 1) {
-                    $("myTournamentScore").classList.remove("show");
-                }
-                
-                try {
-                    var last = await contract.getLastTournamentResult();
-                    var lastId = last[0].toNumber();
-                    var winners = last[1];
-                    var lastHighScore = last[2].toNumber();
-                    var prizePerWinner = parseFloat(ethers.utils.formatEther(last[3]));
-                    var lastPlayerCount = last[4].toNumber();
-                    
-                    if (lastId > 0) {
-                        $("lastWinner").classList.add("show");
+                    return contract.isPlayerRegistered(currentTournamentId, burner.address).then(function(reg) {
+                        isRegistered = reg;
+                        joinBtn.classList.toggle("joined", isRegistered);
                         
-                        if (lastPlayerCount === 0) {
-                            // No players
-                            $("lastWinnerTitle").textContent = "📭 Last Tournament";
-                            $("winnerAddr").textContent = "No players joined";
-                            $("winnerPrizeText").textContent = "";
-                        } else if (lastPlayerCount === 1) {
-                            // Only 1 player - refunded
-                            $("lastWinnerTitle").textContent = "💸 Last Tournament";
-                            $("winnerAddr").textContent = "Only 1 player - refunded";
-                            $("winnerPrizeText").textContent = "";
-                        } else if (winners.length === 0 || lastHighScore === 0) {
-                            // No scores submitted - everyone refunded
-                            $("lastWinnerTitle").textContent = "💸 Last Tournament";
-                            $("winnerAddr").textContent = "No scores - all refunded";
-                            $("winnerPrizeText").textContent = "";
-                        } else if (winners.length === 1) {
-                            // Single winner
-                            $("lastWinnerTitle").textContent = "🎉 Last Winner";
-                            $("winnerAddr").textContent = formatAddr(winners[0]);
-                            $("winnerPrize").textContent = prizePerWinner.toFixed(1);
-                            $("winnerPrizeText").innerHTML = "Won <span id='winnerPrize'>" + prizePerWinner.toFixed(1) + "</span> MON (score: " + lastHighScore + ")";
+                        if (isRegistered) {
+                            return contract.getPlayerScore(currentTournamentId, burner.address).then(function(myScore) {
+                                myCurrentTournamentScore = myScore.toNumber();
+                                $("myScoreVal").textContent = myCurrentTournamentScore;
+                                $("myTournamentScore").classList.add("show");
+                            });
                         } else {
-                            // Multiple winners (tie)
-                            $("lastWinnerTitle").textContent = "🎉 " + winners.length + "-Way Tie!";
-                            var winnerStrs = [];
-                            for (var i = 0; i < winners.length; i++) {
-                                winnerStrs.push(formatAddr(winners[i]));
-                            }
-                            $("winnerAddr").textContent = winnerStrs.join(", ");
-                            $("winnerPrizeText").innerHTML = "Each won <span id='winnerPrize'>" + prizePerWinner.toFixed(1) + "</span> MON (score: " + lastHighScore + ")";
+                            myCurrentTournamentScore = 0;
+                            $("myTournamentScore").classList.remove("show");
                         }
-                    }
-                } catch(e) { console.error(e); }
+                    });
+                }
+            }).then(function() {
+                return contract.getLastTournamentResult();
+            }).then(function(last) {
+                var lastId = last[0].toNumber();
+                var winners = last[1];
+                var lastHighScore = last[2].toNumber();
+                var prizePerWinner = parseFloat(ethers.utils.formatEther(last[3]));
+                var lastPlayerCount = last[4].toNumber();
                 
-                await updateBal();
-            } catch(e) { console.error("Tournament info error:", e); }
+                if (lastId > 0) {
+                    $("lastWinner").classList.add("show");
+                    
+                    if (lastPlayerCount === 0) {
+                        $("lastWinnerTitle").textContent = "📭 Last Tournament";
+                        $("winnerAddr").textContent = "No players joined";
+                        $("winnerPrizeText").textContent = "";
+                    } else if (lastPlayerCount === 1) {
+                        $("lastWinnerTitle").textContent = "💸 Last Tournament";
+                        $("winnerAddr").textContent = "Only 1 player - refunded";
+                        $("winnerPrizeText").textContent = "";
+                    } else if (winners.length === 0 || lastHighScore === 0) {
+                        $("lastWinnerTitle").textContent = "💸 Last Tournament";
+                        $("winnerAddr").textContent = "No scores - all refunded";
+                        $("winnerPrizeText").textContent = "";
+                    } else if (winners.length === 1) {
+                        $("lastWinnerTitle").textContent = "🎉 Last Winner";
+                        $("winnerAddr").textContent = formatAddr(winners[0]);
+                        $("winnerPrizeText").innerHTML = "Won " + prizePerWinner.toFixed(1) + " MON (score: " + lastHighScore + ")";
+                    } else {
+                        $("lastWinnerTitle").textContent = "🎉 " + winners.length + "-Way Tie!";
+                        var winnerStrs = [];
+                        for (var i = 0; i < winners.length; i++) {
+                            winnerStrs.push(formatAddr(winners[i]));
+                        }
+                        $("winnerAddr").textContent = winnerStrs.join(", ");
+                        $("winnerPrizeText").innerHTML = "Each won " + prizePerWinner.toFixed(1) + " MON (score: " + lastHighScore + ")";
+                    }
+                }
+            }).then(function() {
+                return updateBal();
+            }).catch(function(e) {
+                console.error("Tournament info error:", e);
+            });
         }
         
         function updateTimer() {
@@ -563,31 +542,29 @@
             }
         }
         
-        connectBtn.onclick = async function() {
+        connectBtn.onclick = function() {
             if (!window.ethereum) {
-                alert("Please install MetaMask or another Web3 wallet!");
+                alert("Please install MetaMask!");
                 return;
             }
-            try {
-                connectBtn.textContent = "Connecting...";
-                connectBtn.disabled = true;
-                
-                // Request accounts
-                var accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+            
+            connectBtn.textContent = "Connecting...";
+            connectBtn.disabled = true;
+            
+            window.ethereum.request({ method: "eth_requestAccounts" }).then(function(accounts) {
                 if (!accounts || accounts.length === 0) {
-                    throw new Error("No accounts found");
+                    throw new Error("No accounts");
                 }
-                
                 provider = new ethers.providers.Web3Provider(window.ethereum);
-                var net = await provider.getNetwork();
-                
-                // Switch to Monad if needed
+                return provider.getNetwork();
+            }).then(function(net) {
                 if (net.chainId !== 10143) {
-                    try {
-                        await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
-                    } catch(switchError) {
-                        if (switchError.code === 4902) {
-                            await window.ethereum.request({
+                    return window.ethereum.request({ 
+                        method: "wallet_switchEthereumChain", 
+                        params: [{ chainId: CHAIN_ID }] 
+                    }).catch(function(e) {
+                        if (e.code === 4902) {
+                            return window.ethereum.request({
                                 method: "wallet_addEthereumChain",
                                 params: [{
                                     chainId: CHAIN_ID,
@@ -597,16 +574,17 @@
                                     blockExplorerUrls: [EXPLORER]
                                 }]
                             });
-                        } else {
-                            throw switchError;
                         }
-                    }
-                    // Refresh provider after chain switch
-                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                        throw e;
+                    }).then(function() {
+                        provider = new ethers.providers.Web3Provider(window.ethereum);
+                    });
                 }
-                
+            }).then(function() {
                 signer = provider.getSigner();
-                userAddress = await signer.getAddress();
+                return signer.getAddress();
+            }).then(function(addr) {
+                userAddress = addr;
                 burner = getBurner();
                 contract = new ethers.Contract(CONTRACT, ABI, burner);
                 
@@ -622,28 +600,35 @@
                 };
                 walletSection.style.display = "block";
                 
-                await updateTournamentInfo();
                 initAudio();
                 
                 setInterval(updateTimer, 1000);
                 setInterval(updateTournamentInfo, 10000);
                 
-            } catch(e) {
+                return updateTournamentInfo();
+            }).catch(function(e) {
                 console.error("Connection error:", e);
                 connectBtn.textContent = "Connect Wallet";
                 connectBtn.disabled = false;
-            }
+            });
         };
         
-        async function fund(amt) {
-            if (!amt || amt <= 0) return;
-            try {
-                var tx = await signer.sendTransaction({ to: burner.address, value: ethers.utils.parseEther(amt.toString()) });
+        function fund(amt) {
+            if (!amt || amt <= 0 || !signer) return;
+            
+            signer.sendTransaction({ 
+                to: burner.address, 
+                value: ethers.utils.parseEther(amt.toString()) 
+            }).then(function(tx) {
                 connectBtn.textContent = "Depositing...";
-                await tx.wait();
-                await updateBal();
+                return tx.wait();
+            }).then(function() {
                 connectBtn.textContent = formatAddr(userAddress);
-            } catch(e) { console.error(e); }
+                return updateBal();
+            }).catch(function(e) {
+                console.error(e);
+                connectBtn.textContent = formatAddr(userAddress);
+            });
         }
         
         $("fundBtn").onclick = function() { fund(parseFloat($("fundAmt").value)); };
@@ -653,57 +638,45 @@
             quickFundBtns[i].onclick = function() { fund(parseFloat(this.dataset.amt)); };
         }
         
-        $("withdrawBtn").onclick = async function() {
+        $("withdrawBtn").onclick = function() {
             var addr = $("withdrawAddr").value.trim();
             var amt = parseFloat($("withdrawAmt").value);
             if (!addr || !amt) return;
-            try {
-                var tx = await burner.sendTransaction({ to: addr, value: ethers.utils.parseEther(amt.toString()), gasLimit: 21000 });
-                await tx.wait();
-                await updateBal();
-            } catch(e) { console.error(e); }
+            
+            burner.sendTransaction({ 
+                to: addr, 
+                value: ethers.utils.parseEther(amt.toString()), 
+                gasLimit: 21000 
+            }).then(function(tx) {
+                return tx.wait();
+            }).then(function() {
+                return updateBal();
+            }).catch(function(e) { console.error(e); });
         };
         
-        joinBtn.onclick = async function() {
+        joinBtn.onclick = function() {
             if (!burner || isRegistered || tournamentPhase !== 0) return;
-            try {
-                joinBtn.textContent = "Joining...";
-                joinBtn.disabled = true;
-                
-                var tx = await contract.joinTournament({ 
-                    value: ethers.utils.parseEther("10"), 
-                    gasLimit: 300000,
-                    gasPrice: ethers.utils.parseUnits("100", "gwei")
-                });
-                
+            
+            joinBtn.textContent = "Joining...";
+            joinBtn.disabled = true;
+            
+            contract.joinTournament({ 
+                value: ethers.utils.parseEther("10"), 
+                gasLimit: 300000 
+            }).then(function(tx) {
                 joinBtn.textContent = "Confirming...";
-                await tx.wait();
-                
+                return tx.wait();
+            }).then(function() {
                 isRegistered = true;
                 joinBtn.textContent = "✓ Registered";
                 joinBtn.classList.add("joined");
-                await updateTournamentInfo();
-            } catch(e) {
+                return updateTournamentInfo();
+            }).catch(function(e) {
                 console.error("Join error:", e);
                 joinBtn.textContent = "Join Tournament (10 MON)";
                 joinBtn.disabled = false;
-                
-                // Show error in the button briefly
-                var errorMsg = "Failed to join";
-                if (e.message && e.message.indexOf("insufficient") > -1) {
-                    errorMsg = "Not enough MON";
-                } else if (e.message && e.message.indexOf("user rejected") > -1) {
-                    errorMsg = "Cancelled";
-                }
-                joinBtn.textContent = errorMsg;
-                setTimeout(function() {
-                    if (!isRegistered) {
-                        joinBtn.textContent = "Join Tournament (10 MON)";
-                    }
-                }, 2000);
-                
-                await updateBal();
-            }
+                updateBal();
+            });
         };
         
         function createBranch(side, y) {
@@ -721,10 +694,11 @@
                 existingBranches[i].remove();
             }
             branches = [];
-            for (var i = 0; i < 8; i++) {
+            for (var j = 0; j < 8; j++) {
                 var side = Math.random() > 0.5 ? "left" : "right";
-                var y = 165 + i * 70;
-                branches.push({ side: side, y: y, el: createBranch(side, y) });
+                var y = 165 + j * 70;
+                var el = createBranch(side, y);
+                branches.push({ side: side, y: y, el: el });
             }
         }
         
@@ -746,7 +720,6 @@
             startOverlay.classList.add("hidden");
             gameOver.classList.remove("show", "canRestart", "newRecord");
             gameOver.style.display = "none";
-            startBtn.disabled = true;
             scoreDisplay.textContent = "0";
             timeBar.style.width = "100%";
             timeBar.className = "";
@@ -763,10 +736,9 @@
             
             initBranches();
             
-            burner.getTransactionCount("pending").then(function(n) {
-                nonce = n;
+            if (!isTournamentGame) {
                 contract.startGame(userAddress, { gasLimit: 100000 }).catch(function() {});
-            });
+            }
             
             requestAnimationFrame(gameLoop);
         }
@@ -832,15 +804,14 @@
             
             var newSide = Math.random() > 0.5 ? "left" : "right";
             var newY = branches[branches.length - 1].y + 70;
-            branches.push({ side: newSide, y: newY, el: createBranch(newSide, newY) });
+            var newEl = createBranch(newSide, newY);
+            branches.push({ side: newSide, y: newY, el: newEl });
             
             score++;
             txCount++;
             timeLeft = Math.min(100, timeLeft + 6);
             scoreDisplay.textContent = score;
             
-            // Only send chop transactions during FREE PLAY (not tournament)
-            // This keeps tournament score submission clean with no nonce conflicts
             var isTournamentGame = tournamentPhase === 1 && isRegistered;
             if (!isTournamentGame) {
                 contract.chop(userAddress, score, { gasLimit: 100000 }).catch(function() {});
@@ -865,14 +836,18 @@
             }
             
             $("finalScore").textContent = score;
-            $("txSummary").textContent = "⚡ " + txCount + " transactions";
+            $("txSummary").textContent = "⚡ " + txCount + " chops";
             $("beatScore").textContent = isRecord ? "🎉 NEW RECORD!" : "Best: " + highScore;
             
             if (isRecord) gameOver.classList.add("newRecord");
             
             if (isTournamentGame) {
                 $("tournamentSubmit").classList.add("show");
-                $("tournamentSubmit").textContent = "🏆 Submitting score to tournament...";
+                if (score > myCurrentTournamentScore) {
+                    $("tournamentSubmit").textContent = "🏆 Submitting score " + score + "...";
+                } else {
+                    $("tournamentSubmit").textContent = "Score " + score + " (your best: " + myCurrentTournamentScore + ")";
+                }
             } else {
                 $("tournamentSubmit").classList.remove("show");
             }
@@ -889,46 +864,33 @@
             submitGameResults(isTournamentGame, score);
         }
         
-        async function submitGameResults(isTournamentGame, finalScore) {
+        function submitGameResults(isTournamentGame, finalScore) {
             if (isTournamentGame && isRegistered && finalScore > myCurrentTournamentScore) {
-                $("tournamentSubmit").textContent = "🏆 New high! Submitting " + finalScore + "...";
-                
-                try {
-                    // Simple and clean - no other transactions running during tournament
-                    var tx = await contract.submitScore(finalScore, { gasLimit: 300000 });
-                    
+                contract.submitScore(finalScore, { gasLimit: 300000 }).then(function(tx) {
                     $("tournamentSubmit").textContent = "🏆 Confirming " + finalScore + "...";
-                    await tx.wait();
-                    
+                    return tx.wait();
+                }).then(function(receipt) {
                     $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
-                    $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + tx.hash + '" target="_blank">View on Explorer →</a>';
-                    
+                    $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
                     myCurrentTournamentScore = finalScore;
                     $("myScoreVal").textContent = finalScore;
-                    
-                } catch(err) {
+                    setTimeout(updateTournamentInfo, 1000);
+                }).catch(function(err) {
                     console.error("Score submit failed:", err);
                     $("tournamentSubmit").textContent = "⚠️ Failed - try playing again";
-                }
-                
-                setTimeout(function() { updateTournamentInfo(); }, 1000);
-                
-            } else if (isTournamentGame && isRegistered) {
-                $("tournamentSubmit").textContent = "Score " + finalScore + " (your best: " + myCurrentTournamentScore + ")";
-                
-            } else {
-                // Free play
+                });
+            } else if (!isTournamentGame) {
                 contract.endGame(userAddress, finalScore, { gasLimit: 150000 }).catch(function() {});
             }
             
-            await updateBal();
+            updateBal();
         }
         
         $("restartBtn").onclick = startGame;
         
         function handleTap(side) {
             if (!gameActive) {
-                if (!startBtn.disabled && (canRestart || !gameOver.classList.contains("show"))) {
+                if (canRestart || !gameOver.classList.contains("show")) {
                     startGame();
                 }
             } else {
