@@ -653,58 +653,7 @@
             nonce++;
         }
         
-        function endGame(){
-            gameActive = false;
-            cancelAnimationFrame(animFrame);
-            
-            const isTournamentGame = gameArea.classList.contains('tournament');
-            
-            gameArea.classList.add('shake');
-            playDeathSound();
-            setTimeout(() => gameArea.classList.remove('shake'), 250);
-            
-            const isRecord = score > highScore;
-            if(isRecord){ highScore = score; localStorage.setItem('lumberjackHS', highScore); highScoreEl.textContent = highScore; }
-            
-            $('finalScore').textContent = score;
-            $('txSummary').textContent = `⚡ ${txCount} transactions`;
-            $('beatScore').textContent = isRecord ? '🎉 NEW RECORD!' : `Best: ${highScore}`;
-            
-            if(isRecord) gameOver.classList.add('newRecord');
-            
-            if(isTournamentGame){
-                $('tournamentSubmit').classList.add('show');
-                $('tournamentSubmit').textContent = '🏆 Submitting score to tournament...';
-            } else {
-                $('tournamentSubmit').classList.remove('show');
-            }
-            
-            gameOver.querySelector('h2').textContent = isRecord ? '🎉 NEW RECORD!' : 'GAME OVER';
-            gameOver.style.display = 'flex';
-            gameOver.classList.add('show');
-            
-            setTimeout(() => { canRestart = true; gameOver.classList.add('canRestart'); startBtn.disabled = false; }, 800);
-            
-            (async () => {
-                try {
-                    const n = await burner.getTransactionCount('pending');
-                    
-                    if(isTournamentGame && isRegistered){
-                        try {
-                            const tx = await contract.submitScore(score, {gasLimit: 200000, nonce: n});
-                            await tx.wait();
-                            $('tournamentSubmit').textContent = '🏆 Score submitted to tournament!';
-                            await updateTournamentInfo();
-                        } catch(e){ 
-                            console.error('Submit score error:', e);
-                            $('tournamentSubmit').textContent = '⚠️ Score submit failed';
-                        }
-                    }
-                    
-                    const tx = await contract.endGame(userAddress, score, {gasLimit: 150000, nonce: n + 1});
-                    const r = await tx.wait();
-                    $('txLink').innerHTML = `<a href="${EXPLORER}/tx/${r.transactionHash}" target="_blank">View on Explorer →</a>`;
-                } catch(e){ console.error(e); }
+        e); }
                 await updateBal();
             })();
         }
