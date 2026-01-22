@@ -10,40 +10,26 @@
             font-family: 'Arial Black', Arial, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 10px;
-            user-select: none;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 10px; user-select: none;
         }
         #header { text-align: center; margin-bottom: 10px; }
         h1 {
-            font-size: 28px;
-            margin: 10px 0 5px 0;
+            font-size: 28px; margin: 10px 0 5px 0;
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         #highScoreDisplay { font-size: 14px; color: #feca57; }
         #mainContainer { display: flex; gap: 20px; align-items: flex-start; }
         
         #gameArea {
             background: linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 100%);
-            width: 380px;
-            height: 600px;
-            position: relative;
-            border: 3px solid #5D4037;
-            border-radius: 15px;
-            overflow: hidden;
+            width: 380px; height: 600px; position: relative;
+            border: 3px solid #5D4037; border-radius: 15px; overflow: hidden;
         }
         #gameArea.tournament { border-color: #9c27b0; box-shadow: 0 0 20px rgba(156,39,176,0.5); }
         #gameArea.shake { animation: shake 0.25s ease-out; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
-        }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
         
         .cloud { position: absolute; background: rgba(255,255,255,0.9); border-radius: 50px; z-index: 1; }
         .cloud::before, .cloud::after { content: ''; position: absolute; background: rgba(255,255,255,0.9); border-radius: 50%; }
@@ -65,53 +51,24 @@
         .branch.left { transform: translateX(-26px) translateX(-100%); }
         .branch.right { transform: translateX(26px); }
         .branch-inner { position: relative; width: 95px; height: 50px; }
-        .branch-wood {
-            position: absolute; bottom: 18px; width: 50px; height: 14px;
-            background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 50%, #6D4C41 100%);
-        }
+        .branch-wood { position: absolute; bottom: 18px; width: 50px; height: 14px; background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 50%, #6D4C41 100%); }
         .branch.left .branch-wood { right: 0; border-radius: 8px 0 0 8px; }
         .branch.right .branch-wood { left: 0; border-radius: 0 8px 8px 0; }
-        .branch-leaf {
-            position: absolute; bottom: 5px; width: 52px; height: 44px;
-            background: radial-gradient(ellipse at 50% 60%, #7ED67E 0%, #5CB85C 30%, #4CAF50 55%, #388E3C 80%, #2E7D32 100%);
-            border-radius: 50%;
-        }
+        .branch-leaf { position: absolute; bottom: 5px; width: 52px; height: 44px; background: radial-gradient(ellipse at 50% 60%, #7ED67E 0%, #5CB85C 30%, #4CAF50 55%, #388E3C 80%, #2E7D32 100%); border-radius: 50%; }
         .branch.left .branch-leaf { left: 0; }
         .branch.right .branch-leaf { right: 0; }
         
-        #ground {
-            position: absolute; bottom: 0; width: 100%; height: 80px;
-            background: linear-gradient(to bottom, #7CB342 0%, #689F38 40%, #558B2F 70%, #33691E 100%);
-            z-index: 15;
-        }
-        #groundHighlight {
-            position: absolute; bottom: 80px; width: 100%; height: 12px;
-            background: linear-gradient(to bottom, #8BC34A 0%, #7CB342 100%);
-            border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 15;
-        }
+        #ground { position: absolute; bottom: 0; width: 100%; height: 80px; background: linear-gradient(to bottom, #7CB342 0%, #689F38 40%, #558B2F 70%, #33691E 100%); z-index: 15; }
+        #groundHighlight { position: absolute; bottom: 80px; width: 100%; height: 12px; background: linear-gradient(to bottom, #8BC34A 0%, #7CB342 100%); border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 15; }
         
         #lumberjack { position: absolute; bottom: 90px; width: 60px; height: 75px; z-index: 20; transition: left 0.08s ease-out; }
         #lumberjack.left { left: 70px; }
         #lumberjack.right { left: 250px; }
         
-        #keoneImg {
-            width: 36px; height: 36px; border-radius: 50%; border: 3px solid #5D4037;
-            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            background: #FFCCBC; object-fit: cover; z-index: 2;
-        }
-        .lj-body {
-            position: absolute; top: 31px; left: 50%; transform: translateX(-50%);
-            width: 30px; height: 32px; background: #E53935; border-radius: 4px;
-        }
-        .lj-body::before {
-            content: ''; position: absolute; inset: 3px;
-            background: repeating-linear-gradient(90deg, #C62828 0px, #C62828 3px, #1A1A1A 3px, #1A1A1A 6px);
-            border-radius: 2px;
-        }
-        .lj-pants {
-            position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
-            width: 26px; height: 16px; background: #1565C0; border-radius: 0 0 4px 4px;
-        }
+        #keoneImg { width: 36px; height: 36px; border-radius: 50%; border: 3px solid #5D4037; position: absolute; top: 0; left: 50%; transform: translateX(-50%); background: #FFCCBC; object-fit: cover; z-index: 2; }
+        .lj-body { position: absolute; top: 31px; left: 50%; transform: translateX(-50%); width: 30px; height: 32px; background: #E53935; border-radius: 4px; }
+        .lj-body::before { content: ''; position: absolute; inset: 3px; background: repeating-linear-gradient(90deg, #C62828 0px, #C62828 3px, #1A1A1A 3px, #1A1A1A 6px); border-radius: 2px; }
+        .lj-pants { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 26px; height: 16px; background: #1565C0; border-radius: 0 0 4px 4px; }
         #axe { position: absolute; top: 20px; font-size: 26px; z-index: 3; }
         #lumberjack.left #axe { right: -5px; transform: scaleX(-1); }
         #lumberjack.right #axe { left: -5px; transform: scaleX(1); }
@@ -120,47 +77,25 @@
         
         .wood-chip { position: absolute; border-radius: 2px; pointer-events: none; z-index: 50; }
         
-        #bottomHUD {
-            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 100;
-        }
-        #scoreDisplay {
-            font-size: 36px; font-weight: bold; color: white;
-            text-shadow: 2px 2px 0 #5D4037, 0 0 10px rgba(0,0,0,0.5);
-        }
-        #timeBarContainer {
-            width: 160px; height: 12px; background: rgba(0,0,0,0.4);
-            border-radius: 6px; overflow: hidden; border: 2px solid #5D4037;
-        }
+        #bottomHUD { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 100; }
+        #scoreDisplay { font-size: 36px; font-weight: bold; color: white; text-shadow: 2px 2px 0 #5D4037, 0 0 10px rgba(0,0,0,0.5); }
+        #timeBarContainer { width: 160px; height: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; overflow: hidden; border: 2px solid #5D4037; }
         #timeBarFill { height: 100%; width: 100%; background: linear-gradient(to right, #4CAF50, #8BC34A); transition: width 0.08s linear; }
         #timeBarFill.warning { background: linear-gradient(to right, #FF9800, #FFC107); }
         #timeBarFill.danger { background: linear-gradient(to right, #f44336, #FF5722); animation: pulseDanger 0.4s ease-in-out infinite; }
         @keyframes pulseDanger { 0%, 100% { box-shadow: 0 0 5px #f44336; } 50% { box-shadow: 0 0 15px #ff0000, 0 0 25px rgba(255,0,0,0.6); } }
         
-        #tournamentBadge {
-            display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(135deg, #9c27b0, #e91e63); padding: 6px 16px;
-            border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 100;
-            animation: glow 1.5s ease-in-out infinite;
-        }
+        #tournamentBadge { display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #9c27b0, #e91e63); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 100; }
         #tournamentBadge.show { display: block; }
-        @keyframes glow { 0%, 100% { box-shadow: 0 0 10px rgba(156,39,176,0.5); } 50% { box-shadow: 0 0 20px rgba(156,39,176,0.8); } }
         
         .tap-zone { position: absolute; top: 0; width: 50%; height: 100%; z-index: 30; cursor: pointer; }
         .tap-zone.left { left: 0; }
         .tap-zone.right { right: 0; }
         
-        #sidePanel { display: flex; flex-direction: column; gap: 10px; width: 260px; }
-        .panel-box {
-            background: rgba(255,255,255,0.05); padding: 14px;
-            border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
-        }
+        #sidePanel { display: flex; flex-direction: column; gap: 10px; width: 280px; }
+        .panel-box { background: rgba(255,255,255,0.05); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
         .panel-box h3 { font-size: 12px; margin-bottom: 8px; opacity: 0.7; font-weight: normal; }
-        button {
-            padding: 10px 14px; font-size: 13px; font-weight: bold; border: none;
-            border-radius: 8px; cursor: pointer; width: 100%; color: white;
-            transition: transform 0.1s, opacity 0.1s;
-        }
+        button { padding: 10px 14px; font-size: 13px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; width: 100%; color: white; transition: transform 0.1s, opacity 0.1s; }
         button:active { transform: scale(0.98); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
         
@@ -171,7 +106,6 @@
         .wallet-info { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 10px; text-align: center; }
         .wallet-info .balance { font-size: 18px; font-weight: bold; color: #8BC34A; margin: 6px 0; }
         .wallet-info .address { font-size: 9px; opacity: 0.6; word-break: break-all; cursor: pointer; }
-        .wallet-info .address:hover { opacity: 1; }
         
         .action-row { display: flex; gap: 6px; margin-top: 8px; }
         .action-row input { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 11px; min-width: 0; }
@@ -181,68 +115,54 @@
         
         .quick-fund { display: flex; gap: 4px; margin-top: 6px; }
         .quick-fund button { flex: 1; padding: 6px; font-size: 10px; background: rgba(255,255,255,0.1); }
-        .quick-fund button:hover { background: rgba(255,255,255,0.2); }
         
         #walletSection { display: none; }
         
         /* Tournament Panel */
-        .tournament-box {
-            background: linear-gradient(135deg, rgba(156,39,176,0.2), rgba(233,30,99,0.2));
-            border: 1px solid rgba(156,39,176,0.4);
-        }
+        .tournament-box { background: linear-gradient(135deg, rgba(156,39,176,0.2), rgba(233,30,99,0.2)); border: 1px solid rgba(156,39,176,0.4); }
         .tournament-box h3 { color: #e91e63; opacity: 1; font-size: 13px; }
         
-        #tournamentTimer {
-            font-size: 28px; font-weight: bold; text-align: center;
-            color: #feca57; margin: 8px 0;
-        }
+        #phaseIndicator { text-align: center; margin-bottom: 8px; padding: 8px; border-radius: 8px; font-size: 14px; font-weight: bold; }
+        #phaseIndicator.signup { background: rgba(76,175,80,0.3); color: #8BC34A; }
+        #phaseIndicator.play { background: rgba(233,30,99,0.3); color: #e91e63; }
+        #phaseIndicator.ended { background: rgba(255,152,0,0.3); color: #FFC107; }
+        
+        #tournamentTimer { font-size: 32px; font-weight: bold; text-align: center; color: #feca57; margin: 5px 0; }
         .tournament-stats { display: flex; justify-content: space-around; margin: 10px 0; text-align: center; }
         .tournament-stats .stat-val { font-size: 18px; font-weight: bold; color: #8BC34A; }
         .tournament-stats .stat-label { font-size: 9px; opacity: 0.7; }
         
-        #joinTournamentBtn {
-            background: linear-gradient(135deg, #9c27b0, #e91e63);
-            font-size: 13px; margin-top: 8px;
-        }
+        #joinTournamentBtn { background: linear-gradient(135deg, #9c27b0, #e91e63); font-size: 13px; margin-top: 8px; }
         #joinTournamentBtn.joined { background: linear-gradient(135deg, #4CAF50, #8BC34A); }
         
-        .mode-toggle { display: flex; gap: 4px; margin-bottom: 10px; }
-        .mode-toggle button { flex: 1; padding: 8px; font-size: 11px; background: rgba(255,255,255,0.1); border-radius: 6px; }
-        .mode-toggle button.active { background: linear-gradient(135deg, #667eea, #764ba2); }
+        #lastWinner { margin-top: 10px; padding: 10px; background: rgba(76,175,80,0.2); border-radius: 8px; text-align: center; font-size: 11px; display: none; }
+        #lastWinner.show { display: block; }
+        #lastWinner .winner-addr { color: #8BC34A; font-weight: bold; font-size: 13px; }
+        #lastWinner .winner-prize { color: #feca57; }
         
-        #claimSection { display: none; margin-top: 10px; padding: 10px; background: rgba(76,175,80,0.2); border-radius: 8px; text-align: center; }
-        #claimSection.show { display: block; }
-        #claimBtn { background: linear-gradient(135deg, #4CAF50, #8BC34A); }
+        #myTournamentScore { margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; text-align: center; font-size: 11px; display: none; }
+        #myTournamentScore.show { display: block; }
         
         .instructions { font-size: 10px; opacity: 0.6; text-align: center; line-height: 1.4; }
         
         /* Overlays */
-        #startOverlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.75); z-index: 50;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-        }
+        #startOverlay { position: absolute; inset: 0; background: rgba(0,0,0,0.75); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         #startOverlay.hidden { display: none; }
         #startOverlay h2 { font-size: 22px; margin-bottom: 10px; }
         #startOverlay p { font-size: 13px; opacity: 0.85; margin: 4px 0; }
         #tapToStart { margin-top: 16px; font-size: 14px; color: #feca57; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         
-        #gameOver {
-            display: none; position: absolute; inset: 0;
-            background: rgba(0,0,0,0.9); z-index: 100;
-            flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;
-            opacity: 0; pointer-events: none;
-        }
+        #gameOver { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; opacity: 0; pointer-events: none; }
         #gameOver.show { display: flex; animation: fadeIn 0.6s ease-out forwards; }
         #gameOver.show.canRestart { pointer-events: auto; }
         @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
         #gameOver h2 { font-size: 22px; color: #f5576c; margin-bottom: 5px; }
         #gameOver.newRecord h2 { color: #feca57; }
-        #gameOver.tournament h2 { color: #e91e63; }
         #finalScore { font-size: 48px; font-weight: bold; color: white; margin: 6px 0; }
         #txSummary { font-size: 13px; color: #9c27b0; margin: 6px 0; padding: 6px 14px; background: rgba(156,39,176,0.2); border-radius: 10px; }
-        #tournamentResult { display: none; font-size: 14px; color: #feca57; margin: 8px 0; padding: 8px 16px; background: rgba(255,215,0,0.2); border-radius: 10px; }
-        #tournamentResult.show { display: block; }
+        #tournamentSubmit { display: none; font-size: 13px; color: #8BC34A; margin: 8px 0; padding: 8px 16px; background: rgba(76,175,80,0.2); border-radius: 10px; }
+        #tournamentSubmit.show { display: block; }
         #beatScore { font-size: 11px; color: #feca57; margin: 4px 0; }
         #restartBtn { background: linear-gradient(135deg, #f5576c, #f093fb); margin-top: 12px; font-size: 14px; padding: 10px 28px; width: auto; }
         #txLink { margin-top: 8px; }
@@ -265,7 +185,7 @@
             <div class="cloud cloud1"></div>
             <div class="cloud cloud2"></div>
             <div id="trunk"></div>
-            <div id="tournamentBadge">🏆 TOURNAMENT MODE</div>
+            <div id="tournamentBadge">🏆 TOURNAMENT</div>
             
             <div id="lumberjack" class="left">
                 <img src="keone.png" alt="" id="keoneImg" onerror="this.style.background='#FFCCBC'">
@@ -297,7 +217,7 @@
                 <h2>GAME OVER</h2>
                 <div id="finalScore">0</div>
                 <div id="txSummary">⚡ 0 transactions</div>
-                <div id="tournamentResult">Score submitted to tournament!</div>
+                <div id="tournamentSubmit">🏆 Score submitted to tournament!</div>
                 <div id="beatScore"></div>
                 <div id="txLink"></div>
                 <button id="restartBtn">PLAY AGAIN</button>
@@ -307,14 +227,12 @@
         <div id="sidePanel">
             <div class="panel-box">
                 <button id="connectBtn">Connect Wallet</button>
-                
                 <div id="walletSection">
                     <div class="wallet-info">
                         <div>Game Wallet</div>
                         <div class="balance"><span id="balanceAmt">0</span> MON</div>
                         <div class="address" id="walletAddr" title="Click to copy">-</div>
                     </div>
-                    
                     <div class="action-row">
                         <input type="number" id="fundAmt" placeholder="Amount">
                         <button class="btn-fund" id="fundBtn">Deposit</button>
@@ -322,10 +240,9 @@
                     <div class="quick-fund">
                         <button data-amt="1">1</button>
                         <button data-amt="5">5</button>
-                        <button data-amt="10">10</button>
-                        <button data-amt="20">20</button>
+                        <button data-amt="15">15</button>
+                        <button data-amt="25">25</button>
                     </div>
-                    
                     <div class="action-row" style="margin-top: 10px;">
                         <input type="text" id="withdrawAddr" placeholder="0x...">
                         <input type="number" id="withdrawAmt" placeholder="Amt" style="width: 50px; flex: none;">
@@ -334,34 +251,35 @@
                 </div>
             </div>
             
-            <!-- Tournament Panel -->
             <div class="panel-box tournament-box">
-                <h3>🏆 TOURNAMENT</h3>
-                <div id="tournamentTimer">--:--</div>
+                <h3>🏆 TOURNAMENT #<span id="tournamentNum">1</span></h3>
+                <div id="phaseIndicator" class="signup">📝 SIGNUP PHASE</div>
+                <div id="tournamentTimer">5:00</div>
                 <div class="tournament-stats">
-                    <div><div class="stat-val" id="prizePool">0</div><div class="stat-label">Prize Pool</div></div>
+                    <div><div class="stat-val" id="prizePool">0</div><div class="stat-label">Prize (MON)</div></div>
                     <div><div class="stat-val" id="playerCount">0</div><div class="stat-label">Players</div></div>
                     <div><div class="stat-val" id="highScoreTourney">0</div><div class="stat-label">High Score</div></div>
                 </div>
-                <button id="joinTournamentBtn" disabled>Join (10 MON)</button>
-                <div id="claimSection">
-                    <div style="margin-bottom:8px">🎉 You won!</div>
-                    <button id="claimBtn">Claim Prize</button>
+                <button id="joinTournamentBtn" disabled>Join Tournament (10 MON)</button>
+                <div id="myTournamentScore">Your tournament score: <span id="myScoreVal">0</span></div>
+                <div id="lastWinner">
+                    <div>🎉 Last Winner</div>
+                    <div class="winner-addr" id="winnerAddr">-</div>
+                    <div class="winner-prize">Won <span id="winnerPrize">0</span> MON</div>
                 </div>
             </div>
             
             <div class="panel-box">
-                <div class="mode-toggle">
-                    <button id="modeFree" class="active">Free Play</button>
-                    <button id="modeTourney">Tournament</button>
+                <button id="startBtn" disabled>START FREE PLAY</button>
+                <div style="text-align:center;margin-top:8px;font-size:10px;opacity:0.7">
+                    Tournament games auto-count during Play Phase
                 </div>
-                <button id="startBtn" disabled>START GAME</button>
             </div>
             
             <div class="instructions">
-                Free Play: Practice anytime<br>
-                Tournament: Pay 10 MON, compete for prize pool!<br>
-                Each chop = 1 tx on Monad ⚡
+                📝 Signup Phase: Join for 10 MON<br>
+                🎮 Play Phase: Compete for high score<br>
+                🏆 Winner takes the prize pool!
             </div>
         </div>
     </div>
@@ -369,21 +287,19 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
-        // UPDATE THIS TO YOUR NEW CONTRACT ADDRESS AFTER DEPLOYING
-        const CONTRACT="0x03Ca2A3f8742b7c5E984d7600CD8A549636aF419";
+        // UPDATE THIS AFTER DEPLOYING V2 CONTRACT
+        const CONTRACT="0x9cDA14bf696DE8c5A9aE01738b4276Ba2B88c9b4";
         const ABI=[
             "function startGame(address) external",
             "function chop(address,uint256) external",
             "function endGame(address,uint256) external",
             "function joinTournament() external payable",
-            "function submitTournamentScore(uint256) external",
-            "function finalizeTournament() external",
-            "function claimPrize(uint256) external",
-            "function getTournamentInfo() external view returns (uint256,uint256,uint256,uint256,uint256,bool)",
+            "function submitScore(uint256) external",
+            "function advanceTournament() external",
+            "function getTournamentInfo() external view returns (uint256,uint256,uint256,uint256,uint256,uint256,uint8,bool)",
             "function isPlayerRegistered(uint256,address) external view returns (bool)",
             "function getPlayerScore(uint256,address) external view returns (uint256)",
-            "function getTimeRemaining() external view returns (uint256)",
-            "function canClaimPrize(uint256,address) external view returns (bool)",
+            "function getLastTournamentResult() external view returns (uint256,address[],uint256,uint256,uint256)",
             "function currentTournamentId() external view returns (uint256)"
         ];
         const CHAIN_ID='0x279f', RPC='https://testnet-rpc.monad.xyz', EXPLORER='https://testnet.monadexplorer.com';
@@ -391,7 +307,8 @@
         let score=0, highScore=0, gameActive=false, playerSide='left';
         let branches=[], timeLeft=100, txCount=0, nonce=null, canRestart=false;
         let provider, signer, userAddress, burner, contract, animFrame;
-        let lastChopTime=0, gameMode='free', isRegistered=false, currentTournamentId=0;
+        let lastChopTime=0, isRegistered=false, currentTournamentId=0;
+        let tournamentPhase=0, signupEndTime=0, playEndTime=0;
         
         const $=id=>document.getElementById(id);
         const gameArea=$('gameArea'), scoreDisplay=$('scoreDisplay'), timeBar=$('timeBarFill');
@@ -400,8 +317,8 @@
         const startBtn=$('startBtn'), connectBtn=$('connectBtn');
         const tapToStart=$('tapToStart'), highScoreEl=$('highScoreTop');
         const walletSection=$('walletSection'), balanceAmt=$('balanceAmt'), walletAddr=$('walletAddr');
-        const tournamentBadge=$('tournamentBadge'), tournamentResult=$('tournamentResult');
-        const joinBtn=$('joinTournamentBtn'), claimSection=$('claimSection');
+        const tournamentBadge=$('tournamentBadge');
+        const joinBtn=$('joinTournamentBtn'), phaseIndicator=$('phaseIndicator');
         
         highScore = parseInt(localStorage.getItem('lumberjackHS')||'0');
         highScoreEl.textContent = highScore;
@@ -411,10 +328,7 @@
         async function initAudio(){
             try {
                 await Tone.start();
-                deathSound = new Tone.MembraneSynth({
-                    pitchDecay: 0.05, octaves: 4,
-                    envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.3 }
-                }).toDestination();
+                deathSound = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 4, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.3 } }).toDestination();
                 deathSound.volume.value = -8;
             } catch(e) {}
         }
@@ -454,20 +368,24 @@
             if(!burner) return 0;
             const b = parseFloat(ethers.utils.formatEther(await burner.getBalance()));
             balanceAmt.textContent = b.toFixed(3);
-            const minBal = gameMode === 'tournament' ? 10.01 : 0.001;
-            startBtn.disabled = b < 0.001 || (gameMode === 'tournament' && !isRegistered);
-            joinBtn.disabled = b < 10 || isRegistered;
+            startBtn.disabled = b < 0.001;
+            joinBtn.disabled = b < 10 || isRegistered || tournamentPhase !== 0;
             updateTapToStart(b);
             return b;
         }
         
         function updateTapToStart(bal){
-            if(gameMode === 'tournament'){
-                if(!isRegistered) tapToStart.textContent = 'JOIN TOURNAMENT FIRST';
-                else tapToStart.textContent = 'TAP TO START TOURNAMENT GAME';
+            if(bal < 0.001){
+                tapToStart.textContent = 'DEPOSIT MON TO PLAY';
+            } else if(tournamentPhase === 1 && isRegistered){
+                tapToStart.textContent = 'TAP TO PLAY TOURNAMENT';
             } else {
-                tapToStart.textContent = bal < 0.001 ? 'DEPOSIT MON TO PLAY' : 'TAP TO START';
+                tapToStart.textContent = 'TAP TO START FREE PLAY';
             }
+        }
+        
+        function formatAddr(addr){
+            return addr.slice(0,6) + '...' + addr.slice(-4);
         }
         
         async function updateTournamentInfo(){
@@ -475,46 +393,92 @@
             try {
                 const info = await contract.getTournamentInfo();
                 currentTournamentId = info[0].toNumber();
-                const endTime = info[1].toNumber();
-                const prize = parseFloat(ethers.utils.formatEther(info[2]));
-                const players = info[3].toNumber();
-                const high = info[4].toNumber();
-                const active = info[5];
+                signupEndTime = info[1].toNumber() * 1000;
+                playEndTime = info[2].toNumber() * 1000;
+                const prize = parseFloat(ethers.utils.formatEther(info[3]));
+                const players = info[4].toNumber();
+                const high = info[5].toNumber();
+                tournamentPhase = info[6];
+                const finalized = info[7];
                 
+                $('tournamentNum').textContent = currentTournamentId;
                 $('prizePool').textContent = prize.toFixed(0);
                 $('playerCount').textContent = players;
                 $('highScoreTourney').textContent = high;
                 
-                if(active){
-                    const remaining = await contract.getTimeRemaining();
-                    const secs = remaining.toNumber();
-                    const mins = Math.floor(secs / 60);
-                    const s = secs % 60;
-                    $('tournamentTimer').textContent = `${mins}:${s.toString().padStart(2,'0')}`;
+                // Update phase indicator
+                if(tournamentPhase === 0){
+                    phaseIndicator.className = 'signup';
+                    phaseIndicator.textContent = '📝 SIGNUP PHASE';
+                    joinBtn.textContent = isRegistered ? '✓ Registered' : 'Join Tournament (10 MON)';
+                } else if(tournamentPhase === 1){
+                    phaseIndicator.className = 'play';
+                    phaseIndicator.textContent = '🎮 PLAY PHASE';
+                    joinBtn.textContent = 'Signup Closed';
                 } else {
-                    $('tournamentTimer').textContent = 'ENDED';
+                    phaseIndicator.className = 'ended';
+                    phaseIndicator.textContent = '⏳ FINALIZING...';
+                    joinBtn.textContent = 'Next Round Soon';
+                    // Try to advance
+                    contract.advanceTournament({gasLimit: 500000}).catch(()=>{});
                 }
                 
                 if(burner){
                     isRegistered = await contract.isPlayerRegistered(currentTournamentId, burner.address);
-                    joinBtn.textContent = isRegistered ? '✓ Joined' : 'Join (10 MON)';
                     joinBtn.classList.toggle('joined', isRegistered);
                     
-                    // Check for claimable prizes from previous tournaments
-                    for(let i = currentTournamentId - 1; i > 0 && i > currentTournamentId - 5; i--){
-                        const canClaim = await contract.canClaimPrize(i, burner.address);
-                        if(canClaim){
-                            claimSection.classList.add('show');
-                            $('claimBtn').onclick = () => claimPrize(i);
-                            break;
-                        } else {
-                            claimSection.classList.remove('show');
-                        }
+                    if(isRegistered){
+                        const myScore = await contract.getPlayerScore(currentTournamentId, burner.address);
+                        $('myScoreVal').textContent = myScore.toNumber();
+                        $('myTournamentScore').classList.add('show');
+                    } else {
+                        $('myTournamentScore').classList.remove('show');
                     }
                 }
                 
+                // Get last winner
+                try {
+                    const last = await contract.getLastTournamentResult();
+                    const lastId = last[0].toNumber();
+                    const winners = last[1];
+                    const lastHigh = last[2].toNumber();
+                    const prizePerWinner = parseFloat(ethers.utils.formatEther(last[3]));
+                    
+                    if(lastId > 0 && winners.length > 0){
+                        $('lastWinner').classList.add('show');
+                        if(winners.length === 1){
+                            $('winnerAddr').textContent = formatAddr(winners[0]);
+                        } else {
+                            $('winnerAddr').textContent = winners.map(w => formatAddr(w)).join(', ');
+                        }
+                        $('winnerPrize').textContent = prizePerWinner.toFixed(1);
+                    }
+                } catch(e){}
+                
                 await updateBal();
             } catch(e){ console.error('Tournament info error:', e); }
+        }
+        
+        function updateTimer(){
+            const now = Date.now();
+            let remaining;
+            
+            if(tournamentPhase === 0){
+                remaining = Math.max(0, signupEndTime - now);
+            } else if(tournamentPhase === 1){
+                remaining = Math.max(0, playEndTime - now);
+            } else {
+                remaining = 0;
+            }
+            
+            const secs = Math.floor(remaining / 1000);
+            const mins = Math.floor(secs / 60);
+            const s = secs % 60;
+            $('tournamentTimer').textContent = `${mins}:${s.toString().padStart(2,'0')}`;
+            
+            if(remaining === 0 && contract){
+                updateTournamentInfo();
+            }
         }
         
         connectBtn.onclick = async () => {
@@ -533,16 +497,16 @@
                 burner = getBurner();
                 contract = new ethers.Contract(CONTRACT, ABI, burner);
                 
-                connectBtn.textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+                connectBtn.textContent = formatAddr(userAddress);
                 connectBtn.classList.add('connected');
                 walletAddr.textContent = burner.address;
                 walletAddr.onclick = () => { navigator.clipboard.writeText(burner.address); walletAddr.textContent = 'Copied!'; setTimeout(() => walletAddr.textContent = burner.address, 1000); };
                 walletSection.style.display = 'block';
-                await updateBal();
                 await updateTournamentInfo();
                 initAudio();
                 
-                setInterval(updateTournamentInfo, 5000);
+                setInterval(updateTimer, 1000);
+                setInterval(updateTournamentInfo, 10000);
             } catch(e){ console.error(e); }
         };
         
@@ -553,7 +517,7 @@
                 connectBtn.textContent = 'Depositing...';
                 await tx.wait();
                 await updateBal();
-                connectBtn.textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+                connectBtn.textContent = formatAddr(userAddress);
             } catch(e){ console.error(e); }
         }
         $('fundBtn').onclick = () => fund(parseFloat($('fundAmt').value));
@@ -568,47 +532,24 @@
             } catch(e){ console.error(e); }
         };
         
-        // Mode toggle
-        $('modeFree').onclick = () => { gameMode = 'free'; $('modeFree').classList.add('active'); $('modeTourney').classList.remove('active'); updateBal(); };
-        $('modeTourney').onclick = () => { gameMode = 'tournament'; $('modeTourney').classList.add('active'); $('modeFree').classList.remove('active'); updateBal(); };
-        
-        // Join tournament
         joinBtn.onclick = async () => {
-            if(!burner || isRegistered) return;
+            if(!burner || isRegistered || tournamentPhase !== 0) return;
             try {
                 joinBtn.textContent = 'Joining...';
                 joinBtn.disabled = true;
-                console.log('Joining tournament, sending 10 MON to contract:', CONTRACT);
                 const tx = await contract.joinTournament({value: ethers.utils.parseEther('10'), gasLimit: 300000});
-                console.log('TX sent:', tx.hash);
                 await tx.wait();
-                console.log('TX confirmed');
                 isRegistered = true;
-                joinBtn.textContent = '✓ Joined';
+                joinBtn.textContent = '✓ Registered';
                 joinBtn.classList.add('joined');
                 await updateTournamentInfo();
             } catch(e){ 
-                console.error('Join tournament error:', e);
-                alert('Failed to join: ' + (e.reason || e.message || 'Unknown error'));
-                joinBtn.textContent = 'Join (10 MON)';
-                joinBtn.disabled = false;
+                console.error('Join error:', e);
+                alert('Failed: ' + (e.reason || e.message));
+                joinBtn.textContent = 'Join Tournament (10 MON)';
+                await updateBal();
             }
         };
-        
-        async function claimPrize(tournamentId){
-            try {
-                $('claimBtn').textContent = 'Claiming...';
-                $('claimBtn').disabled = true;
-                const tx = await contract.claimPrize(tournamentId, {gasLimit: 200000});
-                await tx.wait();
-                claimSection.classList.remove('show');
-                await updateBal();
-            } catch(e){ 
-                console.error(e);
-                $('claimBtn').textContent = 'Claim Prize';
-                $('claimBtn').disabled = false;
-            }
-        }
         
         function createBranch(side, y){
             const el = document.createElement('div');
@@ -631,12 +572,13 @@
         
         function startGame(){
             if(!burner || startBtn.disabled) return;
-            if(gameMode === 'tournament' && !isRegistered) return;
             if(!canRestart && gameOver.classList.contains('show')) return;
+            
+            const isTournamentGame = tournamentPhase === 1 && isRegistered;
             
             score = 0; txCount = 0; timeLeft = 100; playerSide = 'left'; gameActive = true; canRestart = false;
             startOverlay.classList.add('hidden');
-            gameOver.classList.remove('show', 'canRestart', 'newRecord', 'tournament');
+            gameOver.classList.remove('show', 'canRestart', 'newRecord');
             gameOver.style.display = 'none';
             startBtn.disabled = true;
             scoreDisplay.textContent = '0';
@@ -645,7 +587,7 @@
             lumberjack.className = 'left';
             gameArea.classList.remove('shake');
             
-            if(gameMode === 'tournament'){
+            if(isTournamentGame){
                 gameArea.classList.add('tournament');
                 tournamentBadge.classList.add('show');
             } else {
@@ -715,6 +657,8 @@
             gameActive = false;
             cancelAnimationFrame(animFrame);
             
+            const isTournamentGame = gameArea.classList.contains('tournament');
+            
             gameArea.classList.add('shake');
             playDeathSound();
             setTimeout(() => gameArea.classList.remove('shake'), 250);
@@ -727,12 +671,12 @@
             $('beatScore').textContent = isRecord ? '🎉 NEW RECORD!' : `Best: ${highScore}`;
             
             if(isRecord) gameOver.classList.add('newRecord');
-            if(gameMode === 'tournament'){
-                gameOver.classList.add('tournament');
-                tournamentResult.classList.add('show');
-                tournamentResult.textContent = '🏆 Score submitted to tournament!';
+            
+            if(isTournamentGame){
+                $('tournamentSubmit').classList.add('show');
+                $('tournamentSubmit').textContent = '🏆 Submitting score to tournament...';
             } else {
-                tournamentResult.classList.remove('show');
+                $('tournamentSubmit').classList.remove('show');
             }
             
             gameOver.querySelector('h2').textContent = isRecord ? '🎉 NEW RECORD!' : 'GAME OVER';
@@ -745,11 +689,16 @@
                 try {
                     const n = await burner.getTransactionCount('pending');
                     
-                    // Submit tournament score if in tournament mode
-                    if(gameMode === 'tournament' && isRegistered){
+                    if(isTournamentGame && isRegistered){
                         try {
-                            await contract.submitTournamentScore(score, {gasLimit: 150000, nonce: n});
-                        } catch(e){ console.error('Tournament score submit error:', e); }
+                            const tx = await contract.submitScore(score, {gasLimit: 200000, nonce: n});
+                            await tx.wait();
+                            $('tournamentSubmit').textContent = '🏆 Score submitted to tournament!';
+                            await updateTournamentInfo();
+                        } catch(e){ 
+                            console.error('Submit score error:', e);
+                            $('tournamentSubmit').textContent = '⚠️ Score submit failed';
+                        }
                     }
                     
                     const tx = await contract.endGame(userAddress, score, {gasLimit: 150000, nonce: n + 1});
@@ -757,7 +706,6 @@
                     $('txLink').innerHTML = `<a href="${EXPLORER}/tx/${r.transactionHash}" target="_blank">View on Explorer →</a>`;
                 } catch(e){ console.error(e); }
                 await updateBal();
-                await updateTournamentInfo();
             })();
         }
         
