@@ -370,7 +370,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
         // UPDATE THIS TO YOUR NEW CONTRACT ADDRESS AFTER DEPLOYING
-        const CONTRACT="0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
+        const CONTRACT="0x03Ca2A3f8742b7c5E984d7600CD8A549636aF419";
         const ABI=[
             "function startGame(address) external",
             "function chop(address,uint256) external",
@@ -578,14 +578,18 @@
             try {
                 joinBtn.textContent = 'Joining...';
                 joinBtn.disabled = true;
-                const tx = await contract.joinTournament({value: ethers.utils.parseEther('10'), gasLimit: 200000});
+                console.log('Joining tournament, sending 10 MON to contract:', CONTRACT);
+                const tx = await contract.joinTournament({value: ethers.utils.parseEther('10'), gasLimit: 300000});
+                console.log('TX sent:', tx.hash);
                 await tx.wait();
+                console.log('TX confirmed');
                 isRegistered = true;
                 joinBtn.textContent = '✓ Joined';
                 joinBtn.classList.add('joined');
                 await updateTournamentInfo();
             } catch(e){ 
-                console.error(e); 
+                console.error('Join tournament error:', e);
+                alert('Failed to join: ' + (e.reason || e.message || 'Unknown error'));
                 joinBtn.textContent = 'Join (10 MON)';
                 joinBtn.disabled = false;
             }
