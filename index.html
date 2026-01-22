@@ -5,13 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Monad Lumberjack</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Arial Black', Arial, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
@@ -21,549 +15,348 @@
             align-items: center;
             min-height: 100vh;
             padding: 10px;
-            overflow-x: hidden;
             user-select: none;
-            position: relative;
         }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5 L35 25 L55 30 L35 35 L30 55 L25 35 L5 30 L25 25 Z' fill='%236E54FF' fill-opacity='0.04'/%3E%3C/svg%3E");
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: 0;
-        }
-        
-        #header, #mainContainer {
-            position: relative;
-            z-index: 1;
-        }
-        
-        #header {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        
+        #header { text-align: center; margin-bottom: 10px; }
         h1 {
-            font-size: 36px;
+            font-size: 32px;
             margin: 10px 0 5px 0;
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8), 2px 2px 4px rgba(0,0,0,0.5);
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-        
-        #highScoreDisplay {
-            font-size: 16px;
-            color: #feca57;
-            text-shadow: 0 0 10px rgba(254, 202, 87, 0.5);
-        }
-        
-        #mainContainer {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            max-width: 100%;
-        }
-        
-        #gameWrapper {
-            position: relative;
-        }
+        #highScoreDisplay { font-size: 16px; color: #feca57; }
+        #mainContainer { display: flex; gap: 20px; align-items: flex-start; }
         
         #gameArea {
-            background: linear-gradient(to bottom, #1a1a2e 0%, #2d3436 100%);
+            background: linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 100%);
             width: 380px;
             height: 640px;
             position: relative;
-            border: 3px solid #9c27b0;
+            border: 3px solid #5D4037;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 0 40px rgba(156, 39, 176, 0.4), inset 0 0 60px rgba(0,0,0,0.5);
         }
+        #gameArea.shake {
+            animation: shake 0.3s ease-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .cloud {
+            position: absolute;
+            background: rgba(255,255,255,0.85);
+            border-radius: 50px;
+            z-index: 1;
+        }
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,255,0.85);
+            border-radius: 50%;
+        }
+        .cloud1 { width: 70px; height: 25px; top: 40px; left: 15px; }
+        .cloud1::before { width: 35px; height: 35px; top: -18px; left: 12px; }
+        .cloud1::after { width: 45px; height: 40px; top: -20px; left: 35px; }
+        .cloud2 { width: 60px; height: 22px; top: 80px; right: 20px; }
+        .cloud2::before { width: 30px; height: 30px; top: -15px; left: 10px; }
+        .cloud2::after { width: 38px; height: 34px; top: -16px; left: 30px; }
+        
+        #trunk {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 80px;
+            width: 52px;
+            height: 500px;
+            background: linear-gradient(to right, #4E342E 0%, #6D4C41 15%, #8D6E63 35%, #A1887F 50%, #8D6E63 65%, #6D4C41 85%, #4E342E 100%);
+            z-index: 10;
+        }
+        
+        #treeTop {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 11;
+        }
+        .treetop-part {
+            position: absolute;
+            border-radius: 50%;
+        }
+        .tt1 { width: 95px; height: 70px; background: radial-gradient(ellipse at 50% 60%, #81C784, #66BB6A, #4CAF50, #43A047, #388E3C); left: -47px; top: 0; }
+        .tt2 { width: 70px; height: 55px; background: radial-gradient(ellipse at 50% 55%, #A5D6A7, #81C784, #66BB6A, #4CAF50); left: -62px; top: 25px; }
+        .tt3 { width: 70px; height: 55px; background: radial-gradient(ellipse at 50% 55%, #A5D6A7, #81C784, #66BB6A, #4CAF50); left: -8px; top: 25px; }
+        .tt4 { width: 50px; height: 40px; background: radial-gradient(ellipse at 50% 50%, #C8E6C9, #A5D6A7, #81C784); left: -25px; top: -10px; }
+        
+        /* Branches - simple and clean */
+        .branch {
+            position: absolute;
+            left: 50%;
+            height: 50px;
+            z-index: 9;
+            transition: bottom 0.15s ease-out;
+        }
+        .branch.left { transform: translateX(-26px) translateX(-100%); }
+        .branch.right { transform: translateX(26px); }
+        
+        .branch-inner {
+            position: relative;
+            width: 95px;
+            height: 50px;
+        }
+        
+        .branch-wood {
+            position: absolute;
+            bottom: 18px;
+            width: 50px;
+            height: 14px;
+            background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 50%, #6D4C41 100%);
+        }
+        .branch.left .branch-wood { right: 0; border-radius: 8px 0 0 8px; }
+        .branch.right .branch-wood { left: 0; border-radius: 0 8px 8px 0; }
+        
+        .branch-leaf {
+            position: absolute;
+            bottom: 5px;
+            width: 52px;
+            height: 44px;
+            background: radial-gradient(ellipse at 50% 60%, #7ED67E 0%, #5CB85C 30%, #4CAF50 55%, #388E3C 80%, #2E7D32 100%);
+            border-radius: 50%;
+        }
+        .branch.left .branch-leaf { left: 0; }
+        .branch.right .branch-leaf { right: 0; }
         
         #ground {
             position: absolute;
             bottom: 0;
             width: 100%;
             height: 80px;
-            background: linear-gradient(to bottom, #4a7c59 0%, #2d5a3d 100%);
-            z-index: 1;
+            background: linear-gradient(to bottom, #7CB342 0%, #689F38 40%, #558B2F 70%, #33691E 100%);
+            z-index: 15;
         }
-        
-        #tree {
-            width: 50px;
-            background: linear-gradient(to right, #5d4037 0%, #8d6e63 50%, #5d4037 100%);
-            height: 100%;
+        #groundHighlight {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: inset -5px 0 15px rgba(0,0,0,0.4);
-            z-index: 2;
+            bottom: 80px;
+            width: 100%;
+            height: 12px;
+            background: linear-gradient(to bottom, #8BC34A 0%, #7CB342 100%);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            z-index: 15;
         }
+        /* Grass blades */
+        .grass {
+            position: absolute;
+            bottom: 80px;
+            width: 8px;
+            height: 20px;
+            background: #7CB342;
+            border-radius: 50% 50% 0 0;
+            z-index: 14;
+        }
+        .grass1 { left: 20px; height: 18px; transform: rotate(-10deg); }
+        .grass2 { left: 45px; height: 22px; transform: rotate(5deg); }
+        .grass3 { left: 70px; height: 16px; transform: rotate(-5deg); }
+        .grass4 { right: 30px; height: 20px; transform: rotate(8deg); }
+        .grass5 { right: 55px; height: 17px; transform: rotate(-8deg); }
+        .grass6 { right: 80px; height: 21px; transform: rotate(3deg); }
         
         #lumberjack {
+            position: absolute;
+            bottom: 90px;
             width: 60px;
             height: 75px;
-            position: absolute;
-            bottom: 130px;
-            left: 75px;
+            z-index: 20;
             transition: left 0.04s ease-out;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
+        #lumberjack.left { left: 70px; }
+        #lumberjack.right { left: 250px; }
         
         #keoneImg {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            border: 3px solid #9c27b0;
-            box-shadow: 0 0 15px rgba(156, 39, 176, 0.6);
-            margin-bottom: -8px;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .lumberjack-body {
-            width: 30px;
-            height: 38px;
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            border-radius: 5px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .lumberjack-body::before {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 18px;
-            background: #3498db;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            border-radius: 0 0 3px 3px;
-        }
-        
-        #axe {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            top: 15px;
-            right: -20px;
-            font-size: 32px;
-            transition: transform 0.08s;
-            z-index: 3;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
-        }
-        
-        #axe.swing {
-            animation: swingAxe 0.12s ease-out;
-        }
-        
-        @keyframes swingAxe {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(-60deg); }
-            100% { transform: rotate(0deg); }
-        }
-        
-        .branch {
-            position: absolute;
-            z-index: 3;
-            transition: bottom 0.05s ease-out;
-        }
-        
-        .branch-main {
-            position: relative;
-        }
-        
-        /* The narrow horizontal branch arm */
-        .branch-arm {
-            width: 70px;
-            height: 12px;
-            background: linear-gradient(to bottom, #8B7355 0%, #6B5344 50%, #5a4636 100%);
-            border-radius: 6px;
-            position: absolute;
-            top: 20px;
-            box-shadow: 0 3px 4px rgba(0,0,0,0.3);
-        }
-        
-        /* The bush/foliage at the end */
-        .branch-foliage {
-            width: 55px;
-            height: 45px;
-            background: radial-gradient(ellipse at 50% 60%, #7cb860 0%, #5a9a45 40%, #4a8a38 70%, #3d7830 100%);
-            border-radius: 50% 50% 45% 45%;
+            border: 3px solid #5D4037;
             position: absolute;
             top: 0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #FFCCBC;
+            object-fit: cover;
+            z-index: 2;
         }
-        
-        /* Small accent leaves */
-        .branch-leaf-accent {
-            width: 20px;
-            height: 16px;
-            background: radial-gradient(ellipse at center, #8cd070 0%, #6ab050 100%);
-            border-radius: 50%;
+        .lj-body {
             position: absolute;
-            top: -5px;
+            top: 31px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 32px;
+            background: #E53935;
+            border-radius: 4px;
+        }
+        .lj-body::before {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            background: repeating-linear-gradient(90deg, #C62828 0px, #C62828 3px, #1A1A1A 3px, #1A1A1A 6px);
+            border-radius: 2px;
+        }
+        .lj-pants {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 26px;
+            height: 16px;
+            background: #1565C0;
+            border-radius: 0 0 4px 4px;
+        }
+        #axe {
+            position: absolute;
+            top: 20px;
+            font-size: 26px;
+            z-index: 3;
+        }
+        #lumberjack.left #axe { right: -5px; transform: scaleX(-1); }
+        #lumberjack.right #axe { left: -5px; transform: scaleX(1); }
+        #axe.swing { animation: swing 0.08s ease-out; }
+        @keyframes swing {
+            0%, 100% { rotate: 0deg; }
+            50% { rotate: -40deg; }
         }
         
-        .branch.left .branch-arm { 
-            right: 0;
+        /* Wood chip particles */
+        .wood-chip {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #8D6E63;
+            border-radius: 2px;
+            z-index: 50;
+            pointer-events: none;
         }
-        .branch.left .branch-foliage { 
-            left: 0; 
-        }
-        .branch.left .branch-leaf-accent {
-            left: 10px;
-        }
+        .wood-chip.light { background: #A1887F; }
+        .wood-chip.dark { background: #5D4037; }
         
-        .branch.right .branch-arm { 
-            left: 0;
-        }
-        .branch.right .branch-foliage { 
-            right: 0; 
-        }
-        .branch.right .branch-leaf-accent {
-            right: 10px;
-        }
-        
-        /* Bottom HUD Container */
+        /* Bottom HUD */
         #bottomHUD {
             position: absolute;
-            bottom: 12px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 6px;
-            z-index: 20;
+            z-index: 100;
         }
-        
         #scoreDisplay {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
             color: white;
-            text-shadow: 0 0 10px rgba(156, 39, 176, 0.9), 0 0 20px rgba(156, 39, 176, 0.6), 2px 2px 4px rgba(0,0,0,0.8);
-            letter-spacing: 2px;
+            text-shadow: 2px 2px 0 #5D4037, 0 0 10px rgba(0,0,0,0.5);
         }
-        
         #timeBarContainer {
-            width: 200px;
+            width: 160px;
             height: 12px;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.4);
             border-radius: 6px;
             overflow: hidden;
-            border: 2px solid rgba(156, 39, 176, 0.6);
-            box-shadow: 0 0 15px rgba(156, 39, 176, 0.3);
+            border: 2px solid #5D4037;
         }
-        
         #timeBarFill {
             height: 100%;
-            background: linear-gradient(to right, #00d2d3 0%, #54a0ff 100%);
             width: 100%;
-            transition: width 0.1s linear, background 0.3s;
-            border-radius: 4px;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            transition: width 0.1s linear;
+        }
+        #timeBarFill.warning { background: linear-gradient(to right, #FF9800, #FFC107); }
+        #timeBarFill.danger { 
+            background: linear-gradient(to right, #f44336, #FF5722);
+            animation: pulse-danger 0.3s ease-in-out infinite;
+        }
+        @keyframes pulse-danger {
+            0%, 100% { box-shadow: 0 0 5px #f44336; }
+            50% { box-shadow: 0 0 15px #f44336, 0 0 25px #ff0000; }
         }
         
-        /* Tap zones for mobile */
-        .tap-zone {
-            position: absolute;
-            top: 0;
-            width: 50%;
-            height: 100%;
-            z-index: 30;
-            cursor: pointer;
-        }
-        
+        .tap-zone { position: absolute; top: 0; width: 50%; height: 100%; z-index: 30; cursor: pointer; }
         .tap-zone.left { left: 0; }
         .tap-zone.right { right: 0; }
         
-        .tap-zone:active {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        /* Side panel */
-        #sidePanel {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 280px;
-        }
-        
-        .panel-section {
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-        }
-        
-        #wallet {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        #wallet:hover { transform: translateY(-2px); }
-        #wallet.connected {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
-        }
-        
-        .fund-btn {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 10px 8px;
-            font-size: 12px;
-            flex: 1;
-            white-space: nowrap;
-            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
-        }
-        
-        .fund-btn:hover { transform: translateY(-2px); }
-        
-        #startBtn {
-            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-            color: white;
-            font-size: 20px;
-            padding: 15px;
-            box-shadow: 0 4px 20px rgba(245, 87, 108, 0.5);
-        }
-        
-        #startBtn:hover:not(:disabled) { 
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(245, 87, 108, 0.6);
-        }
-        
-        #startBtn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        #status {
-            font-size: 13px;
-            text-align: center;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #fundOptions {
-            display: none;
-            margin-top: 10px;
-        }
-        
-        #burnerInfo {
-            font-size: 11px;
-            text-align: center;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            margin-top: 10px;
-            display: none;
-            word-break: break-all;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        #burnerInfo:hover { background: rgba(0,0,0,0.5); }
-        
-        .instructions {
-            font-size: 13px;
-            line-height: 1.5;
-            opacity: 0.8;
-        }
-        
-        .instructions p { margin: 5px 0; }
+        /* Side Panel */
+        #sidePanel { display: flex; flex-direction: column; gap: 12px; width: 250px; }
+        .panel-section { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        button { padding: 10px 16px; font-size: 14px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; width: 100%; color: white; }
+        #wallet { background: linear-gradient(135deg, #667eea, #764ba2); }
+        #wallet.connected { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .fund-btn { background: linear-gradient(135deg, #f093fb, #f5576c); padding: 8px; font-size: 11px; flex: 1; }
+        #startBtn { background: linear-gradient(135deg, #f5576c, #f093fb); font-size: 16px; padding: 12px; }
+        #startBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #status { font-size: 11px; text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; }
+        #fundOptions { display: none; margin-top: 8px; }
+        #burnerInfo { font-size: 10px; text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; margin-top: 8px; display: none; word-break: break-all; cursor: pointer; }
+        #withdrawSection { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .instructions { font-size: 11px; line-height: 1.4; opacity: 0.8; }
+        .instructions p { margin: 3px 0; }
         .highlight { color: #feca57; }
         
-        /* Game Over Overlay */
-        #gameOver {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 100;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-            opacity: 0;
-            animation: fadeInOverlay 0.5s ease-out forwards;
-        }
+        /* Leaderboard */
+        #leaderboard h3 { font-size: 14px; margin-bottom: 8px; color: #feca57; }
+        #leaderboardList { font-size: 11px; }
+        .lb-entry { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .lb-entry:last-child { border-bottom: none; }
+        .lb-rank { color: #feca57; width: 20px; }
+        .lb-addr { opacity: 0.8; }
+        .lb-score { color: #8BC34A; font-weight: bold; }
         
+        /* Overlays */
+        #startOverlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 50;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        #startOverlay.hidden { display: none; }
+        #startOverlay h2 { font-size: 24px; margin-bottom: 12px; }
+        #startOverlay p { font-size: 14px; opacity: 0.85; margin: 5px 0; }
+        #tapToStart { margin-top: 20px; font-size: 16px; color: #feca57; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        
+        #gameOver {
+            display: none; position: absolute; inset: 0;
+            background: rgba(0,0,0,0.9); z-index: 100;
+            flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #gameOver.show {
+            display: flex;
+            animation: fadeInOverlay 0.8s ease-out forwards;
+        }
+        #gameOver.show.canRestart {
+            pointer-events: auto;
+        }
         @keyframes fadeInOverlay {
             0% { opacity: 0; }
             100% { opacity: 1; }
         }
+        #gameOver h2 { font-size: 24px; color: #f5576c; margin-bottom: 5px; }
+        #gameOver.newRecord h2 { color: #feca57; }
+        #finalScore { font-size: 56px; font-weight: bold; color: white; margin: 8px 0; }
+        #txSummary { font-size: 15px; color: #9c27b0; margin: 8px 0; padding: 8px 16px; background: rgba(156,39,176,0.2); border-radius: 12px; }
+        #beatScore { font-size: 12px; color: #feca57; margin: 6px 0; }
+        #restartBtn { background: linear-gradient(135deg, #f5576c, #f093fb); margin-top: 15px; font-size: 15px; padding: 12px 30px; width: auto; }
+        #txLink { margin-top: 10px; }
+        #txLink a { color: #54a0ff; text-decoration: none; font-size: 12px; }
         
-        #gameOver h2 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            color: #f5576c;
-            opacity: 0;
-            animation: slideDown 0.4s ease-out 0.3s forwards;
-        }
-        
-        @keyframes slideDown {
-            0% { opacity: 0; transform: translateY(-30px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        #gameOver.newRecord h2 {
-            color: #feca57;
-            text-shadow: 0 0 20px rgba(254, 202, 87, 0.8);
-        }
-        
-        #finalScore {
-            font-size: 64px;
-            font-weight: bold;
-            color: white;
-            margin: 10px 0;
-            text-shadow: 0 0 30px rgba(255,255,255,0.5);
-            opacity: 0;
-            animation: popIn 0.5s ease-out 0.5s forwards;
-        }
-        
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.5); }
-            70% { transform: scale(1.1); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        
-        #txSummary {
-            font-size: 18px;
-            color: #9c27b0;
-            margin: 10px 0;
-            padding: 10px 20px;
-            background: rgba(156, 39, 176, 0.2);
-            border-radius: 20px;
-            opacity: 0;
-            animation: fadeIn 0.4s ease-out 0.7s forwards;
-        }
-        
-        @keyframes fadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-        
-        #beatScore {
-            font-size: 14px;
-            color: #feca57;
-            margin: 10px 0;
-            opacity: 0;
-            animation: fadeIn 0.4s ease-out 0.8s forwards;
-        }
-        
-        #restartBtn {
-            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-            color: white;
-            margin-top: 20px;
-            font-size: 18px;
-            padding: 15px 40px;
-            width: auto;
-            opacity: 0;
-            animation: fadeIn 0.4s ease-out 1s forwards;
-        }
-        
-        #txLink {
-            margin-top: 15px;
-        }
-        
-        #txLink a {
-            color: #54a0ff;
-            text-decoration: none;
-        }
-        
-        /* Particles */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            z-index: 50;
-            font-size: 20px;
-        }
-        
-        /* Start overlay */
-        #startOverlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        
-        #startOverlay h2 {
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-        
-        #startOverlay p {
-            font-size: 16px;
-            opacity: 0.8;
-            margin: 5px 0;
-        }
-        
-        #tapToStart {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #feca57;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-        
-        #startOverlay.hidden { display: none; }
-        
-        @media (max-width: 750px) {
-            #mainContainer {
-                flex-direction: column;
-                align-items: center;
-            }
-            #sidePanel {
-                width: 380px;
-                max-width: 100%;
-            }
-            h1 { font-size: 28px; }
+        @media (max-width: 700px) {
+            #mainContainer { flex-direction: column; align-items: center; }
+            #sidePanel { width: 380px; max-width: 100%; }
         }
     </style>
 </head>
@@ -571,47 +364,61 @@
     <div id="header">
         <h1>🪓 MONAD LUMBERJACK</h1>
         <div id="highScoreDisplay">🏆 Best: <span id="highScoreTop">0</span></div>
-        <button id="musicToggle" style="margin-top: 8px; padding: 8px 16px; font-size: 12px; background: rgba(156, 39, 176, 0.3); border: 1px solid rgba(156, 39, 176, 0.5); color: white; border-radius: 20px; cursor: pointer;">🔇 Music Off</button>
     </div>
     
     <div id="mainContainer">
-        <div id="gameWrapper">
-            <div id="gameArea">
-                <div id="tree"></div>
-                
-                <div id="lumberjack">
-                    <img src="keone.png" alt="Lumberjack" id="keoneImg">
-                    <div class="lumberjack-body"></div>
-                    <div id="axe">🪓</div>
-                </div>
-                <div id="ground"></div>
-                
-                <div id="bottomHUD">
-                    <div id="scoreDisplay">0</div>
-                    <div id="timeBarContainer">
-                        <div id="timeBarFill"></div>
-                    </div>
-                </div>
-                
-                <div class="tap-zone left" id="tapLeft"></div>
-                <div class="tap-zone right" id="tapRight"></div>
-                
-                <div id="startOverlay">
-                    <h2>TAP TO CHOP</h2>
-                    <p>⬅️ Left side = chop left</p>
-                    <p>➡️ Right side = chop right</p>
-                    <p>🌿 Avoid the branches!</p>
-                    <div id="tapToStart">CONNECT WALLET TO PLAY</div>
-                </div>
-                
-                <div id="gameOver">
-                    <h2>GAME OVER</h2>
-                    <div id="finalScore">0</div>
-                    <div id="txSummary">⚡ 0 transactions</div>
-                    <div id="beatScore"></div>
-                    <div id="txLink"></div>
-                    <button id="restartBtn">PRESS SPACE TO RETRY</button>
-                </div>
+        <div id="gameArea">
+            <div class="cloud cloud1"></div>
+            <div class="cloud cloud2"></div>
+            <div class="cloud cloud3"></div>
+            
+            <div id="treeTop">
+                <div class="treetop-part tt1"></div>
+                <div class="treetop-part tt2"></div>
+                <div class="treetop-part tt3"></div>
+                <div class="treetop-part tt4"></div>
+            </div>
+            <div id="trunk"></div>
+            
+            <div id="lumberjack" class="left">
+                <img src="keone.png" alt="" id="keoneImg" onerror="this.style.background='#FFCCBC'">
+                <div class="lj-body"></div>
+                <div class="lj-pants"></div>
+                <div id="axe">🪓</div>
+            </div>
+            
+            <div id="groundHighlight"></div>
+            <div id="ground"></div>
+            <div class="grass grass1"></div>
+            <div class="grass grass2"></div>
+            <div class="grass grass3"></div>
+            <div class="grass grass4"></div>
+            <div class="grass grass5"></div>
+            <div class="grass grass6"></div>
+            
+            <div id="bottomHUD">
+                <div id="scoreDisplay">0</div>
+                <div id="timeBarContainer"><div id="timeBarFill"></div></div>
+            </div>
+            
+            <div class="tap-zone left" id="tapLeft"></div>
+            <div class="tap-zone right" id="tapRight"></div>
+            
+            <div id="startOverlay">
+                <h2>🪓 TAP TO CHOP</h2>
+                <p>⬅️ Tap left = chop left</p>
+                <p>➡️ Tap right = chop right</p>
+                <p>🌿 Avoid the branches!</p>
+                <div id="tapToStart">CONNECT WALLET TO PLAY</div>
+            </div>
+            
+            <div id="gameOver">
+                <h2>GAME OVER</h2>
+                <div id="finalScore">0</div>
+                <div id="txSummary">⚡ 0 transactions</div>
+                <div id="beatScore"></div>
+                <div id="txLink"></div>
+                <button id="restartBtn">PLAY AGAIN</button>
             </div>
         </div>
         
@@ -619,38 +426,40 @@
             <div class="panel-section">
                 <button id="wallet">Connect Wallet</button>
                 <div id="fundOptions">
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <div style="display:flex; gap:6px; margin-bottom:6px;">
                         <button class="fund-btn" data-amount="1">1 MON</button>
                         <button class="fund-btn" data-amount="10">10 MON</button>
                         <button class="fund-btn" data-amount="100">100 MON</button>
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="number" id="customAmount" placeholder="Custom" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 14px; width: 70px;">
+                    <div style="display:flex; gap:6px;">
+                        <input type="number" id="customAmount" placeholder="Custom" style="flex:1; padding:8px; border-radius:6px; border:none; font-size:12px;">
                         <button class="fund-btn" id="customFundBtn">Fund</button>
                     </div>
                 </div>
                 <div id="status">Connect wallet to play</div>
                 <div id="burnerInfo"></div>
-                <div id="withdrawSection" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <div style="font-size: 11px; margin-bottom: 6px; opacity: 0.8;">Withdraw MON:</div>
-                    <input type="text" id="withdrawAddress" placeholder="Address (0x...)" style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 11px; margin-bottom: 6px;">
-                    <div style="display: flex; gap: 6px;">
-                        <input type="number" id="withdrawAmount" placeholder="Amount" style="flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 11px;">
-                        <button id="withdrawBtn" style="padding: 8px 12px; font-size: 11px; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); white-space: nowrap;">Withdraw</button>
+                <div id="withdrawSection">
+                    <div style="font-size:10px; margin-bottom:4px; opacity:0.7;">Withdraw MON:</div>
+                    <input type="text" id="withdrawAddress" placeholder="0x..." style="width:100%; padding:6px; border-radius:5px; border:none; font-size:10px; margin-bottom:4px;">
+                    <div style="display:flex; gap:4px;">
+                        <input type="number" id="withdrawAmount" placeholder="Amt" style="flex:1; padding:6px; border-radius:5px; border:none; font-size:10px;">
+                        <button id="withdrawBtn" style="padding:6px 10px; font-size:10px; background:linear-gradient(135deg,#e74c3c,#c0392b); border:none; border-radius:5px; cursor:pointer; color:white;">Send</button>
                     </div>
                 </div>
             </div>
-            
             <div class="panel-section">
                 <button id="startBtn" disabled>START GAME</button>
-                <div style="font-size: 11px; text-align: center; opacity: 0.6; margin-top: 8px;">or press SPACE</div>
+                <div style="font-size:10px; text-align:center; opacity:0.5; margin-top:5px;">or press SPACE</div>
             </div>
-            
+            <div class="panel-section" id="leaderboard">
+                <h3>🌍 Global Leaderboard</h3>
+                <div id="leaderboardList">Loading...</div>
+            </div>
             <div class="panel-section instructions">
                 <p><strong>How to Play:</strong></p>
-                <p>• Tap <span class="highlight">left</span> or <span class="highlight">right</span> to chop</p>
-                <p>• Don't hit the branches!</p>
-                <p>• Every chop = 1 transaction ⚡</p>
+                <p>• Tap <span class="highlight">left</span> or <span class="highlight">right</span></p>
+                <p>• Don't get hit by branches!</p>
+                <p>• Each chop = 1 tx ⚡</p>
             </div>
         </div>
     </div>
@@ -658,721 +467,343 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
-        // Music setup
-        let musicOn = false;
-        let musicStarted = false;
-        let kick, hihat, snare, bass, lead, arp;
+        const CONTRACT="0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
+        const ABI=["function startGame(address) external","function chop(address,uint256) external","function endGame(address,uint256) external","function getHighScore(address) view returns (uint256)","event GameEnded(address indexed player, uint256 score)"];
+        const CHAIN_ID='0x279f', RPC='https://testnet-rpc.monad.xyz', EXPLORER='https://testnet.monadexplorer.com';
         
-        const musicToggle = document.getElementById('musicToggle');
+        let score=0, highScore=0, gameActive=false, playerSide='left';
+        let branches=[], timeLeft=100, txCount=0, nonce=null, canRestart=false;
+        let provider, signer, userAddress, burner, contract, animFrame;
+        let deathSound;
         
-        async function initMusic() {
-            if (musicStarted) return;
+        const $=id=>document.getElementById(id);
+        const gameArea=$('gameArea'), scoreDisplay=$('scoreDisplay'), timeBar=$('timeBarFill');
+        const lumberjack=$('lumberjack'), axe=$('axe');
+        const startOverlay=$('startOverlay'), gameOver=$('gameOver');
+        const startBtn=$('startBtn'), walletBtn=$('wallet');
+        const statusDiv=$('status'), burnerInfo=$('burnerInfo');
+        const fundOptions=$('fundOptions'), tapToStart=$('tapToStart');
+        const highScoreEl=$('highScoreTop'), withdrawSection=$('withdrawSection');
+        
+        // Initialize death sound
+        async function initAudio(){
             await Tone.start();
-            
-            // Punchy kick
-            kick = new Tone.MembraneSynth({
-                pitchDecay: 0.05,
-                octaves: 8,
-                oscillator: { type: 'sine' },
-                envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 }
-            }).toDestination();
-            kick.volume.value = -6;
-            
-            // Snare
-            snare = new Tone.NoiseSynth({
-                noise: { type: 'pink' },
-                envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
-            }).toDestination();
-            snare.volume.value = -10;
-            
-            // Hi-hat
-            hihat = new Tone.MetalSynth({
-                frequency: 250,
-                envelope: { attack: 0.001, decay: 0.05, release: 0.01 },
-                harmonicity: 5.1,
-                modulationIndex: 32,
-                resonance: 4000,
-                octaves: 1.5
-            }).toDestination();
-            hihat.volume.value = -20;
-            
-            // Bass
-            bass = new Tone.MonoSynth({
-                oscillator: { type: 'sawtooth' },
-                envelope: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 0.1 },
-                filterEnvelope: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1, baseFrequency: 200, octaves: 2.5 }
-            }).toDestination();
-            bass.volume.value = -12;
-            
-            // Lead synth
-            lead = new Tone.PolySynth(Tone.Synth, {
+            deathSound = new Tone.Synth({
                 oscillator: { type: 'square' },
-                envelope: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 0.2 }
+                envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.1 }
             }).toDestination();
-            lead.volume.value = -14;
-            
-            // Arpeggiator
-            arp = new Tone.Synth({
-                oscillator: { type: 'triangle' },
-                envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 }
-            }).toDestination();
-            arp.volume.value = -16;
-            
-            // Kick pattern - four on floor with extra hits
-            new Tone.Sequence((time, note) => {
-                if (musicOn && note) kick.triggerAttackRelease('C1', '8n', time);
-            }, [1, 0, 1, 0, 1, 0, 1, 1], '8n').start(0);
-            
-            // Snare on 2 and 4
-            new Tone.Sequence((time, note) => {
-                if (musicOn && note) snare.triggerAttackRelease('8n', time);
-            }, [0, 0, 1, 0, 0, 0, 1, 0], '8n').start(0);
-            
-            // Hi-hat pattern - busy 16ths
-            new Tone.Sequence((time, note) => {
-                if (musicOn && note) hihat.triggerAttackRelease('32n', time);
-            }, [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], '16n').start(0);
-            
-            // Bass line - energetic
-            const bassPattern = ['C2', 'C2', 'G2', 'G2', 'A2', 'A2', 'F2', 'G2',
-                                 'C2', 'C2', 'E2', 'E2', 'F2', 'G2', 'A2', 'G2'];
-            new Tone.Sequence((time, note) => {
-                if (musicOn) bass.triggerAttackRelease(note, '16n', time);
-            }, bassPattern, '8n').start(0);
-            
-            // Lead melody - catchy and upbeat
-            const melodyPattern = [
-                ['C4', 'E4'], null, 'G4', null, 'A4', 'G4', 'E4', null,
-                ['C4', 'E4'], null, 'G4', 'A4', 'B4', null, 'A4', 'G4',
-                ['F4', 'A4'], null, 'C5', null, 'A4', 'G4', 'F4', null,
-                'E4', 'D4', 'C4', null, 'D4', 'E4', 'G4', null
-            ];
-            new Tone.Sequence((time, note) => {
-                if (musicOn && note) {
-                    if (Array.isArray(note)) {
-                        lead.triggerAttackRelease(note, '8n', time);
-                    } else {
-                        lead.triggerAttackRelease(note, '8n', time);
-                    }
-                }
-            }, melodyPattern, '8n').start(0);
-            
-            // Arpeggio - adds excitement
-            const arpPattern = ['C5', 'E5', 'G5', 'E5', 'C5', 'E5', 'G5', 'B5',
-                               'A4', 'C5', 'E5', 'C5', 'A4', 'C5', 'E5', 'G5'];
-            let arpIndex = 0;
-            new Tone.Loop((time) => {
-                if (musicOn) {
-                    arp.triggerAttackRelease(arpPattern[arpIndex % arpPattern.length], '32n', time);
-                    arpIndex++;
-                }
-            }, '16n').start('2m');
-            
-            Tone.Transport.bpm.value = 140;
-            Tone.Transport.start();
-            musicStarted = true;
+            deathSound.volume.value = -10;
         }
         
-        musicToggle.addEventListener('click', async () => {
-            if (!musicStarted) {
-                await initMusic();
+        function playDeathSound(){
+            if(deathSound){
+                deathSound.triggerAttackRelease('C3', '8n');
+                setTimeout(()=>deathSound.triggerAttackRelease('G2', '8n'), 100);
+                setTimeout(()=>deathSound.triggerAttackRelease('C2', '4n'), 200);
             }
-            musicOn = !musicOn;
-            musicToggle.textContent = musicOn ? '🔊 Music On' : '🔇 Music Off';
-            musicToggle.style.background = musicOn ? 'rgba(156, 39, 176, 0.6)' : 'rgba(156, 39, 176, 0.3)';
-        });
-
-        const CONTRACT_ADDRESS = "0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
-        const CONTRACT_ABI = [
-            "function startGame(address mainWallet) external",
-            "function chop(address mainWallet, uint256 chopNumber) external",
-            "function endGame(address mainWallet, uint256 finalScore) external",
-            "function getHighScore(address player) external view returns (uint256)",
-            "function totalChops() external view returns (uint256)"
-        ];
-        
-        const MONAD_CHAIN_ID = '0x279f';
-        const MONAD_RPC = 'https://testnet-rpc.monad.xyz';
-        const MONAD_EXPLORER = 'https://testnet.monadexplorer.com';
-        
-        let score = 0;
-        let highScore = 0;
-        let gameActive = false;
-        let lumberjackSide = 'left';
-        let branches = [];
-        let provider, signer, userAddress;
-        let burnerWallet, burnerContract;
-        let timeRemaining = 100;
-        let baseTimeDecay = 0.12;
-        let currentTimeDecay = 0.12;
-        let timeAddPerChop = 5;
-        let animationFrameId;
-        let txCount = 0;
-        let pendingTxs = [];
-        let currentNonce = null;
-        let txQueue = [];
-        let isProcessingQueue = false;
-        let canRestart = true;
-        
-        const $ = id => document.getElementById(id);
-        const walletBtn = $('wallet');
-        const fundOptionsDiv = $('fundOptions');
-        const customAmountInput = $('customAmount');
-        const customFundBtn = $('customFundBtn');
-        const startBtn = $('startBtn');
-        const statusDiv = $('status');
-        const burnerInfoDiv = $('burnerInfo');
-        const scoreDisplay = $('scoreDisplay');
-        const timeBarFill = $('timeBarFill');
-        const lumberjack = $('lumberjack');
-        const keoneImg = $('keoneImg');
-        const axe = $('axe');
-        const gameArea = $('gameArea');
-        const gameOverDiv = $('gameOver');
-        const restartBtn = $('restartBtn');
-        const finalScoreDiv = $('finalScore');
-        const txSummaryDiv = $('txSummary');
-        const beatScoreDiv = $('beatScore');
-        const txLinkDiv = $('txLink');
-        const highScoreDiv = $('highScoreTop');
-        const startOverlay = $('startOverlay');
-        const tapToStart = $('tapToStart');
-        const tapLeft = $('tapLeft');
-        const tapRight = $('tapRight');
-        const withdrawSection = $('withdrawSection');
-        const withdrawAddress = $('withdrawAddress');
-        const withdrawAmount = $('withdrawAmount');
-        const withdrawBtn = $('withdrawBtn');
-        
-        if (localStorage.getItem('monadLumberjackHighScore')) {
-            highScore = parseInt(localStorage.getItem('monadLumberjackHighScore'));
-            highScoreDiv.textContent = highScore;
         }
         
-        function getOrCreateBurnerWallet() {
-            let pk = localStorage.getItem('monadLumberjackBurner');
-            if (!pk) {
-                const newWallet = ethers.Wallet.createRandom();
-                pk = newWallet.privateKey;
-                localStorage.setItem('monadLumberjackBurner', pk);
-            }
-            const rpcProvider = new ethers.providers.JsonRpcProvider(MONAD_RPC);
-            return new ethers.Wallet(pk, rpcProvider);
-        }
-        
-        async function checkBurnerBalance() {
-            if (!burnerWallet) return 0;
-            const balance = await burnerWallet.getBalance();
-            return parseFloat(ethers.utils.formatEther(balance));
-        }
-        
-        walletBtn.addEventListener('click', async () => {
-            if (typeof window.ethereum === 'undefined') {
-                alert('Please install MetaMask!');
-                return;
-            }
-            
-            try {
-                statusDiv.textContent = 'Connecting...';
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                provider = new ethers.providers.Web3Provider(window.ethereum);
+        // Wood chip particles
+        function spawnWoodChips(x, y){
+            for(let i=0; i<6; i++){
+                const chip = document.createElement('div');
+                chip.className = 'wood-chip ' + ['','light','dark'][Math.floor(Math.random()*3)];
+                chip.style.left = x + 'px';
+                chip.style.top = y + 'px';
+                chip.style.width = (4 + Math.random()*6) + 'px';
+                chip.style.height = (4 + Math.random()*6) + 'px';
+                gameArea.appendChild(chip);
                 
-                const network = await provider.getNetwork();
-                if (network.chainId !== 10143) {
+                const angle = (Math.random() - 0.5) * Math.PI;
+                const speed = 3 + Math.random() * 5;
+                const vx = Math.cos(angle) * speed * (playerSide === 'left' ? -1 : 1);
+                const vy = -Math.random() * 6 - 2;
+                let cx = x, cy = y, gravity = 0.3, opacity = 1;
+                
+                function animateChip(){
+                    cx += vx;
+                    cy += vy;
+                    vy += gravity;
+                    opacity -= 0.02;
+                    chip.style.left = cx + 'px';
+                    chip.style.top = cy + 'px';
+                    chip.style.opacity = opacity;
+                    chip.style.transform = `rotate(${cx * 5}deg)`;
+                    if(opacity > 0) requestAnimationFrame(animateChip);
+                    else chip.remove();
+                }
+                requestAnimationFrame(animateChip);
+            }
+        }
+        
+        highScore = parseInt(localStorage.getItem('lumberjackHS')||'0');
+        highScoreEl.textContent = highScore;
+        
+        function getBurner(){
+            let pk=localStorage.getItem('lumberjackPK');
+            if(!pk){pk=ethers.Wallet.createRandom().privateKey;localStorage.setItem('lumberjackPK',pk);}
+            return new ethers.Wallet(pk,new ethers.providers.JsonRpcProvider(RPC));
+        }
+        async function getBalance(){
+            if(!burner)return 0;
+            return parseFloat(ethers.utils.formatEther(await burner.getBalance()));
+        }
+        
+        // Fetch leaderboard from contract events
+        async function fetchLeaderboard(){
+            try {
+                const rpcProvider = new ethers.providers.JsonRpcProvider(RPC);
+                
+                // Get recent blocks only to avoid timeout
+                const currentBlock = await rpcProvider.getBlockNumber();
+                const fromBlock = Math.max(0, currentBlock - 100000);
+                
+                const logs = await rpcProvider.getLogs({
+                    address: CONTRACT,
+                    fromBlock: fromBlock,
+                    toBlock: 'latest'
+                });
+                
+                const scores = {};
+                logs.forEach(log => {
                     try {
-                        await window.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: MONAD_CHAIN_ID }],
-                        });
-                    } catch (switchError) {
-                        if (switchError.code === 4902) {
-                            await window.ethereum.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{
-                                    chainId: MONAD_CHAIN_ID,
-                                    chainName: 'Monad Testnet',
-                                    nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
-                                    rpcUrls: [MONAD_RPC],
-                                    blockExplorerUrls: [MONAD_EXPLORER]
-                                }]
-                            });
-                        } else {
-                            throw switchError;
+                        // Check if this looks like a GameEnded event (has score data)
+                        if(log.data && log.data.length >= 66 && log.topics && log.topics.length >= 2) {
+                            const player = '0x' + log.topics[1].slice(26).toLowerCase();
+                            const score = parseInt(log.data.slice(0, 66), 16);
+                            
+                            if(score > 0 && score < 10000) {
+                                if(!scores[player] || scores[player] < score) {
+                                    scores[player] = score;
+                                }
+                            }
                         }
-                    }
-                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    } catch(e) {}
+                });
+                
+                const sorted = Object.entries(scores)
+                    .sort((a,b) => b[1] - a[1])
+                    .slice(0, 10);
+                
+                if(sorted.length === 0){
+                    $('leaderboardList').innerHTML = '<div style="opacity:0.5; font-size:10px;">No scores yet!</div>';
+                    return;
                 }
                 
-                signer = provider.getSigner();
-                userAddress = await signer.getAddress();
+                $('leaderboardList').innerHTML = sorted.map((entry, i) => `
+                    <div class="lb-entry">
+                        <span class="lb-rank">${i+1}.</span>
+                        <span class="lb-addr">${entry[0].slice(0,6)}...${entry[0].slice(-4)}</span>
+                        <span class="lb-score">${entry[1]}</span>
+                    </div>
+                `).join('');
                 
-                burnerWallet = getOrCreateBurnerWallet();
-                burnerContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, burnerWallet);
-                
-                walletBtn.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+            } catch(e) {
+                console.error('Leaderboard error:', e);
+                $('leaderboardList').innerHTML = '<div style="opacity:0.5; font-size:10px;">Loading...</div>';
+            }
+        }
+        fetchLeaderboard();
+        
+        walletBtn.onclick=async()=>{
+            if(!window.ethereum){alert('Install MetaMask!');return;}
+            try{
+                statusDiv.textContent='Connecting...';
+                await window.ethereum.request({method:'eth_requestAccounts'});
+                provider=new ethers.providers.Web3Provider(window.ethereum);
+                const net=await provider.getNetwork();
+                if(net.chainId!==10143){
+                    try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_ID}]});}
+                    catch(e){if(e.code===4902)await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:CHAIN_ID,chainName:'Monad Testnet',nativeCurrency:{name:'MON',symbol:'MON',decimals:18},rpcUrls:[RPC]}]});}
+                    provider=new ethers.providers.Web3Provider(window.ethereum);
+                }
+                signer=provider.getSigner();
+                userAddress=await signer.getAddress();
+                burner=getBurner();
+                contract=new ethers.Contract(CONTRACT,ABI,burner);
+                walletBtn.textContent=userAddress.slice(0,6)+'...'+userAddress.slice(-4);
                 walletBtn.classList.add('connected');
-                
-                const burnerBalance = await checkBurnerBalance();
-                burnerInfoDiv.style.display = 'block';
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
-                burnerInfoDiv.onclick = () => {
-                    navigator.clipboard.writeText(burnerWallet.address);
-                    statusDiv.textContent = 'Copied!';
-                    setTimeout(async () => {
-                        const bal = await checkBurnerBalance();
-                        statusDiv.textContent = bal < 0.01 ? 'Fund wallet to play' : `Ready! ${bal.toFixed(3)} MON`;
-                    }, 1000);
-                };
-                
-                fundOptionsDiv.style.display = 'block';
-                withdrawSection.style.display = 'block';
-                
-                if (burnerBalance < 0.01) {
-                    statusDiv.textContent = 'Fund game wallet to play';
-                    startBtn.disabled = true;
-                    tapToStart.textContent = 'FUND WALLET TO PLAY';
-                } else {
-                    statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
-                    startBtn.disabled = false;
-                    tapToStart.textContent = 'TAP ANYWHERE TO START';
-                }
-                
-            } catch (error) {
-                console.error('Connection error:', error);
-                statusDiv.textContent = 'Connection failed';
-            }
-        });
+                const bal=await getBalance();
+                burnerInfo.style.display='block';
+                burnerInfo.innerHTML=`🎮 Game Wallet:<br><b>${burner.address}</b><br>Balance: ${bal.toFixed(4)} MON`;
+                burnerInfo.onclick=()=>{navigator.clipboard.writeText(burner.address);statusDiv.textContent='Copied!';};
+                fundOptions.style.display='block';
+                withdrawSection.style.display='block';
+                if(bal<0.01){statusDiv.textContent='Fund wallet to play';startBtn.disabled=true;tapToStart.textContent='FUND WALLET TO PLAY';}
+                else{statusDiv.textContent=`Ready! ${bal.toFixed(3)} MON`;startBtn.disabled=false;tapToStart.textContent='TAP TO START';}
+                initAudio();
+            }catch(e){console.error(e);statusDiv.textContent='Failed';}
+        };
         
-        async function fundBurnerWallet(amount) {
-            try {
-                statusDiv.textContent = 'Confirm in wallet...';
-                const tx = await signer.sendTransaction({
-                    to: burnerWallet.address,
-                    value: ethers.utils.parseEther(amount.toString())
-                });
-                statusDiv.textContent = 'Funding...';
+        async function fund(amt){
+            try{
+                statusDiv.textContent='Confirm...';
+                const tx=await signer.sendTransaction({to:burner.address,value:ethers.utils.parseEther(amt.toString())});
+                statusDiv.textContent='Funding...';
                 await tx.wait();
-                const burnerBalance = await checkBurnerBalance();
-                statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
-                startBtn.disabled = false;
-                tapToStart.textContent = 'TAP ANYWHERE TO START';
-            } catch (error) {
-                console.error('Funding error:', error);
-                statusDiv.textContent = 'Funding failed';
+                const bal=await getBalance();
+                statusDiv.textContent=`Ready! ${bal.toFixed(3)} MON`;
+                burnerInfo.innerHTML=`🎮 Game Wallet:<br><b>${burner.address}</b><br>Balance: ${bal.toFixed(4)} MON`;
+                startBtn.disabled=false;tapToStart.textContent='TAP TO START';
+            }catch(e){statusDiv.textContent='Failed';}
+        }
+        document.querySelectorAll('.fund-btn[data-amount]').forEach(b=>b.onclick=()=>fund(b.dataset.amount));
+        $('customFundBtn').onclick=()=>{const a=parseFloat($('customAmount').value);if(a>0)fund(a);};
+        $('withdrawBtn').onclick=async()=>{
+            const addr=$('withdrawAddress').value.trim(),amt=parseFloat($('withdrawAmount').value);
+            if(!addr||!amt)return;
+            try{statusDiv.textContent='Sending...';await(await burner.sendTransaction({to:addr,value:ethers.utils.parseEther(amt.toString()),gasLimit:21000})).wait();
+            const bal=await getBalance();burnerInfo.innerHTML=`🎮 Game Wallet:<br><b>${burner.address}</b><br>Balance: ${bal.toFixed(4)} MON`;statusDiv.textContent=`Done! ${bal.toFixed(3)} MON`;}
+            catch(e){statusDiv.textContent='Failed';}
+        };
+        
+        function createBranch(side, y){
+            const el=document.createElement('div');
+            el.className='branch '+side;
+            el.style.bottom=y+'px';
+            el.innerHTML=`
+                <div class="branch-inner">
+                    <div class="branch-wood"></div>
+                    <div class="branch-leaf"></div>
+                </div>
+            `;
+            gameArea.appendChild(el);
+            return el;
+        }
+        
+        function initBranches(){
+            document.querySelectorAll('.branch').forEach(b=>b.remove());
+            branches=[];
+            for(let i=0;i<6;i++){
+                const side=Math.random()>0.5?'left':'right';
+                const y=165+i*70;
+                branches.push({side,y,el:createBranch(side,y)});
             }
         }
         
-        document.querySelectorAll('.fund-btn[data-amount]').forEach(btn => {
-            btn.addEventListener('click', () => fundBurnerWallet(btn.getAttribute('data-amount')));
-        });
-        
-        customFundBtn.addEventListener('click', () => {
-            const amount = parseFloat(customAmountInput.value);
-            if (amount && amount > 0) fundBurnerWallet(amount);
-        });
-        
-        withdrawBtn.addEventListener('click', async () => {
-            const toAddress = withdrawAddress.value.trim();
-            const amount = parseFloat(withdrawAmount.value);
+        function startGame(){
+            if(!burner||startBtn.disabled)return;
+            if(!canRestart && gameOver.classList.contains('show')) return;
             
-            if (!toAddress || !toAddress.startsWith('0x') || toAddress.length !== 42) {
-                statusDiv.textContent = 'Invalid address';
-                return;
-            }
-            if (!amount || amount <= 0) {
-                statusDiv.textContent = 'Invalid amount';
-                return;
-            }
-            
-            try {
-                withdrawBtn.disabled = true;
-                withdrawBtn.textContent = 'Sending...';
-                statusDiv.textContent = 'Withdrawing...';
-                
-                const tx = await burnerWallet.sendTransaction({
-                    to: toAddress,
-                    value: ethers.utils.parseEther(amount.toString()),
-                    gasLimit: 21000
-                });
-                
-                await tx.wait();
-                
-                const newBalance = await checkBurnerBalance();
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${newBalance.toFixed(4)} MON`;
-                statusDiv.textContent = `Withdrawn! Balance: ${newBalance.toFixed(3)} MON`;
-                withdrawAddress.value = '';
-                withdrawAmount.value = '';
-                
-                if (newBalance < 0.01) {
-                    startBtn.disabled = true;
-                    tapToStart.textContent = 'FUND WALLET TO PLAY';
-                }
-                
-            } catch (error) {
-                console.error('Withdraw error:', error);
-                statusDiv.textContent = 'Withdraw failed';
-            }
-            
-            withdrawBtn.disabled = false;
-            withdrawBtn.textContent = 'Withdraw';
-        });
-        
-        async function processQueue() {
-            if (isProcessingQueue) return;
-            isProcessingQueue = true;
-            
-            while (txQueue.length > 0) {
-                const chopNumber = txQueue.shift();
-                try {
-                    const tx = await burnerContract.chop(userAddress, chopNumber, { 
-                        gasLimit: 100000,
-                        nonce: currentNonce
-                    });
-                    currentNonce++;
-                    pendingTxs.push(tx.hash);
-                } catch (error) {
-                    console.error('Chop tx error:', error);
-                    if (error.message && error.message.includes('nonce')) {
-                        currentNonce = await burnerWallet.getTransactionCount('pending');
-                    }
-                }
-            }
-            isProcessingQueue = false;
-        }
-        
-        function sendChopTx(chopNumber) {
-            txQueue.push(chopNumber);
-            processQueue();
-        }
-        
-        function spawnParticles(x, y) {
-            for (let i = 0; i < 5; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.textContent = '🍃';
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
-                gameArea.appendChild(particle);
-                
-                const angle = Math.random() * Math.PI * 2;
-                const velocity = 50 + Math.random() * 100;
-                const vx = Math.cos(angle) * velocity;
-                const vy = Math.sin(angle) * velocity;
-                
-                let px = x, py = y, opacity = 1;
-                const animate = () => {
-                    px += vx * 0.02;
-                    py += vy * 0.02 + 2;
-                    opacity -= 0.03;
-                    particle.style.left = px + 'px';
-                    particle.style.top = py + 'px';
-                    particle.style.opacity = opacity;
-                    if (opacity > 0) requestAnimationFrame(animate);
-                    else particle.remove();
-                };
-                requestAnimationFrame(animate);
-            }
-        }
-        
-        function startGame() {
-            if (!burnerWallet || startBtn.disabled) return;
-            if (gameOverDiv.style.display === 'flex' && !canRestart) return;
-            
-            score = 0;
-            txCount = 0;
-            pendingTxs = [];
-            txQueue = [];
-            isProcessingQueue = false;
-            timeRemaining = 100;
-            currentTimeDecay = baseTimeDecay;
-            branches = [];
-            lumberjackSide = 'left';
-            gameActive = true;
-            
+            score=0;txCount=0;timeLeft=100;playerSide='left';gameActive=true;canRestart=false;
             startOverlay.classList.add('hidden');
-            gameOverDiv.style.display = 'none';
-            startBtn.disabled = true;
-            
-            updateScore();
-            updateTimeBar();
-            generateBranches();
-            updateLumberjackPosition();
-            
-            burnerWallet.getTransactionCount('pending').then(nonce => {
-                currentNonce = nonce;
-                burnerContract.startGame(userAddress, { gasLimit: 100000, nonce: currentNonce }).catch(console.error);
-                currentNonce++;
-            });
-            
-            gameLoop();
+            gameOver.classList.remove('show','canRestart','newRecord');
+            gameOver.style.display='none';
+            startBtn.disabled=true;
+            scoreDisplay.textContent='0';
+            timeBar.style.width='100%';
+            timeBar.className='';
+            lumberjack.className='left';
+            gameArea.classList.remove('shake');
+            initBranches();
+            burner.getTransactionCount('pending').then(n=>{nonce=n;contract.startGame(userAddress,{gasLimit:100000,nonce}).catch(console.error);nonce++;});
+            requestAnimationFrame(gameLoop);
         }
         
-        function gameLoop() {
-            if (!gameActive) return;
-            
-            const milestones = Math.floor(score / 20);
-            let speedMultiplier = 1 + (milestones * 0.12);
-            
-            // Extra hard mode at 100+
-            if (score >= 100) {
-                speedMultiplier += 0.3;
-            }
-            // Insane mode at 150+
-            if (score >= 150) {
-                speedMultiplier += 0.4;
-            }
-            // Brutal mode at 200+
-            if (score >= 200) {
-                speedMultiplier += 0.5;
-            }
-            
-            currentTimeDecay = baseTimeDecay * speedMultiplier;
-            
-            timeRemaining -= currentTimeDecay;
-            updateTimeBar();
-            
-            if (timeRemaining <= 0) {
-                endGame();
-                return;
-            }
-            animationFrameId = requestAnimationFrame(gameLoop);
+        function gameLoop(){
+            if(!gameActive)return;
+            // Aggressive decay at higher scores
+            const decay = 0.1 * (1 + Math.floor(score/15)*0.15 + (score >= 50 ? 0.2 : 0) + (score >= 100 ? 0.3 : 0));
+            timeLeft-=decay;
+            const pct=Math.max(0,timeLeft);
+            timeBar.style.width=pct+'%';
+            timeBar.className=pct>50?'':pct>25?'warning':'danger';
+            if(timeLeft<=0){endGame();return;}
+            animFrame=requestAnimationFrame(gameLoop);
         }
         
-        function generateBranches() {
-            document.querySelectorAll('.branch').forEach(b => b.remove());
-            branches = [];
-            for (let i = 0; i < 6; i++) {
-                const side = Math.random() > 0.5 ? 'left' : 'right';
-                const position = 210 + (i * 90);
-                branches.push({ side, position });
-                createBranch(side, position);
-            }
-        }
-        
-        function createBranch(side, position) {
-            const branch = document.createElement('div');
-            branch.className = `branch ${side}`;
-            branch.style.bottom = `${position}px`;
+        function chop(side){
+            if(!gameActive)return;
             
-            if (side === 'left') {
-                branch.style.left = '90px';
-            } else {
-                branch.style.left = '190px';
-            }
-            
-            const main = document.createElement('div');
-            main.className = 'branch-main';
-            main.style.width = '120px';
-            main.style.height = '50px';
-            main.style.position = 'relative';
-            
-            const arm = document.createElement('div');
-            arm.className = 'branch-arm';
-            main.appendChild(arm);
-            
-            const foliage = document.createElement('div');
-            foliage.className = 'branch-foliage';
-            main.appendChild(foliage);
-            
-            const leafAccent = document.createElement('div');
-            leafAccent.className = 'branch-leaf-accent';
-            main.appendChild(leafAccent);
-            
-            branch.appendChild(main);
-            gameArea.appendChild(branch);
-        }
-        
-        function updateLumberjackPosition() {
-            if (lumberjackSide === 'left') {
-                lumberjack.style.left = '65px';
-                keoneImg.style.transform = 'scaleX(1)';
-                axe.style.right = '-20px';
-                axe.style.left = 'auto';
-                axe.style.transform = 'scaleX(-1)';
-            } else {
-                lumberjack.style.left = '255px';
-                keoneImg.style.transform = 'scaleX(-1)';
-                axe.style.left = '-20px';
-                axe.style.right = 'auto';
-                axe.style.transform = 'scaleX(1)';
-            }
-        }
-        
-        function chop(side) {
-            if (!gameActive) return;
-            
-            const lowestBranch = branches[0];
-            if (lowestBranch && lowestBranch.position < 215 && lowestBranch.side === side) {
-                endGame();
-                return;
-            }
-            
-            lumberjackSide = side;
-            updateLumberjackPosition();
+            playerSide=side;
+            lumberjack.className=side;
             
             axe.classList.remove('swing');
             void axe.offsetWidth;
             axe.classList.add('swing');
             
-            if (branches.length > 0) {
-                const branchEl = document.querySelector('.branch');
-                if (branchEl) {
-                    const rect = branchEl.getBoundingClientRect();
-                    const gameRect = gameArea.getBoundingClientRect();
-                    spawnParticles(rect.left - gameRect.left + 50, rect.top - gameRect.top + 15);
-                }
-                
-                branches.shift();
-                const branchEls = document.querySelectorAll('.branch');
-                if (branchEls[0]) branchEls[0].remove();
-                
-                branches.forEach((branch, index) => {
-                    branch.position -= 90;
-                    const branchEl = branchEls[index + 1];
-                    if (branchEl) branchEl.style.bottom = `${branch.position}px`;
-                });
-                
-                const newSide = Math.random() > 0.5 ? 'left' : 'right';
-                const newPosition = 210 + (branches.length * 90);
-                branches.push({ side: newSide, position: newPosition });
-                createBranch(newSide, newPosition);
+            // Spawn wood chips
+            spawnWoodChips(side === 'left');
+            
+            // Check collision
+            if(branches[0]&&branches[0].side===side){
+                endGame();
+                return;
             }
+            
+            // Remove bottom branch
+            branches[0].el.remove();
+            branches.shift();
+            
+            // Move remaining branches down with smooth animation
+            branches.forEach(b=>{
+                b.y-=70;
+                b.el.style.bottom=b.y+'px';
+            });
+            
+            // Add new branch at top
+            const newSide=Math.random()>0.5?'left':'right';
+            const newY=165+5*70;
+            branches.push({side:newSide,y:newY,el:createBranch(newSide,newY)});
             
             score++;
             txCount++;
-            timeRemaining = Math.min(100, timeRemaining + timeAddPerChop);
+            timeLeft=Math.min(100,timeLeft+5);
+            scoreDisplay.textContent=score;
             
-            updateScore();
-            updateTimeBar();
-            sendChopTx(score);
+            contract.chop(userAddress,score,{gasLimit:100000,nonce}).catch(console.error);
+            nonce++;
         }
         
-        function updateScore() {
-            scoreDisplay.textContent = score;
-        }
-        
-        function updateTimeBar() {
-            const pct = Math.max(0, timeRemaining);
-            timeBarFill.style.width = `${pct}%`;
+        function endGame(){
+            gameActive=false;
+            cancelAnimationFrame(animFrame);
             
-            if (pct > 60) {
-                timeBarFill.style.background = 'linear-gradient(to right, #00d2d3 0%, #54a0ff 100%)';
-            } else if (pct > 30) {
-                timeBarFill.style.background = 'linear-gradient(to right, #feca57 0%, #ff9f43 100%)';
-            } else {
-                timeBarFill.style.background = 'linear-gradient(to right, #ff6b6b 0%, #ee5a6f 100%)';
-            }
-        }
-        
-        async function endGame() {
-            gameActive = false;
-            cancelAnimationFrame(animationFrameId);
+            // Screen shake and death sound
+            gameArea.classList.add('shake');
+            playDeathSound();
+            setTimeout(() => gameArea.classList.remove('shake'), 300);
             
-            const isNewRecord = score > highScore;
-            const finalScore = score;
-            const finalTxCount = txCount;
+            const isRecord=score>highScore;
+            if(isRecord){highScore=score;localStorage.setItem('lumberjackHS',highScore);highScoreEl.textContent=highScore;}
             
-            if (isNewRecord) {
-                highScore = score;
-                highScoreDiv.textContent = highScore;
-                localStorage.setItem('monadLumberjackHighScore', highScore.toString());
-                gameOverDiv.classList.add('newRecord');
-                gameOverDiv.querySelector('h2').textContent = '🎉 NEW RECORD!';
-                beatScoreDiv.textContent = '';
-            } else {
-                gameOverDiv.classList.remove('newRecord');
-                gameOverDiv.querySelector('h2').textContent = 'GAME OVER';
-                const diff = highScore - score;
-                beatScoreDiv.textContent = diff === 0 ? 'You tied your best!' : `${diff} away from your best`;
-            }
+            $('finalScore').textContent=score;
+            $('txSummary').textContent=`⚡ ${txCount} transactions`;
+            $('beatScore').textContent=isRecord?'🎉 NEW RECORD!':`Best: ${highScore}`;
             
-            finalScoreDiv.textContent = finalScore;
-            txSummaryDiv.textContent = `⚡ ${finalTxCount} transactions on Monad`;
-            txLinkDiv.innerHTML = '';
-            gameOverDiv.style.display = 'flex';
+            if(isRecord) gameOver.classList.add('newRecord');
+            gameOver.querySelector('h2').textContent=isRecord?'🎉 NEW RECORD!':'GAME OVER';
             
-            canRestart = false;
-            setTimeout(() => { canRestart = true; }, 1000);
+            // Fade in game over
+            gameOver.style.display='flex';
+            gameOver.classList.add('show');
             
-            startBtn.disabled = false;
+            // Allow restart after delay
+            setTimeout(()=>{
+                canRestart=true;
+                gameOver.classList.add('canRestart');
+                startBtn.disabled=false;
+            }, 1000);
             
-            (async () => {
-                try {
-                    await new Promise(r => setTimeout(r, 300));
-                    const freshNonce = await burnerWallet.getTransactionCount('pending');
-                    const tx = await burnerContract.endGame(userAddress, finalScore, { 
-                        gasLimit: 150000,
-                        nonce: freshNonce
-                    });
-                    const receipt = await tx.wait();
-                    txLinkDiv.innerHTML = `<a href="${MONAD_EXPLORER}/tx/${receipt.transactionHash}" target="_blank">View on Explorer →</a>`;
-                } catch (error) {
-                    console.error('End game error:', error);
-                }
-                
-                const burnerBalance = await checkBurnerBalance();
-                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${burnerBalance.toFixed(4)} MON`;
-                statusDiv.textContent = `Ready! ${burnerBalance.toFixed(3)} MON`;
+            (async()=>{
+                try{const n=await burner.getTransactionCount('pending');const tx=await contract.endGame(userAddress,score,{gasLimit:150000,nonce:n});const r=await tx.wait();$('txLink').innerHTML=`<a href="${EXPLORER}/tx/${r.transactionHash}" target="_blank">View on Explorer →</a>`;fetchLeaderboard();}catch(e){}
+                const bal=await getBalance();burnerInfo.innerHTML=`🎮 Game Wallet:<br><b>${burner.address}</b><br>Balance: ${bal.toFixed(4)} MON`;
             })();
         }
         
-        restartBtn.addEventListener('click', startGame);
-        startBtn.addEventListener('click', startGame);
-        
-        document.addEventListener('keydown', (e) => {
-            if (gameOverDiv.style.display === 'flex') {
-                if (e.key === ' ' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                    e.preventDefault();
-                    startGame();
-                }
-            }
-        });
-        
-        tapLeft.addEventListener('click', () => {
-            if (!gameActive && !startBtn.disabled && !startOverlay.classList.contains('hidden')) {
-                startGame();
-            } else {
-                chop('left');
-            }
-        });
-        
-        tapRight.addEventListener('click', () => {
-            if (!gameActive && !startBtn.disabled && !startOverlay.classList.contains('hidden')) {
-                startGame();
-            } else {
-                chop('right');
-            }
-        });
-        
-        tapLeft.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (!gameActive && !startBtn.disabled) startGame();
-            else chop('left');
-        });
-        
-        tapRight.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (!gameActive && !startBtn.disabled) startGame();
-            else chop('right');
-        });
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === ' ' || e.key === 'Spacebar') {
-                e.preventDefault();
-                if (!gameActive && !startBtn.disabled) startGame();
-            }
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                if (!gameActive && !startBtn.disabled) startGame();
-                else chop('left');
-            }
-            if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                if (!gameActive && !startBtn.disabled) startGame();
-                else chop('right');
-            }
-        });
+        $('restartBtn').onclick=startGame;
+        startBtn.onclick=startGame;
+        $('tapLeft').onclick=()=>{if(!gameActive&&!startBtn.disabled&&canRestart)startGame();else if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('left');};
+        $('tapRight').onclick=()=>{if(!gameActive&&!startBtn.disabled&&canRestart)startGame();else if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('right');};
+        $('tapLeft').ontouchstart=e=>{e.preventDefault();if(!gameActive&&!startBtn.disabled&&canRestart)startGame();else if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('left');};
+        $('tapRight').ontouchstart=e=>{e.preventDefault();if(!gameActive&&!startBtn.disabled&&canRestart)startGame();else if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('right');};
+        document.onkeydown=e=>{
+            if(e.key===' '||e.key==='ArrowLeft'||e.key==='ArrowRight')e.preventDefault();
+            if(gameOver.classList.contains('show')&&canRestart&&(e.key===' '||e.key==='ArrowLeft'||e.key==='ArrowRight')){startGame();return;}
+            if(e.key===' '&&!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();
+            if(e.key==='ArrowLeft'){if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('left');}
+            if(e.key==='ArrowRight'){if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('right');}
+        };
     </script>
 </body>
 </html>
