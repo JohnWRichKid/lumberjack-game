@@ -567,48 +567,66 @@
         async function fetchLeaderboard() {
             try {
                 const rpcProvider = new ethers.providers.JsonRpcProvider(RPC);
-                
-                // Wait for provider to be ready
                 await rpcProvider.ready;
                 
                 const currentBlock = await rpcProvider.getBlockNumber();
-                
-                // Query logs in chunks to avoid timeout
                 const scores = {};
-                const chunkSize = 50000;
-                const startBlock = Math.max(0, currentBlock - 200000);
+                const startBlock = Math.max(0, currentBlock - 100000);
                 
-                for(let from = startBlock; from < currentBlock; from += chunkSize) {
-                    const to = Math.min(from + chunkSize - 1, currentBlock);
-                    try {
-                        const logs = await rpcProvider.getLogs({
-                            address: CONTRACT,
-                            fromBlock: from,
-                            toBlock: to
-                        });
+                console.log('Fetching logs from block', startBlock, 'to', currentBlock);
+                
+                const logs = await rpcProvider.getLogs({
+                    address: CONTRACT,
+                    fromBlock: startBlock,
+                    toBlock: currentBlock
+                });
+                
+                console.log('Found', logs.length, 'total logs');
+                
+                logs.forEach(log => {
+                    // Log everything to see the structure
+                    if(log.topics && log.topics.length >= 1) {
+                        const eventSig = log.topics[0].slice(0, 10);
                         
-                        logs.forEach(log => {
-                            // Look for logs with topics that have an address (GameEnded events)
-                            if(log.topics && log.topics.length >= 2 && log.data) {
-                                try {
-                                    // Address is in topic[1], padded to 32 bytes
-                                    const addr = '0x' + log.topics[1].slice(26).toLowerCase();
-                                    // Score is in the data field
-                                    const score = parseInt(log.data, 16);
-                                    
-                                    // Sanity check - score should be reasonable (1-9999)
-                                    if(score > 0 && score < 10000 && addr.length === 42) {
-                                        if(!scores[addr] || scores[addr] < score) {
-                                            scores[addr] = score;
-                                        }
+                        // Look for endGame events - check different possible structures
+                        if(log.topics.length >= 2 && log.data && log.data !== '0x') {
+                            try {
+                                // Try parsing score from data
+                                // Data might be just the score, or might have multiple values
+                                let score = 0;
+                                
+                                if(log.data.length === 66) {
+                                    // Single uint256 in data
+                                    score = parseInt(log.data, 16);
+                                } else if(log.data.length > 66) {
+                                    // Multiple values - score might be first or second
+                                    const firstVal = parseInt(log.data.slice(0, 66), 16);
+                                    const secondVal = parseInt('0x' + log.data.slice(66, 130), 16);
+                                    // Use whichever looks like a reasonable score
+                                    score = (firstVal > 0 && firstVal < 1000) ? firstVal : 
+                                            (secondVal > 0 && secondVal < 1000) ? secondVal : 0;
+                                }
+                                
+                                // Address could be in topic[1] or topic[2]
+                                let addr = '';
+                                if(log.topics[1]) {
+                                    addr = '0x' + log.topics[1].slice(26).toLowerCase();
+                                }
+                                
+                                if(score > 0 && score < 1000 && addr.length === 42 && addr !== '0x0000000000000000000000000000000000000000') {
+                                    console.log('Found score:', addr, score);
+                                    if(!scores[addr] || scores[addr] < score) {
+                                        scores[addr] = score;
                                     }
-                                } catch(e) {}
+                                }
+                            } catch(e) {
+                                console.log('Parse error', e);
                             }
-                        });
-                    } catch(e) {
-                        console.log('Chunk error', from, e);
+                        }
                     }
-                }
+                });
+                
+                console.log('Parsed scores:', scores);
                 
                 const sorted = Object.entries(scores)
                     .sort((a, b) => b[1] - a[1])
