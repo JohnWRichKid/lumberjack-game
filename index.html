@@ -218,7 +218,7 @@
                 <div id="tournamentSubmit">🏆 Score submitted to tournament!</div>
                 <div id="beatScore"></div>
                 <div id="txLink"></div>
-                <button id="restartBtn">PLAY AGAIN</button>
+                <button id="restartBtn">PLAY AGAIN (SPACE)</button>
             </div>
         </div>
         
@@ -268,9 +268,9 @@
             </div>
             
             <div class="panel-box">
-                <button id="startBtn" disabled>START FREE PLAY</button>
-                <div style="text-align:center;margin-top:8px;font-size:10px;opacity:0.7">
-                    Tournament games auto-count during Play Phase
+                <button id="startBtn" disabled>START GAME</button>
+                <div id="gameHint" style="text-align:center;margin-top:8px;font-size:10px;opacity:0.7">
+                    Connect wallet to play
                 </div>
             </div>
             
@@ -316,6 +316,7 @@
         var lastChopTime = 0;
         var isRegistered = false;
         var currentTournamentId = 0;
+        var myCurrentTournamentScore = 0;
         var tournamentPhase = 0;
         var signupEndTime = 0;
         var playEndTime = 0;
@@ -425,10 +426,8 @@
         function updateTapToStart(bal) {
             if (bal < 0.001) {
                 tapToStart.textContent = "DEPOSIT MON TO PLAY";
-            } else if (tournamentPhase === 1 && isRegistered) {
-                tapToStart.textContent = "TAP TO PLAY TOURNAMENT";
             } else {
-                tapToStart.textContent = "TAP TO START FREE PLAY";
+                tapToStart.textContent = "TAP OR PRESS SPACE TO START";
             }
         }
         
@@ -474,11 +473,24 @@
                     
                     if (isRegistered) {
                         var myScore = await contract.getPlayerScore(currentTournamentId, burner.address);
-                        $("myScoreVal").textContent = myScore.toNumber();
+                        myCurrentTournamentScore = myScore.toNumber();
+                        $("myScoreVal").textContent = myCurrentTournamentScore;
                         $("myTournamentScore").classList.add("show");
                     } else {
+                        myCurrentTournamentScore = 0;
                         $("myTournamentScore").classList.remove("show");
                     }
+                }
+                
+                // Update game hint
+                if (tournamentPhase === 1 && isRegistered) {
+                    $("gameHint").textContent = "🏆 Tournament mode - beat " + myCurrentTournamentScore + " to update score";
+                } else if (tournamentPhase === 0 && isRegistered) {
+                    $("gameHint").textContent = "⏳ Waiting for play phase...";
+                } else if (tournamentPhase === 1 && !isRegistered) {
+                    $("gameHint").textContent = "Free play (not in tournament)";
+                } else {
+                    $("gameHint").textContent = "Join tournament or play free";
                 }
                 
                 try {
@@ -874,69 +886,55 @@
         }
         
         async function submitGameResults(isTournamentGame, finalScore) {
-            if (isTournamentGame && isRegistered) {
-                $("tournamentSubmit").textContent = "🏆 Submitting score " + finalScore + "...";
+            // Only submit to tournament if:
+            // 1. It's a tournament game
+            // 2. Player is registered  
+            // 3. Score is HIGHER than their current tournament score
+            
+            if (isTournamentGame && isRegistered && finalScore > myCurrentTournamentScore) {
+                $("tournamentSubmit").textContent = "🏆 New high! Submitting " + finalScore + "...";
                 
                 try {
-                    // Get the current nonce and wait for any pending txs
-                    var pendingNonce = await burner.getTransactionCount("pending");
-                    var latestNonce = await burner.getTransactionCount("latest");
+                    console.log("Submitting score " + finalScore);
                     
-                    // If there are pending transactions, wait a bit
-                    if (pendingNonce > latestNonce) {
-                        $("tournamentSubmit").textContent = "🏆 Waiting for pending txs...";
-                        await new Promise(function(resolve) { setTimeout(resolve, 2000); });
-                    }
+                    // Create a fresh provider connection to avoid any caching issues
+                    var freshProvider = new ethers.providers.JsonRpcProvider(RPC);
+                    var freshWallet = new ethers.Wallet(localStorage.getItem("lumberjackPK"), freshProvider);
+                    var freshContract = new ethers.Contract(CONTRACT, ABI, freshWallet);
                     
-                    // Get fresh nonce after waiting
-                    var nonce = await burner.getTransactionCount("latest");
-                    
-                    var submitTx = await contract.submitScore(finalScore, { 
-                        gasLimit: 500000,
-                        gasPrice: ethers.utils.parseUnits("200", "gwei"),
-                        nonce: nonce
+                    var tx = await freshContract.submitScore(finalScore, { 
+                        gasLimit: 300000
                     });
                     
-                    $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " sent! Confirming...";
+                    console.log("TX hash: " + tx.hash);
+                    $("tournamentSubmit").textContent = "🏆 Confirming " + finalScore + "...";
                     
-                    // Wait for confirmation with timeout
-                    var receipt = await Promise.race([
-                        submitTx.wait(),
-                        new Promise(function(_, reject) {
-                            setTimeout(function() { reject(new Error("timeout")); }, 30000);
-                        })
-                    ]);
+                    var receipt = await tx.wait();
                     
+                    console.log("Score " + finalScore + " confirmed in block " + receipt.blockNumber);
                     $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
-                    $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
+                    $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + tx.hash + '" target="_blank">View on Explorer →</a>';
                     
-                    // Update tournament info after short delay
-                    setTimeout(function() { updateTournamentInfo(); }, 1000);
+                    myCurrentTournamentScore = finalScore;
+                    $("myScoreVal").textContent = finalScore;
                     
                 } catch(err) {
-                    console.error("Score submit error:", err);
-                    
-                    if (err.message === "timeout") {
-                        $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " sent (confirming slowly)";
-                    } else if (err.code === "NONCE_EXPIRED" || (err.message && err.message.indexOf("nonce") > -1)) {
-                        // Nonce issue - tx might have gone through anyway
-                        $("tournamentSubmit").textContent = "🏆 Score may have submitted - check below";
-                        setTimeout(function() { updateTournamentInfo(); }, 2000);
-                    } else if (err.code === "REPLACEMENT_UNDERPRICED") {
-                        $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " already pending";
-                    } else {
-                        $("tournamentSubmit").textContent = "⚠️ Submit error - score was " + finalScore;
-                    }
+                    console.error("Score submit failed:", err);
+                    var errMsg = err.reason || err.message || "unknown error";
+                    if (errMsg.length > 50) errMsg = errMsg.substring(0, 50) + "...";
+                    $("tournamentSubmit").textContent = "⚠️ Failed: " + errMsg;
                 }
-            } else {
-                // Non-tournament: just fire endGame
-                contract.endGame(userAddress, finalScore, { gasLimit: 150000 }).then(function(tx) {
-                    return tx.wait();
-                }).then(function(receipt) {
-                    $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
-                }).catch(function(err) {
-                    console.error("EndGame error:", err);
-                });
+                
+                // Refresh tournament info
+                setTimeout(function() { updateTournamentInfo(); }, 2000);
+                
+            } else if (isTournamentGame && isRegistered && finalScore <= myCurrentTournamentScore) {
+                // Score not higher than current, no need to submit
+                $("tournamentSubmit").textContent = "Score " + finalScore + " (your best: " + myCurrentTournamentScore + ")";
+                
+            } else if (!isTournamentGame) {
+                // Free play - just record endGame (fire and forget)
+                contract.endGame(userAddress, finalScore, { gasLimit: 150000 }).catch(function() {});
             }
             
             await updateBal();
