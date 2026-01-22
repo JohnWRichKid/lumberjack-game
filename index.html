@@ -706,8 +706,7 @@
             
             burner.getTransactionCount("pending").then(function(n) {
                 nonce = n;
-                contract.startGame(userAddress, { gasLimit: 100000, nonce: nonce }).catch(console.error);
-                nonce++;
+                contract.startGame(userAddress, { gasLimit: 100000 }).catch(function() {});
             });
             
             requestAnimationFrame(gameLoop);
@@ -781,8 +780,8 @@
             timeLeft = Math.min(100, timeLeft + 6);
             scoreDisplay.textContent = score;
             
-            contract.chop(userAddress, score, { gasLimit: 100000, nonce: nonce }).catch(console.error);
-            nonce++;
+            // Fire and forget - don't track nonce, don't wait
+            contract.chop(userAddress, score, { gasLimit: 100000 }).catch(function() {});
         }
         
         function endGame() {
@@ -829,57 +828,37 @@
         }
         
         async function submitGameResults(isTournamentGame, finalScore) {
-            try {
-                if (isTournamentGame && isRegistered) {
-                    $("tournamentSubmit").textContent = "🏆 Submitting score...";
-                    
-                    // Wait a moment for pending txs to clear
-                    await new Promise(function(resolve) { setTimeout(resolve, 500); });
-                    
-                    var submitted = false;
-                    for (var attempt = 0; attempt < 5 && !submitted; attempt++) {
-                        try {
-                            // Get fresh nonce each attempt
-                            var freshNonce = await burner.getTransactionCount("latest");
-                            console.log("Submit attempt " + (attempt + 1) + " with nonce " + freshNonce + " for score " + finalScore);
-                            
-                            var submitTx = await contract.submitScore(finalScore, { 
-                                gasLimit: 500000, 
-                                nonce: freshNonce,
-                                gasPrice: ethers.utils.parseUnits("100", "gwei")
-                            });
-                            
-                            console.log("TX sent: " + submitTx.hash);
-                            var receipt = await submitTx.wait();
-                            console.log("TX confirmed in block " + receipt.blockNumber);
-                            
-                            $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " submitted!";
-                            submitted = true;
-                            await updateTournamentInfo();
-                        } catch(err) {
-                            console.error("Submit attempt " + (attempt + 1) + " failed:", err.message || err);
-                            
-                            // Wait longer between retries
-                            await new Promise(function(resolve) { setTimeout(resolve, 2000); });
-                        }
-                    }
-                    if (!submitted) {
-                        $("tournamentSubmit").textContent = "⚠️ Submit failed - score was " + finalScore;
-                    }
-                }
+            if (isTournamentGame && isRegistered) {
+                $("tournamentSubmit").textContent = "🏆 Submitting score " + finalScore + "...";
                 
-                // End game transaction (less critical)
+                // Submit immediately with high priority
                 try {
-                    var endNonce = await burner.getTransactionCount("latest");
-                    var endTx = await contract.endGame(userAddress, finalScore, { gasLimit: 150000, nonce: endNonce });
-                    var receipt = await endTx.wait();
+                    var submitTx = await contract.submitScore(finalScore, { 
+                        gasLimit: 500000,
+                        gasPrice: ethers.utils.parseUnits("150", "gwei")
+                    });
+                    
+                    $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " sent! Confirming...";
+                    
+                    // Wait for confirmation
+                    var receipt = await submitTx.wait();
+                    $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
                     $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
+                    
+                    updateTournamentInfo();
                 } catch(err) {
-                    console.error("EndGame error:", err);
+                    console.error("Score submit error:", err);
+                    $("tournamentSubmit").textContent = "⚠️ Submit failed for score " + finalScore;
                 }
-            } catch(err) {
-                console.error(err);
+            } else {
+                // Non-tournament: just fire endGame
+                contract.endGame(userAddress, finalScore, { gasLimit: 150000 }).then(function(tx) {
+                    return tx.wait();
+                }).then(function(receipt) {
+                    $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
+                }).catch(function() {});
             }
+            
             await updateBal();
         }
         
