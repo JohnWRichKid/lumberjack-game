@@ -595,7 +595,6 @@
                 
             } catch(e) {
                 console.error("Connection error:", e);
-                alert("Connection failed: " + (e.message || "Unknown error"));
                 connectBtn.textContent = "Connect Wallet";
                 connectBtn.disabled = false;
             }
@@ -635,16 +634,39 @@
             try {
                 joinBtn.textContent = "Joining...";
                 joinBtn.disabled = true;
-                var tx = await contract.joinTournament({ value: ethers.utils.parseEther("10"), gasLimit: 300000 });
+                
+                var tx = await contract.joinTournament({ 
+                    value: ethers.utils.parseEther("10"), 
+                    gasLimit: 300000,
+                    gasPrice: ethers.utils.parseUnits("100", "gwei")
+                });
+                
+                joinBtn.textContent = "Confirming...";
                 await tx.wait();
+                
                 isRegistered = true;
                 joinBtn.textContent = "✓ Registered";
                 joinBtn.classList.add("joined");
                 await updateTournamentInfo();
             } catch(e) {
                 console.error("Join error:", e);
-                alert("Failed: " + (e.reason || e.message));
                 joinBtn.textContent = "Join Tournament (10 MON)";
+                joinBtn.disabled = false;
+                
+                // Show error in the button briefly
+                var errorMsg = "Failed to join";
+                if (e.message && e.message.indexOf("insufficient") > -1) {
+                    errorMsg = "Not enough MON";
+                } else if (e.message && e.message.indexOf("user rejected") > -1) {
+                    errorMsg = "Cancelled";
+                }
+                joinBtn.textContent = errorMsg;
+                setTimeout(function() {
+                    if (!isRegistered) {
+                        joinBtn.textContent = "Join Tournament (10 MON)";
+                    }
+                }, 2000);
+                
                 await updateBal();
             }
         };
