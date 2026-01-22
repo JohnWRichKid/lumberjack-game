@@ -37,8 +37,15 @@
             border-radius: 15px;
             overflow: hidden;
         }
+        #gameArea.shake {
+            animation: shake 0.3s ease-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
         
-        /* Clouds */
         .cloud {
             position: absolute;
             background: rgba(255,255,255,0.85);
@@ -58,7 +65,6 @@
         .cloud2::before { width: 30px; height: 30px; top: -15px; left: 10px; }
         .cloud2::after { width: 38px; height: 34px; top: -16px; left: 30px; }
         
-        /* Tree trunk */
         #trunk {
             position: absolute;
             left: 50%;
@@ -70,7 +76,6 @@
             z-index: 10;
         }
         
-        /* Tree top */
         #treeTop {
             position: absolute;
             top: 25px;
@@ -86,21 +91,21 @@
         .tt2 { width: 65px; height: 50px; background: radial-gradient(ellipse at 50% 60%, #72C472, #4CAF50, #388E3C); left: -58px; top: 28px; }
         .tt3 { width: 65px; height: 50px; background: radial-gradient(ellipse at 50% 60%, #72C472, #4CAF50, #388E3C); left: -7px; top: 28px; }
         
-        /* Branches */
+        /* Branches with green foliage */
         .branch {
             position: absolute;
             left: 50%;
             height: 50px;
             z-index: 9;
-            transition: bottom 0.08s ease-out;
+            transition: bottom 0.12s ease-out, opacity 0.1s;
         }
         .branch.left { transform: translateX(-26px) translateX(-100%); }
         .branch.right { transform: translateX(26px); }
         
         .branch-wood {
             position: absolute;
-            bottom: 12px;
-            width: 45px;
+            bottom: 15px;
+            width: 50px;
             height: 14px;
             background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 50%, #6D4C41 100%);
         }
@@ -109,35 +114,52 @@
         
         .branch-leaves {
             position: absolute;
-            bottom: 2px;
-            width: 50px;
-            height: 46px;
+            bottom: 0;
+            width: 55px;
+            height: 48px;
         }
-        .branch.left .branch-leaves { left: 0; }
-        .branch.right .branch-leaves { right: 0; }
+        .branch.left .branch-leaves { left: -5px; }
+        .branch.right .branch-leaves { right: -5px; }
         
         .leaf-base {
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 44px;
-            height: 36px;
-            background: radial-gradient(ellipse at 50% 70%, #6ECF6E 0%, #4CAF50 45%, #388E3C 80%, #2E7D32 100%);
-            border-radius: 45% 45% 45% 45%;
+            width: 48px;
+            height: 38px;
+            background: radial-gradient(ellipse at 50% 70%, #6ECF6E 0%, #4CAF50 40%, #388E3C 75%, #2E7D32 100%);
+            border-radius: 45%;
         }
         .leaf-top {
             position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 30px;
-            height: 24px;
+            width: 34px;
+            height: 26px;
             background: radial-gradient(ellipse at 50% 65%, #81D681 0%, #66BB6A 50%, #4CAF50 100%);
-            border-radius: 50% 50% 45% 45%;
+            border-radius: 50%;
+        }
+        .leaf-left {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 22px;
+            height: 20px;
+            background: radial-gradient(ellipse at 50% 60%, #72C472 0%, #4CAF50 100%);
+            border-radius: 50%;
+        }
+        .leaf-right {
+            position: absolute;
+            bottom: 10px;
+            right: 0;
+            width: 22px;
+            height: 20px;
+            background: radial-gradient(ellipse at 50% 60%, #72C472 0%, #4CAF50 100%);
+            border-radius: 50%;
         }
         
-        /* Ground */
         #ground {
             position: absolute;
             bottom: 0;
@@ -156,7 +178,6 @@
             z-index: 15;
         }
         
-        /* Lumberjack */
         #lumberjack {
             position: absolute;
             bottom: 90px;
@@ -222,6 +243,19 @@
             50% { rotate: -40deg; }
         }
         
+        /* Wood chip particles */
+        .wood-chip {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #8D6E63;
+            border-radius: 2px;
+            z-index: 50;
+            pointer-events: none;
+        }
+        .wood-chip.light { background: #A1887F; }
+        .wood-chip.dark { background: #5D4037; }
+        
         /* Bottom HUD */
         #bottomHUD {
             position: absolute;
@@ -255,7 +289,14 @@
             transition: width 0.1s linear;
         }
         #timeBarFill.warning { background: linear-gradient(to right, #FF9800, #FFC107); }
-        #timeBarFill.danger { background: linear-gradient(to right, #f44336, #FF5722); }
+        #timeBarFill.danger { 
+            background: linear-gradient(to right, #f44336, #FF5722);
+            animation: pulse-danger 0.3s ease-in-out infinite;
+        }
+        @keyframes pulse-danger {
+            0%, 100% { box-shadow: 0 0 5px #f44336; }
+            50% { box-shadow: 0 0 15px #f44336, 0 0 25px #ff0000; }
+        }
         
         .tap-zone { position: absolute; top: 0; width: 50%; height: 100%; z-index: 30; cursor: pointer; }
         .tap-zone.left { left: 0; }
@@ -278,6 +319,15 @@
         .instructions p { margin: 3px 0; }
         .highlight { color: #feca57; }
         
+        /* Leaderboard */
+        #leaderboard h3 { font-size: 14px; margin-bottom: 8px; color: #feca57; }
+        #leaderboardList { font-size: 11px; }
+        .lb-entry { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .lb-entry:last-child { border-bottom: none; }
+        .lb-rank { color: #feca57; width: 20px; }
+        .lb-addr { opacity: 0.8; }
+        .lb-score { color: #8BC34A; font-weight: bold; }
+        
         /* Overlays */
         #startOverlay {
             position: absolute; inset: 0;
@@ -295,6 +345,19 @@
             display: none; position: absolute; inset: 0;
             background: rgba(0,0,0,0.9); z-index: 100;
             flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #gameOver.show {
+            display: flex;
+            animation: fadeInOverlay 0.8s ease-out forwards;
+        }
+        #gameOver.show.canRestart {
+            pointer-events: auto;
+        }
+        @keyframes fadeInOverlay {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
         #gameOver h2 { font-size: 24px; color: #f5576c; margin-bottom: 5px; }
         #gameOver.newRecord h2 { color: #feca57; }
@@ -394,6 +457,10 @@
                 <button id="startBtn" disabled>START GAME</button>
                 <div style="font-size:10px; text-align:center; opacity:0.5; margin-top:5px;">or press SPACE</div>
             </div>
+            <div class="panel-section" id="leaderboard">
+                <h3>🌍 Global Leaderboard</h3>
+                <div id="leaderboardList">Loading...</div>
+            </div>
             <div class="panel-section instructions">
                 <p><strong>How to Play:</strong></p>
                 <p>• Tap <span class="highlight">left</span> or <span class="highlight">right</span></p>
@@ -404,14 +471,16 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
         const CONTRACT="0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
-        const ABI=["function startGame(address) external","function chop(address,uint256) external","function endGame(address,uint256) external"];
+        const ABI=["function startGame(address) external","function chop(address,uint256) external","function endGame(address,uint256) external","function getHighScore(address) view returns (uint256)","event GameEnded(address indexed player, uint256 score)"];
         const CHAIN_ID='0x279f', RPC='https://testnet-rpc.monad.xyz', EXPLORER='https://testnet.monadexplorer.com';
         
         let score=0, highScore=0, gameActive=false, playerSide='left';
-        let branches=[], timeLeft=100, txCount=0, nonce=null;
+        let branches=[], timeLeft=100, txCount=0, nonce=null, canRestart=false;
         let provider, signer, userAddress, burner, contract, animFrame;
+        let deathSound;
         
         const $=id=>document.getElementById(id);
         const gameArea=$('gameArea'), scoreDisplay=$('scoreDisplay'), timeBar=$('timeBarFill');
@@ -421,6 +490,57 @@
         const statusDiv=$('status'), burnerInfo=$('burnerInfo');
         const fundOptions=$('fundOptions'), tapToStart=$('tapToStart');
         const highScoreEl=$('highScoreTop'), withdrawSection=$('withdrawSection');
+        
+        // Initialize death sound
+        async function initAudio(){
+            await Tone.start();
+            deathSound = new Tone.Synth({
+                oscillator: { type: 'square' },
+                envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.1 }
+            }).toDestination();
+            deathSound.volume.value = -10;
+        }
+        
+        function playDeathSound(){
+            if(deathSound){
+                deathSound.triggerAttackRelease('C3', '8n');
+                setTimeout(()=>deathSound.triggerAttackRelease('G2', '8n'), 100);
+                setTimeout(()=>deathSound.triggerAttackRelease('C2', '4n'), 200);
+            }
+        }
+        
+        // Wood chip particles
+        function spawnWoodChips(x, y){
+            for(let i=0; i<6; i++){
+                const chip = document.createElement('div');
+                chip.className = 'wood-chip ' + ['','light','dark'][Math.floor(Math.random()*3)];
+                chip.style.left = x + 'px';
+                chip.style.top = y + 'px';
+                chip.style.width = (4 + Math.random()*6) + 'px';
+                chip.style.height = (4 + Math.random()*6) + 'px';
+                gameArea.appendChild(chip);
+                
+                const angle = (Math.random() - 0.5) * Math.PI;
+                const speed = 3 + Math.random() * 5;
+                const vx = Math.cos(angle) * speed * (playerSide === 'left' ? -1 : 1);
+                const vy = -Math.random() * 6 - 2;
+                let cx = x, cy = y, gravity = 0.3, opacity = 1;
+                
+                function animateChip(){
+                    cx += vx;
+                    cy += vy;
+                    vy += gravity;
+                    opacity -= 0.02;
+                    chip.style.left = cx + 'px';
+                    chip.style.top = cy + 'px';
+                    chip.style.opacity = opacity;
+                    chip.style.transform = `rotate(${cx * 5}deg)`;
+                    if(opacity > 0) requestAnimationFrame(animateChip);
+                    else chip.remove();
+                }
+                requestAnimationFrame(animateChip);
+            }
+        }
         
         highScore = parseInt(localStorage.getItem('lumberjackHS')||'0');
         highScoreEl.textContent = highScore;
@@ -434,6 +554,42 @@
             if(!burner)return 0;
             return parseFloat(ethers.utils.formatEther(await burner.getBalance()));
         }
+        
+        // Fetch leaderboard from contract events
+        async function fetchLeaderboard(){
+            try{
+                const rpcProvider = new ethers.providers.JsonRpcProvider(RPC);
+                const c = new ethers.Contract(CONTRACT, ABI, rpcProvider);
+                const filter = c.filters.GameEnded();
+                const events = await c.queryFilter(filter, -50000);
+                
+                const scores = {};
+                events.forEach(e => {
+                    const addr = e.args.player;
+                    const sc = e.args.score.toNumber();
+                    if(!scores[addr] || scores[addr] < sc) scores[addr] = sc;
+                });
+                
+                const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]).slice(0, 10);
+                
+                if(sorted.length === 0){
+                    $('leaderboardList').innerHTML = '<div style="opacity:0.5;">No scores yet!</div>';
+                    return;
+                }
+                
+                $('leaderboardList').innerHTML = sorted.map((entry, i) => `
+                    <div class="lb-entry">
+                        <span class="lb-rank">${i+1}.</span>
+                        <span class="lb-addr">${entry[0].slice(0,6)}...${entry[0].slice(-4)}</span>
+                        <span class="lb-score">${entry[1]}</span>
+                    </div>
+                `).join('');
+            }catch(e){
+                console.error('Leaderboard error:', e);
+                $('leaderboardList').innerHTML = '<div style="opacity:0.5;">Could not load</div>';
+            }
+        }
+        fetchLeaderboard();
         
         walletBtn.onclick=async()=>{
             if(!window.ethereum){alert('Install MetaMask!');return;}
@@ -461,6 +617,7 @@
                 withdrawSection.style.display='block';
                 if(bal<0.01){statusDiv.textContent='Fund wallet to play';startBtn.disabled=true;tapToStart.textContent='FUND WALLET TO PLAY';}
                 else{statusDiv.textContent=`Ready! ${bal.toFixed(3)} MON`;startBtn.disabled=false;tapToStart.textContent='TAP TO START';}
+                initAudio();
             }catch(e){console.error(e);statusDiv.textContent='Failed';}
         };
         
@@ -495,6 +652,8 @@
                 <div class="branch-leaves">
                     <div class="leaf-base"></div>
                     <div class="leaf-top"></div>
+                    <div class="leaf-left"></div>
+                    <div class="leaf-right"></div>
                 </div>
             `;
             gameArea.appendChild(el);
@@ -513,14 +672,18 @@
         
         function startGame(){
             if(!burner||startBtn.disabled)return;
-            score=0;txCount=0;timeLeft=100;playerSide='left';gameActive=true;
+            if(!canRestart && gameOver.classList.contains('show')) return;
+            
+            score=0;txCount=0;timeLeft=100;playerSide='left';gameActive=true;canRestart=false;
             startOverlay.classList.add('hidden');
+            gameOver.classList.remove('show','canRestart','newRecord');
             gameOver.style.display='none';
             startBtn.disabled=true;
             scoreDisplay.textContent='0';
             timeBar.style.width='100%';
             timeBar.className='';
             lumberjack.className='left';
+            gameArea.classList.remove('shake');
             initBranches();
             burner.getTransactionCount('pending').then(n=>{nonce=n;contract.startGame(userAddress,{gasLimit:100000,nonce}).catch(console.error);nonce++;});
             requestAnimationFrame(gameLoop);
@@ -528,7 +691,8 @@
         
         function gameLoop(){
             if(!gameActive)return;
-            const decay=0.1*(1+Math.floor(score/25)*0.1);
+            // Aggressive decay at higher scores
+            const decay = 0.1 * (1 + Math.floor(score/15)*0.15 + (score >= 50 ? 0.2 : 0) + (score >= 100 ? 0.3 : 0));
             timeLeft-=decay;
             const pct=Math.max(0,timeLeft);
             timeBar.style.width=pct+'%';
@@ -547,7 +711,11 @@
             void axe.offsetWidth;
             axe.classList.add('swing');
             
-            // Check collision - die if on same side as branch
+            // Spawn wood chips
+            const chipX = side === 'left' ? 160 : 210;
+            spawnWoodChips(chipX, 400);
+            
+            // Check collision
             if(branches[0]&&branches[0].side===side){
                 endGame();
                 return;
@@ -557,7 +725,7 @@
             branches[0].el.remove();
             branches.shift();
             
-            // Move remaining branches down
+            // Move remaining branches down with smooth animation
             branches.forEach(b=>{
                 b.y-=70;
                 b.el.style.bottom=b.y+'px';
@@ -580,33 +748,50 @@
         function endGame(){
             gameActive=false;
             cancelAnimationFrame(animFrame);
+            
+            // Screen shake and death sound
+            gameArea.classList.add('shake');
+            playDeathSound();
+            
             const isRecord=score>highScore;
             if(isRecord){highScore=score;localStorage.setItem('lumberjackHS',highScore);highScoreEl.textContent=highScore;}
+            
             $('finalScore').textContent=score;
             $('txSummary').textContent=`⚡ ${txCount} transactions`;
             $('beatScore').textContent=isRecord?'🎉 NEW RECORD!':`Best: ${highScore}`;
-            gameOver.className=isRecord?'newRecord':'';
+            
+            if(isRecord) gameOver.classList.add('newRecord');
             gameOver.querySelector('h2').textContent=isRecord?'🎉 NEW RECORD!':'GAME OVER';
+            
+            // Fade in game over
             gameOver.style.display='flex';
-            startBtn.disabled=false;
+            gameOver.classList.add('show');
+            
+            // Allow restart after delay
+            setTimeout(()=>{
+                canRestart=true;
+                gameOver.classList.add('canRestart');
+                startBtn.disabled=false;
+            }, 1000);
+            
             (async()=>{
-                try{const n=await burner.getTransactionCount('pending');const tx=await contract.endGame(userAddress,score,{gasLimit:150000,nonce:n});const r=await tx.wait();$('txLink').innerHTML=`<a href="${EXPLORER}/tx/${r.transactionHash}" target="_blank">View on Explorer →</a>`;}catch(e){}
+                try{const n=await burner.getTransactionCount('pending');const tx=await contract.endGame(userAddress,score,{gasLimit:150000,nonce:n});const r=await tx.wait();$('txLink').innerHTML=`<a href="${EXPLORER}/tx/${r.transactionHash}" target="_blank">View on Explorer →</a>`;fetchLeaderboard();}catch(e){}
                 const bal=await getBalance();burnerInfo.innerHTML=`🎮 Game Wallet:<br><b>${burner.address}</b><br>Balance: ${bal.toFixed(4)} MON`;
             })();
         }
         
         $('restartBtn').onclick=startGame;
         startBtn.onclick=startGame;
-        $('tapLeft').onclick=()=>{if(!gameActive&&!startBtn.disabled)startGame();else chop('left');};
-        $('tapRight').onclick=()=>{if(!gameActive&&!startBtn.disabled)startGame();else chop('right');};
-        $('tapLeft').ontouchstart=e=>{e.preventDefault();if(!gameActive&&!startBtn.disabled)startGame();else chop('left');};
-        $('tapRight').ontouchstart=e=>{e.preventDefault();if(!gameActive&&!startBtn.disabled)startGame();else chop('right');};
+        $('tapLeft').onclick=()=>{if(!gameActive&&!startBtn.disabled&&canRestart)startGame();else if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('left');};
+        $('tapRight').onclick=()=>{if(!gameActive&&!startBtn.disabled&&canRestart)startGame();else if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('right');};
+        $('tapLeft').ontouchstart=e=>{e.preventDefault();if(!gameActive&&!startBtn.disabled&&canRestart)startGame();else if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('left');};
+        $('tapRight').ontouchstart=e=>{e.preventDefault();if(!gameActive&&!startBtn.disabled&&canRestart)startGame();else if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('right');};
         document.onkeydown=e=>{
             if(e.key===' '||e.key==='ArrowLeft'||e.key==='ArrowRight')e.preventDefault();
-            if(gameOver.style.display==='flex'&&(e.key===' '||e.key==='ArrowLeft'||e.key==='ArrowRight')){startGame();return;}
-            if(e.key===' '&&!gameActive&&!startBtn.disabled)startGame();
-            if(e.key==='ArrowLeft'){if(!gameActive&&!startBtn.disabled)startGame();else chop('left');}
-            if(e.key==='ArrowRight'){if(!gameActive&&!startBtn.disabled)startGame();else chop('right');}
+            if(gameOver.classList.contains('show')&&canRestart&&(e.key===' '||e.key==='ArrowLeft'||e.key==='ArrowRight')){startGame();return;}
+            if(e.key===' '&&!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();
+            if(e.key==='ArrowLeft'){if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('left');}
+            if(e.key==='ArrowRight'){if(!gameActive&&!startBtn.disabled&&!gameOver.classList.contains('show'))startGame();else chop('right');}
         };
     </script>
 </body>
