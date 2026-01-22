@@ -267,17 +267,11 @@
                 </div>
             </div>
             
-            <div class="panel-box">
-                <button id="startBtn" disabled>START GAME</button>
-                <div id="gameHint" style="text-align:center;margin-top:8px;font-size:10px;opacity:0.7">
-                    Connect wallet to play
-                </div>
-            </div>
-            
             <div class="instructions">
                 📝 Signup Phase: Join for 10 MON<br>
                 🎮 Play Phase: Compete for high score<br>
-                🏆 Winner takes the prize pool!
+                🏆 Winner takes the prize pool!<br><br>
+                Free play anytime during Signup Phase
             </div>
         </div>
     </div>
@@ -330,7 +324,7 @@
         var axe = $("axe");
         var startOverlay = $("startOverlay");
         var gameOver = $("gameOver");
-        var startBtn = $("startBtn");
+        var startBtn = null;
         var connectBtn = $("connectBtn");
         var tapToStart = $("tapToStart");
         var highScoreEl = $("highScoreTop");
@@ -417,7 +411,6 @@
             if (!burner) return 0;
             var b = parseFloat(ethers.utils.formatEther(await burner.getBalance()));
             balanceAmt.textContent = b.toFixed(3);
-            startBtn.disabled = b < 0.001;
             joinBtn.disabled = b < 10 || isRegistered || tournamentPhase !== 0;
             updateTapToStart(b);
             return b;
@@ -483,14 +476,20 @@
                 }
                 
                 // Update game hint
+                var hintText = "";
                 if (tournamentPhase === 1 && isRegistered) {
-                    $("gameHint").textContent = "🏆 Tournament mode - beat " + myCurrentTournamentScore + " to update score";
+                    hintText = "🏆 TOURNAMENT MODE - beat " + myCurrentTournamentScore;
                 } else if (tournamentPhase === 0 && isRegistered) {
-                    $("gameHint").textContent = "⏳ Waiting for play phase...";
+                    hintText = "⏳ Registered! Waiting for play phase...";
                 } else if (tournamentPhase === 1 && !isRegistered) {
-                    $("gameHint").textContent = "Free play (not in tournament)";
+                    hintText = "🎮 Free play (tournament in progress)";
                 } else {
-                    $("gameHint").textContent = "Join tournament or play free";
+                    hintText = "🎮 Free play - join tournament above!";
+                }
+                
+                // Show hint in myTournamentScore area or create new element
+                if (!isRegistered && tournamentPhase !== 1) {
+                    $("myTournamentScore").classList.remove("show");
                 }
                 
                 try {
@@ -730,7 +729,9 @@
         }
         
         function startGame() {
-            if (!burner || startBtn.disabled) return;
+            if (!burner) return;
+            var bal = parseFloat(balanceAmt.textContent);
+            if (bal < 0.001) return;
             if (!canRestart && gameOver.classList.contains("show")) return;
             
             var isTournamentGame = tournamentPhase === 1 && isRegistered;
@@ -838,8 +839,12 @@
             timeLeft = Math.min(100, timeLeft + 6);
             scoreDisplay.textContent = score;
             
-            // Fire and forget - don't track nonce, don't wait
-            contract.chop(userAddress, score, { gasLimit: 100000 }).catch(function() {});
+            // Only send chop transactions during FREE PLAY (not tournament)
+            // This keeps tournament score submission clean with no nonce conflicts
+            var isTournamentGame = tournamentPhase === 1 && isRegistered;
+            if (!isTournamentGame) {
+                contract.chop(userAddress, score, { gasLimit: 100000 }).catch(function() {});
+            }
         }
         
         function endGame() {
@@ -879,39 +884,22 @@
             setTimeout(function() {
                 canRestart = true;
                 gameOver.classList.add("canRestart");
-                startBtn.disabled = false;
             }, 800);
             
             submitGameResults(isTournamentGame, score);
         }
         
         async function submitGameResults(isTournamentGame, finalScore) {
-            // Only submit to tournament if:
-            // 1. It's a tournament game
-            // 2. Player is registered  
-            // 3. Score is HIGHER than their current tournament score
-            
             if (isTournamentGame && isRegistered && finalScore > myCurrentTournamentScore) {
                 $("tournamentSubmit").textContent = "🏆 New high! Submitting " + finalScore + "...";
                 
                 try {
-                    console.log("Submitting score " + finalScore);
+                    // Simple and clean - no other transactions running during tournament
+                    var tx = await contract.submitScore(finalScore, { gasLimit: 300000 });
                     
-                    // Create a fresh provider connection to avoid any caching issues
-                    var freshProvider = new ethers.providers.JsonRpcProvider(RPC);
-                    var freshWallet = new ethers.Wallet(localStorage.getItem("lumberjackPK"), freshProvider);
-                    var freshContract = new ethers.Contract(CONTRACT, ABI, freshWallet);
-                    
-                    var tx = await freshContract.submitScore(finalScore, { 
-                        gasLimit: 300000
-                    });
-                    
-                    console.log("TX hash: " + tx.hash);
                     $("tournamentSubmit").textContent = "🏆 Confirming " + finalScore + "...";
+                    await tx.wait();
                     
-                    var receipt = await tx.wait();
-                    
-                    console.log("Score " + finalScore + " confirmed in block " + receipt.blockNumber);
                     $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
                     $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + tx.hash + '" target="_blank">View on Explorer →</a>';
                     
@@ -920,20 +908,16 @@
                     
                 } catch(err) {
                     console.error("Score submit failed:", err);
-                    var errMsg = err.reason || err.message || "unknown error";
-                    if (errMsg.length > 50) errMsg = errMsg.substring(0, 50) + "...";
-                    $("tournamentSubmit").textContent = "⚠️ Failed: " + errMsg;
+                    $("tournamentSubmit").textContent = "⚠️ Failed - try playing again";
                 }
                 
-                // Refresh tournament info
-                setTimeout(function() { updateTournamentInfo(); }, 2000);
+                setTimeout(function() { updateTournamentInfo(); }, 1000);
                 
-            } else if (isTournamentGame && isRegistered && finalScore <= myCurrentTournamentScore) {
-                // Score not higher than current, no need to submit
+            } else if (isTournamentGame && isRegistered) {
                 $("tournamentSubmit").textContent = "Score " + finalScore + " (your best: " + myCurrentTournamentScore + ")";
                 
-            } else if (!isTournamentGame) {
-                // Free play - just record endGame (fire and forget)
+            } else {
+                // Free play
                 contract.endGame(userAddress, finalScore, { gasLimit: 150000 }).catch(function() {});
             }
             
@@ -941,7 +925,6 @@
         }
         
         $("restartBtn").onclick = startGame;
-        startBtn.onclick = startGame;
         
         function handleTap(side) {
             if (!gameActive) {
@@ -966,7 +949,7 @@
                 startGame();
                 return;
             }
-            if (e.key === " " && !gameActive && !startBtn.disabled && !gameOver.classList.contains("show")) {
+            if (e.key === " " && !gameActive && !gameOver.classList.contains("show")) {
                 startGame();
             }
             if (e.key === "ArrowLeft") handleTap("left");
