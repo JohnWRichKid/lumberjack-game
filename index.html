@@ -530,31 +530,46 @@
         
         connectBtn.onclick = async function() {
             if (!window.ethereum) {
-                alert("Install MetaMask!");
+                alert("Please install MetaMask or another Web3 wallet!");
                 return;
             }
             try {
-                await window.ethereum.request({ method: "eth_requestAccounts" });
+                connectBtn.textContent = "Connecting...";
+                connectBtn.disabled = true;
+                
+                // Request accounts
+                var accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+                if (!accounts || accounts.length === 0) {
+                    throw new Error("No accounts found");
+                }
+                
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 var net = await provider.getNetwork();
+                
+                // Switch to Monad if needed
                 if (net.chainId !== 10143) {
                     try {
                         await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
-                    } catch(e) {
-                        if (e.code === 4902) {
+                    } catch(switchError) {
+                        if (switchError.code === 4902) {
                             await window.ethereum.request({
                                 method: "wallet_addEthereumChain",
                                 params: [{
                                     chainId: CHAIN_ID,
                                     chainName: "Monad Testnet",
                                     nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
-                                    rpcUrls: [RPC]
+                                    rpcUrls: [RPC],
+                                    blockExplorerUrls: [EXPLORER]
                                 }]
                             });
+                        } else {
+                            throw switchError;
                         }
                     }
+                    // Refresh provider after chain switch
                     provider = new ethers.providers.Web3Provider(window.ethereum);
                 }
+                
                 signer = provider.getSigner();
                 userAddress = await signer.getAddress();
                 burner = getBurner();
@@ -562,6 +577,8 @@
                 
                 connectBtn.textContent = formatAddr(userAddress);
                 connectBtn.classList.add("connected");
+                connectBtn.disabled = false;
+                
                 walletAddr.textContent = burner.address;
                 walletAddr.onclick = function() {
                     navigator.clipboard.writeText(burner.address);
@@ -569,12 +586,19 @@
                     setTimeout(function() { walletAddr.textContent = burner.address; }, 1000);
                 };
                 walletSection.style.display = "block";
+                
                 await updateTournamentInfo();
                 initAudio();
                 
                 setInterval(updateTimer, 1000);
                 setInterval(updateTournamentInfo, 10000);
-            } catch(e) { console.error(e); }
+                
+            } catch(e) {
+                console.error("Connection error:", e);
+                alert("Connection failed: " + (e.message || "Unknown error"));
+                connectBtn.textContent = "Connect Wallet";
+                connectBtn.disabled = false;
+            }
         };
         
         async function fund(amt) {
@@ -801,35 +825,58 @@
                 startBtn.disabled = false;
             }, 800);
             
-            submitGameResults(isTournamentGame);
+            submitGameResults(isTournamentGame, score);
         }
         
-        async function submitGameResults(isTournamentGame) {
+        async function submitGameResults(isTournamentGame, finalScore) {
             try {
                 if (isTournamentGame && isRegistered) {
+                    $("tournamentSubmit").textContent = "🏆 Submitting score...";
+                    
+                    // Wait a moment for pending txs to clear
+                    await new Promise(function(resolve) { setTimeout(resolve, 500); });
+                    
                     var submitted = false;
-                    for (var attempt = 0; attempt < 3 && !submitted; attempt++) {
+                    for (var attempt = 0; attempt < 5 && !submitted; attempt++) {
                         try {
-                            var freshNonce = await burner.getTransactionCount("pending");
-                            var submitTx = await contract.submitScore(score, { gasLimit: 300000, nonce: freshNonce });
-                            await submitTx.wait();
-                            $("tournamentSubmit").textContent = "🏆 Score submitted to tournament!";
+                            // Get fresh nonce each attempt
+                            var freshNonce = await burner.getTransactionCount("latest");
+                            console.log("Submit attempt " + (attempt + 1) + " with nonce " + freshNonce + " for score " + finalScore);
+                            
+                            var submitTx = await contract.submitScore(finalScore, { 
+                                gasLimit: 500000, 
+                                nonce: freshNonce,
+                                gasPrice: ethers.utils.parseUnits("100", "gwei")
+                            });
+                            
+                            console.log("TX sent: " + submitTx.hash);
+                            var receipt = await submitTx.wait();
+                            console.log("TX confirmed in block " + receipt.blockNumber);
+                            
+                            $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " submitted!";
                             submitted = true;
                             await updateTournamentInfo();
                         } catch(err) {
-                            console.error("Submit attempt " + (attempt + 1) + " failed:", err);
-                            await new Promise(function(resolve) { setTimeout(resolve, 1000); });
+                            console.error("Submit attempt " + (attempt + 1) + " failed:", err.message || err);
+                            
+                            // Wait longer between retries
+                            await new Promise(function(resolve) { setTimeout(resolve, 2000); });
                         }
                     }
                     if (!submitted) {
-                        $("tournamentSubmit").textContent = "⚠️ Score submit failed - try playing again";
+                        $("tournamentSubmit").textContent = "⚠️ Submit failed - score was " + finalScore;
                     }
                 }
                 
-                var endNonce = await burner.getTransactionCount("pending");
-                var endTx = await contract.endGame(userAddress, score, { gasLimit: 150000, nonce: endNonce });
-                var receipt = await endTx.wait();
-                $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
+                // End game transaction (less critical)
+                try {
+                    var endNonce = await burner.getTransactionCount("latest");
+                    var endTx = await contract.endGame(userAddress, finalScore, { gasLimit: 150000, nonce: endNonce });
+                    var receipt = await endTx.wait();
+                    $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
+                } catch(err) {
+                    console.error("EndGame error:", err);
+                }
             } catch(err) {
                 console.error(err);
             }
