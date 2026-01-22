@@ -341,6 +341,30 @@
             line-height: 1.5;
         }
         
+        /* Leaderboard */
+        #leaderboard {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        #leaderboard h4 {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+            font-weight: normal;
+        }
+        .lb-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .lb-row:last-child { border-bottom: none; }
+        .lb-rank { color: #feca57; width: 18px; }
+        .lb-addr { opacity: 0.7; }
+        .lb-score { color: #8BC34A; font-weight: bold; }
+        
         /* Overlays */
         #startOverlay {
             position: absolute; inset: 0;
@@ -464,6 +488,13 @@
                 Don't hit branches!<br>
                 Each chop = 1 tx on Monad ⚡
             </div>
+            
+            <div class="panel-box" id="leaderboardBox" style="display:none;">
+                <div id="leaderboard">
+                    <h4>🌍 Global Leaderboard</h4>
+                    <div id="lbList">Loading...</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -532,6 +563,75 @@
             }
         }
         
+        // Leaderboard - fetch from contract events
+        async function fetchLeaderboard() {
+            try {
+                const rpcProvider = new ethers.providers.JsonRpcProvider(RPC);
+                
+                // Wait for provider to be ready
+                await rpcProvider.ready;
+                
+                const currentBlock = await rpcProvider.getBlockNumber();
+                
+                // Query logs in chunks to avoid timeout
+                const scores = {};
+                const chunkSize = 50000;
+                const startBlock = Math.max(0, currentBlock - 200000);
+                
+                for(let from = startBlock; from < currentBlock; from += chunkSize) {
+                    const to = Math.min(from + chunkSize - 1, currentBlock);
+                    try {
+                        const logs = await rpcProvider.getLogs({
+                            address: CONTRACT,
+                            fromBlock: from,
+                            toBlock: to
+                        });
+                        
+                        logs.forEach(log => {
+                            // Look for logs with topics that have an address (GameEnded events)
+                            if(log.topics && log.topics.length >= 2 && log.data) {
+                                try {
+                                    // Address is in topic[1], padded to 32 bytes
+                                    const addr = '0x' + log.topics[1].slice(26).toLowerCase();
+                                    // Score is in the data field
+                                    const score = parseInt(log.data, 16);
+                                    
+                                    // Sanity check - score should be reasonable (1-9999)
+                                    if(score > 0 && score < 10000 && addr.length === 42) {
+                                        if(!scores[addr] || scores[addr] < score) {
+                                            scores[addr] = score;
+                                        }
+                                    }
+                                } catch(e) {}
+                            }
+                        });
+                    } catch(e) {
+                        console.log('Chunk error', from, e);
+                    }
+                }
+                
+                const sorted = Object.entries(scores)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10);
+                
+                if(sorted.length > 0) {
+                    $('leaderboardBox').style.display = 'block';
+                    $('lbList').innerHTML = sorted.map((entry, i) => `
+                        <div class="lb-row">
+                            <span class="lb-rank">${i + 1}.</span>
+                            <span class="lb-addr">${entry[0].slice(0,6)}...${entry[0].slice(-4)}</span>
+                            <span class="lb-score">${entry[1]}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    $('leaderboardBox').style.display = 'block';
+                    $('lbList').innerHTML = '<div style="opacity:0.5;font-size:10px;">No scores yet - be the first!</div>';
+                }
+            } catch(e) {
+                console.error('Leaderboard error:', e);
+            }
+        }
+        
         // Wallet
         function getBurner(){
             let pk = localStorage.getItem('lumberjackPK');
@@ -570,6 +670,9 @@
                 walletSection.style.display = 'block';
                 await updateBal();
                 initAudio();
+                
+                // Fetch leaderboard after wallet connects
+                fetchLeaderboard();
             } catch(e){ console.error(e); }
         };
         
@@ -729,6 +832,8 @@
                     const tx = await contract.endGame(userAddress, score, {gasLimit: 150000, nonce: n});
                     const r = await tx.wait();
                     $('txLink').innerHTML = `<a href="${EXPLORER}/tx/${r.transactionHash}" target="_blank">View on Explorer →</a>`;
+                    // Refresh leaderboard after game ends
+                    setTimeout(fetchLeaderboard, 2000);
                 } catch(e){}
                 await updateBal();
             })();
