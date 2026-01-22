@@ -114,45 +114,78 @@
         .tf1 { width: 100px; height: 70px; top: 0; left: -50px; }
         .tf2 { width: 70px; height: 55px; top: 35px; left: -65px; }
         .tf3 { width: 70px; height: 55px; top: 35px; left: -5px; }
-        /* Branches - matching screenshot exactly */
+        /* Branches - matching screenshot */
         .branch {
             position: absolute;
             z-index: 9;
-            height: 50px;
-            display: flex;
-            align-items: center;
+            height: 55px;
         }
         .branch.left {
             right: 50%;
-            margin-right: 27px;
-            flex-direction: row-reverse;
+            margin-right: 25px;
         }
         .branch.right {
             left: 50%;
-            margin-left: 27px;
-            flex-direction: row;
+            margin-left: 25px;
         }
         .branch-arm {
-            width: 60px;
-            height: 16px;
-            background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 50%, #6D4C41 100%);
-            border-radius: 8px;
-            flex-shrink: 0;
+            position: absolute;
+            width: 55px;
+            height: 14px;
+            background: linear-gradient(to bottom, #A68B6A 0%, #8B7355 40%, #6D5A40 100%);
+            top: 28px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.2);
         }
         .branch.left .branch-arm {
-            border-radius: 8px 0 0 8px;
+            right: 0;
+            border-radius: 6px 0 0 6px;
+            background: linear-gradient(to bottom, #A68B6A 0%, #8B7355 40%, #6D5A40 100%);
         }
         .branch.right .branch-arm {
-            border-radius: 0 8px 8px 0;
+            left: 0;
+            border-radius: 0 6px 6px 0;
         }
-        .branch-foliage {
-            width: 60px;
-            height: 45px;
-            background: radial-gradient(ellipse at 50% 60%, #66BB6A 0%, #43A047 40%, #388E3C 70%, #2E7D32 100%);
+        /* Shrub pointing upward */
+        .branch-shrub {
+            position: absolute;
+            width: 45px;
+            height: 40px;
+            top: 0;
+        }
+        .branch.left .branch-shrub { left: 0; }
+        .branch.right .branch-shrub { right: 0; }
+        /* Main shrub body */
+        .shrub-main {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 32px;
+            background: radial-gradient(ellipse at 50% 70%, #5CB85C 0%, #4A9F4A 40%, #3D8B3D 70%, #2E7D32 100%);
+            border-radius: 45% 45% 40% 40%;
+        }
+        /* Top puff of shrub */
+        .shrub-top {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 22px;
+            background: radial-gradient(ellipse at 50% 60%, #6DC96D 0%, #5CB85C 50%, #4A9F4A 100%);
+            border-radius: 50% 50% 45% 45%;
+        }
+        /* Small accent leaves */
+        .shrub-accent {
+            position: absolute;
+            width: 18px;
+            height: 15px;
+            background: radial-gradient(ellipse at 50% 60%, #7ED67E 0%, #5CB85C 100%);
             border-radius: 50%;
-            flex-shrink: 0;
-            margin: 0 -5px;
         }
+        .shrub-accent.left { left: 2px; top: 12px; }
+        .shrub-accent.right { right: 2px; top: 12px; }
         /* Lumberjack */
         #lumberjack {
             width: 70px;
@@ -627,7 +660,15 @@
             const branch = document.createElement('div');
             branch.className = `branch ${side}`;
             branch.style.bottom = `${bottomPos}px`;
-            branch.innerHTML = '<div class="branch-foliage"></div><div class="branch-arm"></div>';
+            branch.innerHTML = `
+                <div class="branch-shrub">
+                    <div class="shrub-top"></div>
+                    <div class="shrub-main"></div>
+                    <div class="shrub-accent left"></div>
+                    <div class="shrub-accent right"></div>
+                </div>
+                <div class="branch-arm"></div>
+            `;
             gameArea.appendChild(branch);
             return branch;
         }
@@ -642,6 +683,8 @@
             }
         }
         
+        let chopCount = 0; // Track chops for 2-chop-per-branch system
+        
         function updatePlayerPosition() {
             lumberjack.className = playerSide;
         }
@@ -651,6 +694,7 @@
             if (gameOverDiv.style.display === 'flex' && !canRestart) return;
             
             score = 0; txCount = 0; timeRemaining = 100; playerSide = 'left'; gameActive = true;
+            chopCount = 0; // Reset chop counter
             startOverlay.classList.add('hidden');
             gameOverDiv.style.display = 'none';
             startBtn.disabled = true;
@@ -696,28 +740,36 @@
             void axe.offsetWidth;
             axe.classList.add('swing');
             
-            // Check collision AFTER moving - if branch is on same side as player, they die
+            // Check collision - if branch is on same side as player, they die
             const lowestBranch = branches[0];
             if (lowestBranch && lowestBranch.side === side) {
                 endGame();
                 return;
             }
             
-            // Remove lowest branch
-            if (branches.length > 0) {
-                branches[0].el.remove();
-                branches.shift();
+            // Increment chop counter
+            chopCount++;
+            
+            // Only remove branch and add new one every 2 chops
+            if (chopCount >= 2) {
+                chopCount = 0;
                 
-                // Move all branches down
-                branches.forEach(b => {
-                    b.pos -= 80;
-                    b.el.style.bottom = `${b.pos}px`;
-                });
-                
-                // Add new branch at top
-                const newSide = Math.random() > 0.5 ? 'left' : 'right';
-                const newPos = 200 + 5 * 80;
-                branches.push({ side: newSide, pos: newPos, el: createBranch(newSide, newPos) });
+                // Remove lowest branch
+                if (branches.length > 0) {
+                    branches[0].el.remove();
+                    branches.shift();
+                    
+                    // Move all branches down
+                    branches.forEach(b => {
+                        b.pos -= 80;
+                        b.el.style.bottom = `${b.pos}px`;
+                    });
+                    
+                    // Add new branch at top
+                    const newSide = Math.random() > 0.5 ? 'left' : 'right';
+                    const newPos = 200 + 5 * 80;
+                    branches.push({ side: newSide, pos: newPos, el: createBranch(newSide, newPos) });
+                }
             }
             
             score++;
