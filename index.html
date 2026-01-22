@@ -267,10 +267,11 @@
             </div>
             
             <div class="instructions">
-                📝 Signup Phase: Join for 10 MON<br>
-                🎮 Play Phase: Compete for high score<br>
-                🏆 Winner takes the prize pool!<br><br>
-                Free play anytime during Signup Phase
+                <div style="font-size:12px;font-weight:bold;margin-bottom:6px;color:#feca57;">HOW TOURNAMENTS WORK</div>
+                📝 <b>Signup (1 min)</b>: Pay 10 MON to enter. Practice for free!<br>
+                🎮 <b>Play (1 min)</b>: Compete! Only your highest score counts.<br>
+                🏆 <b>Winner</b>: Highest score takes the entire prize pool!<br>
+                <div style="margin-top:6px;opacity:0.5;">Ties split the pool. Solo player = refunded.</div>
             </div>
         </div>
     </div>
@@ -278,7 +279,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
-        var CONTRACT = "0x9cDA14bf696DE8c5A9aE01738b4276Ba2B88c9b4";
+        var CONTRACT = "0xdB83794A5195F34300d8fDbCC56dA77dFbA0BCd0";
         var ABI = [
             "function startGame(address) external",
             "function chop(address,uint256) external",
