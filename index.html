@@ -608,9 +608,10 @@
         function initBranches(){
             document.querySelectorAll('.branch').forEach(b => b.remove());
             branches = [];
-            for(let i = 0; i < 6; i++){
+            // Start branches higher up, first one near player, rest going up and off screen
+            for(let i = 0; i < 8; i++){
                 const side = Math.random() > 0.5 ? 'left' : 'right';
-                const y = 165 + i * 70;
+                const y = 165 + i * 70; // Will go from 165 to 655 (top ones off screen)
                 branches.push({side, y, el: createBranch(side, y)});
             }
         }
@@ -687,8 +688,10 @@
                 b.el.style.bottom = b.y + 'px';
             });
             
+            // Add new branch OFF SCREEN at the top
             const newSide = Math.random() > 0.5 ? 'left' : 'right';
-            branches.push({side: newSide, y: 165 + 5 * 70, el: createBranch(newSide, 165 + 5 * 70)});
+            const newY = branches[branches.length - 1].y + 70; // Always above the last branch
+            branches.push({side: newSide, y: newY, el: createBranch(newSide, newY)});
             
             score++;
             txCount++;
