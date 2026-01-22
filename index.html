@@ -341,30 +341,6 @@
             line-height: 1.5;
         }
         
-        /* Leaderboard */
-        #leaderboard {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        #leaderboard h4 {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-bottom: 8px;
-            font-weight: normal;
-        }
-        .lb-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            padding: 4px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .lb-row:last-child { border-bottom: none; }
-        .lb-rank { color: #feca57; width: 18px; }
-        .lb-addr { opacity: 0.7; }
-        .lb-score { color: #8BC34A; font-weight: bold; }
-        
         /* Overlays */
         #startOverlay {
             position: absolute; inset: 0;
@@ -488,13 +464,6 @@
                 Don't hit branches!<br>
                 Each chop = 1 tx on Monad ⚡
             </div>
-            
-            <div class="panel-box" id="leaderboardBox" style="display:none;">
-                <div id="leaderboard">
-                    <h4>🌍 Global Leaderboard</h4>
-                    <div id="lbList">Loading...</div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -563,73 +532,6 @@
             }
         }
         
-        // Leaderboard - fetch from contract events
-        async function fetchLeaderboard() {
-            try {
-                const rpcProvider = new ethers.providers.JsonRpcProvider(RPC);
-                await rpcProvider.ready;
-                
-                const currentBlock = await rpcProvider.getBlockNumber();
-                const scores = {};
-                
-                // Use small range to avoid rate limit
-                const startBlock = Math.max(0, currentBlock - 10000);
-                
-                const logs = await rpcProvider.getLogs({
-                    address: CONTRACT,
-                    fromBlock: startBlock,
-                    toBlock: 'latest'
-                });
-                
-                logs.forEach(log => {
-                    if(log.topics && log.topics.length >= 2 && log.data && log.data !== '0x') {
-                        try {
-                            let score = 0;
-                            
-                            // Parse score from data
-                            if(log.data.length === 66) {
-                                score = parseInt(log.data, 16);
-                            } else if(log.data.length > 66) {
-                                const firstVal = parseInt(log.data.slice(0, 66), 16);
-                                const secondVal = parseInt('0x' + log.data.slice(66, 130), 16);
-                                score = (firstVal > 0 && firstVal < 1000) ? firstVal : 
-                                        (secondVal > 0 && secondVal < 1000) ? secondVal : 0;
-                            }
-                            
-                            const addr = '0x' + log.topics[1].slice(26).toLowerCase();
-                            
-                            if(score > 0 && score < 1000 && addr.length === 42 && !addr.startsWith('0x000000000000')) {
-                                if(!scores[addr] || scores[addr] < score) {
-                                    scores[addr] = score;
-                                }
-                            }
-                        } catch(e) {}
-                    }
-                });
-                
-                const sorted = Object.entries(scores)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 10);
-                
-                if(sorted.length > 0) {
-                    $('leaderboardBox').style.display = 'block';
-                    $('lbList').innerHTML = sorted.map((entry, i) => `
-                        <div class="lb-row">
-                            <span class="lb-rank">${i + 1}.</span>
-                            <span class="lb-addr">${entry[0].slice(0,6)}...${entry[0].slice(-4)}</span>
-                            <span class="lb-score">${entry[1]}</span>
-                        </div>
-                    `).join('');
-                } else {
-                    $('leaderboardBox').style.display = 'block';
-                    $('lbList').innerHTML = '<div style="opacity:0.5;font-size:10px;">No recent scores found</div>';
-                }
-            } catch(e) {
-                console.log('Leaderboard unavailable');
-                $('leaderboardBox').style.display = 'none';
-            }
-        }
-        
         // Wallet
         function getBurner(){
             let pk = localStorage.getItem('lumberjackPK');
@@ -668,9 +570,6 @@
                 walletSection.style.display = 'block';
                 await updateBal();
                 initAudio();
-                
-                // Fetch leaderboard after wallet connects
-                fetchLeaderboard();
             } catch(e){ console.error(e); }
         };
         
@@ -734,7 +633,9 @@
             initBranches();
             
             burner.getTransactionCount('pending').then(n => {
-                contract.startGame(userAddress, {gasLimit: 100000, nonce: n}).catch(console.error);
+                nonce = n;
+                contract.startGame(userAddress, {gasLimit: 100000, nonce}).catch(console.error);
+                nonce++;
             });
             requestAnimationFrame(gameLoop);
         }
@@ -797,7 +698,8 @@
             timeLeft = Math.min(100, timeLeft + 6);
             scoreDisplay.textContent = score;
             
-            contract.chop(userAddress, score, {gasLimit: 100000}).catch(console.error);
+            contract.chop(userAddress, score, {gasLimit: 100000, nonce}).catch(console.error);
+            nonce++;
         }
         
         function endGame(){
@@ -827,8 +729,6 @@
                     const tx = await contract.endGame(userAddress, score, {gasLimit: 150000, nonce: n});
                     const r = await tx.wait();
                     $('txLink').innerHTML = `<a href="${EXPLORER}/tx/${r.transactionHash}" target="_blank">View on Explorer →</a>`;
-                    // Refresh leaderboard after game ends
-                    setTimeout(fetchLeaderboard, 2000);
                 } catch(e){}
                 await updateBal();
             })();
