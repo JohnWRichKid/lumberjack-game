@@ -613,6 +613,14 @@
                 </div>
                 <div id="status">Connect wallet to play</div>
                 <div id="burnerInfo"></div>
+                <div id="withdrawSection" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 11px; margin-bottom: 6px; opacity: 0.8;">Withdraw MON:</div>
+                    <input type="text" id="withdrawAddress" placeholder="Address (0x...)" style="width: 100%; padding: 8px; border-radius: 6px; border: none; font-size: 11px; margin-bottom: 6px;">
+                    <div style="display: flex; gap: 6px;">
+                        <input type="number" id="withdrawAmount" placeholder="Amount" style="flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 11px;">
+                        <button id="withdrawBtn" style="padding: 8px 12px; font-size: 11px; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); white-space: nowrap;">Withdraw</button>
+                    </div>
+                </div>
             </div>
             
             <div class="panel-section">
@@ -774,6 +782,10 @@
         const tapToStart = $('tapToStart');
         const tapLeft = $('tapLeft');
         const tapRight = $('tapRight');
+        const withdrawSection = $('withdrawSection');
+        const withdrawAddress = $('withdrawAddress');
+        const withdrawAmount = $('withdrawAmount');
+        const withdrawBtn = $('withdrawBtn');
         
         if (localStorage.getItem('monadLumberjackHighScore')) {
             highScore = parseInt(localStorage.getItem('monadLumberjackHighScore'));
@@ -856,6 +868,7 @@
                 };
                 
                 fundOptionsDiv.style.display = 'block';
+                withdrawSection.style.display = 'block';
                 
                 if (burnerBalance < 0.01) {
                     statusDiv.textContent = 'Fund game wallet to play';
@@ -900,6 +913,52 @@
         customFundBtn.addEventListener('click', () => {
             const amount = parseFloat(customAmountInput.value);
             if (amount && amount > 0) fundBurnerWallet(amount);
+        });
+        
+        withdrawBtn.addEventListener('click', async () => {
+            const toAddress = withdrawAddress.value.trim();
+            const amount = parseFloat(withdrawAmount.value);
+            
+            if (!toAddress || !toAddress.startsWith('0x') || toAddress.length !== 42) {
+                statusDiv.textContent = 'Invalid address';
+                return;
+            }
+            if (!amount || amount <= 0) {
+                statusDiv.textContent = 'Invalid amount';
+                return;
+            }
+            
+            try {
+                withdrawBtn.disabled = true;
+                withdrawBtn.textContent = 'Sending...';
+                statusDiv.textContent = 'Withdrawing...';
+                
+                const tx = await burnerWallet.sendTransaction({
+                    to: toAddress,
+                    value: ethers.utils.parseEther(amount.toString()),
+                    gasLimit: 21000
+                });
+                
+                await tx.wait();
+                
+                const newBalance = await checkBurnerBalance();
+                burnerInfoDiv.innerHTML = `🎮 Game Wallet:<br><strong>${burnerWallet.address}</strong><br>Balance: ${newBalance.toFixed(4)} MON`;
+                statusDiv.textContent = `Withdrawn! Balance: ${newBalance.toFixed(3)} MON`;
+                withdrawAddress.value = '';
+                withdrawAmount.value = '';
+                
+                if (newBalance < 0.01) {
+                    startBtn.disabled = true;
+                    tapToStart.textContent = 'FUND WALLET TO PLAY';
+                }
+                
+            } catch (error) {
+                console.error('Withdraw error:', error);
+                statusDiv.textContent = 'Withdraw failed';
+            }
+            
+            withdrawBtn.disabled = false;
+            withdrawBtn.textContent = 'Withdraw';
         });
         
         async function processQueue() {
@@ -996,7 +1055,21 @@
             if (!gameActive) return;
             
             const milestones = Math.floor(score / 20);
-            const speedMultiplier = 1 + (milestones * 0.12);
+            let speedMultiplier = 1 + (milestones * 0.12);
+            
+            // Extra hard mode at 100+
+            if (score >= 100) {
+                speedMultiplier += 0.3;
+            }
+            // Insane mode at 150+
+            if (score >= 150) {
+                speedMultiplier += 0.4;
+            }
+            // Brutal mode at 200+
+            if (score >= 200) {
+                speedMultiplier += 0.5;
+            }
+            
             currentTimeDecay = baseTimeDecay * speedMultiplier;
             
             timeRemaining -= currentTimeDecay;
