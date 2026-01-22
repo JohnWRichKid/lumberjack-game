@@ -527,26 +527,56 @@
             return parseFloat(ethers.utils.formatEther(await burner.getBalance()));
         }
         
-        // Fetch leaderboard - needs contract with getLeaderboard or events
+        // Fetch leaderboard from contract events
         async function fetchLeaderboard(){
-            // For now show placeholder - need your contract's actual leaderboard method
-            $('leaderboardList').innerHTML = '<div style="opacity:0.6; font-size:10px;">Play to appear on leaderboard!</div>';
-            
-            // If your contract has a getHighScore function, we can at least show connected user's best
-            if(contract && userAddress){
-                try {
-                    const myBest = await contract.getHighScore(userAddress);
-                    if(myBest.toNumber() > 0){
-                        $('leaderboardList').innerHTML = `
-                            <div class="lb-entry">
-                                <span class="lb-rank">You:</span>
-                                <span class="lb-addr">${userAddress.slice(0,6)}...${userAddress.slice(-4)}</span>
-                                <span class="lb-score">${myBest.toNumber()}</span>
-                            </div>
-                            <div style="opacity:0.5; font-size:10px; margin-top:8px;">Global leaderboard coming soon</div>
-                        `;
-                    }
-                } catch(e){ console.log('No getHighScore:', e); }
+            try {
+                const rpcProvider = new ethers.providers.JsonRpcProvider(RPC);
+                
+                // Query logs for GameEnded events
+                // Event signature hash for GameEnded(address,uint256)
+                const logs = await rpcProvider.getLogs({
+                    address: CONTRACT,
+                    fromBlock: 0,
+                    toBlock: 'latest',
+                    topics: [
+                        ethers.utils.id("GameEnded(address,uint256)")
+                    ]
+                });
+                
+                const scores = {};
+                logs.forEach(log => {
+                    try {
+                        // Decode: first topic after event sig is indexed address
+                        // Data contains the score
+                        const player = '0x' + log.topics[1].slice(26);
+                        const score = parseInt(log.data, 16);
+                        
+                        if(!scores[player] || scores[player] < score) {
+                            scores[player] = score;
+                        }
+                    } catch(e) { console.log('Parse error', e); }
+                });
+                
+                const sorted = Object.entries(scores)
+                    .sort((a,b) => b[1] - a[1])
+                    .slice(0, 10);
+                
+                if(sorted.length === 0){
+                    $('leaderboardList').innerHTML = '<div style="opacity:0.5; font-size:10px;">No scores yet! Be the first!</div>';
+                    return;
+                }
+                
+                $('leaderboardList').innerHTML = sorted.map((entry, i) => `
+                    <div class="lb-entry">
+                        <span class="lb-rank">${i+1}.</span>
+                        <span class="lb-addr">${entry[0].slice(0,6)}...${entry[0].slice(-4)}</span>
+                        <span class="lb-score">${entry[1]}</span>
+                    </div>
+                `).join('');
+                
+            } catch(e) {
+                console.error('Leaderboard error:', e);
+                $('leaderboardList').innerHTML = '<div style="opacity:0.5; font-size:10px;">Could not load leaderboard</div>';
             }
         }
         fetchLeaderboard();
