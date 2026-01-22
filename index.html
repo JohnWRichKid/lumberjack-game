@@ -15,7 +15,6 @@
             align-items: center;
             min-height: 100vh;
             padding: 10px;
-            overflow-x: hidden;
             user-select: none;
         }
         #header { text-align: center; margin-bottom: 10px; }
@@ -52,47 +51,29 @@
             background: rgba(255,255,255,0.85);
             border-radius: 50%;
         }
-        .cloud1 { width: 70px; height: 25px; top: 50px; left: 15px; }
+        .cloud1 { width: 70px; height: 25px; top: 40px; left: 15px; }
         .cloud1::before { width: 35px; height: 35px; top: -18px; left: 12px; }
         .cloud1::after { width: 45px; height: 40px; top: -20px; left: 35px; }
-        .cloud2 { width: 60px; height: 22px; top: 100px; right: 20px; }
+        .cloud2 { width: 60px; height: 22px; top: 80px; right: 20px; }
         .cloud2::before { width: 30px; height: 30px; top: -15px; left: 10px; }
         .cloud2::after { width: 38px; height: 34px; top: -16px; left: 30px; }
-        
-        /* Tree container - this scrolls */
-        #treeContainer {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 100px;
-            height: 600px;
-            transition: transform 0.1s ease-out;
-        }
         
         /* Tree trunk */
         #trunk {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            bottom: 0;
+            bottom: 80px;
             width: 52px;
-            height: 800px;
-            background: linear-gradient(to right, 
-                #4E342E 0%, 
-                #6D4C41 15%, 
-                #8D6E63 35%, 
-                #A1887F 50%, 
-                #8D6E63 65%, 
-                #6D4C41 85%, 
-                #4E342E 100%
-            );
+            height: 500px;
+            background: linear-gradient(to right, #4E342E 0%, #6D4C41 15%, #8D6E63 35%, #A1887F 50%, #8D6E63 65%, #6D4C41 85%, #4E342E 100%);
             z-index: 10;
         }
         
         /* Tree top */
         #treeTop {
             position: absolute;
-            top: -60px;
+            top: 25px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 11;
@@ -109,76 +90,51 @@
         .branch {
             position: absolute;
             left: 50%;
-            height: 45px;
+            height: 50px;
             z-index: 9;
+            transition: bottom 0.08s ease-out;
         }
-        .branch.left {
-            transform: translateX(-100%) translateX(-26px);
-        }
-        .branch.right {
-            transform: translateX(26px);
-        }
+        .branch.left { transform: translateX(-26px) translateX(-100%); }
+        .branch.right { transform: translateX(26px); }
         
-        /* Branch arm - wood part */
         .branch-wood {
             position: absolute;
-            bottom: 8px;
-            width: 50px;
-            height: 12px;
+            bottom: 12px;
+            width: 45px;
+            height: 14px;
             background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 50%, #6D4C41 100%);
-            border-radius: 6px;
         }
-        .branch.left .branch-wood {
-            right: 0;
-            border-radius: 6px 0 0 6px;
-        }
-        .branch.right .branch-wood {
-            left: 0;
-            border-radius: 0 6px 6px 0;
-        }
+        .branch.left .branch-wood { right: 0; border-radius: 8px 0 0 8px; }
+        .branch.right .branch-wood { left: 0; border-radius: 0 8px 8px 0; }
         
-        /* Branch leaves - clean bush shape */
         .branch-leaves {
             position: absolute;
-            bottom: 0;
-            width: 48px;
-            height: 42px;
+            bottom: 2px;
+            width: 50px;
+            height: 46px;
         }
-        .branch.left .branch-leaves {
-            left: 0;
-        }
-        .branch.right .branch-leaves {
-            right: 0;
-        }
-        .leaf-main {
+        .branch.left .branch-leaves { left: 0; }
+        .branch.right .branch-leaves { right: 0; }
+        
+        .leaf-base {
             position: absolute;
-            width: 42px;
-            height: 35px;
-            background: radial-gradient(ellipse at 50% 65%, #6ECF6E 0%, #4CAF50 40%, #388E3C 75%, #2E7D32 100%);
-            border-radius: 50% 50% 45% 45%;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
+            width: 44px;
+            height: 36px;
+            background: radial-gradient(ellipse at 50% 70%, #6ECF6E 0%, #4CAF50 45%, #388E3C 80%, #2E7D32 100%);
+            border-radius: 45% 45% 45% 45%;
         }
         .leaf-top {
             position: absolute;
-            width: 28px;
-            height: 22px;
-            background: radial-gradient(ellipse at 50% 60%, #81D681 0%, #66BB6A 50%, #4CAF50 100%);
-            border-radius: 50%;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-        }
-        .leaf-shadow {
-            position: absolute;
-            width: 38px;
-            height: 12px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 50%;
-            bottom: -2px;
-            left: 50%;
-            transform: translateX(-50%);
+            width: 30px;
+            height: 24px;
+            background: radial-gradient(ellipse at 50% 65%, #81D681 0%, #66BB6A 50%, #4CAF50 100%);
+            border-radius: 50% 50% 45% 45%;
         }
         
         /* Ground */
@@ -186,15 +142,15 @@
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 100px;
+            height: 80px;
             background: linear-gradient(to bottom, #7CB342 0%, #558B2F 40%, #33691E 100%);
             z-index: 15;
         }
         #groundHighlight {
             position: absolute;
-            bottom: 100px;
+            bottom: 80px;
             width: 100%;
-            height: 12px;
+            height: 10px;
             background: #8BC34A;
             border-radius: 50% 50% 0 0 / 100% 100% 0 0;
             z-index: 15;
@@ -203,18 +159,18 @@
         /* Lumberjack */
         #lumberjack {
             position: absolute;
-            bottom: 110px;
-            width: 65px;
-            height: 80px;
+            bottom: 90px;
+            width: 60px;
+            height: 75px;
             z-index: 20;
-            transition: left 0.05s ease-out;
+            transition: left 0.04s ease-out;
         }
-        #lumberjack.left { left: 60px; }
-        #lumberjack.right { left: 255px; }
+        #lumberjack.left { left: 70px; }
+        #lumberjack.right { left: 250px; }
         
         #keoneImg {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             border: 3px solid #5D4037;
             position: absolute;
@@ -227,41 +183,39 @@
         }
         .lj-body {
             position: absolute;
-            top: 33px;
+            top: 31px;
             left: 50%;
             transform: translateX(-50%);
-            width: 32px;
-            height: 36px;
+            width: 30px;
+            height: 32px;
             background: #E53935;
             border-radius: 4px;
-            overflow: hidden;
         }
         .lj-body::before {
             content: '';
             position: absolute;
-            inset: 4px;
+            inset: 3px;
             background: repeating-linear-gradient(90deg, #C62828 0px, #C62828 3px, #1A1A1A 3px, #1A1A1A 6px);
             border-radius: 2px;
         }
         .lj-pants {
             position: absolute;
-            top: 66px;
+            top: 60px;
             left: 50%;
             transform: translateX(-50%);
-            width: 28px;
-            height: 18px;
+            width: 26px;
+            height: 16px;
             background: #1565C0;
             border-radius: 0 0 4px 4px;
         }
         #axe {
             position: absolute;
-            top: 22px;
-            font-size: 28px;
+            top: 20px;
+            font-size: 26px;
             z-index: 3;
-            transition: transform 0.05s;
         }
-        #lumberjack.left #axe { right: -2px; transform: scaleX(-1); }
-        #lumberjack.right #axe { left: -2px; transform: scaleX(1); }
+        #lumberjack.left #axe { right: -5px; transform: scaleX(-1); }
+        #lumberjack.right #axe { left: -5px; transform: scaleX(1); }
         #axe.swing { animation: swing 0.08s ease-out; }
         @keyframes swing {
             0%, 100% { rotate: 0deg; }
@@ -271,26 +225,26 @@
         /* Bottom HUD */
         #bottomHUD {
             position: absolute;
-            bottom: 15px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             z-index: 100;
         }
         #scoreDisplay {
-            font-size: 38px;
+            font-size: 36px;
             font-weight: bold;
             color: white;
             text-shadow: 2px 2px 0 #5D4037, 0 0 10px rgba(0,0,0,0.5);
         }
         #timeBarContainer {
-            width: 180px;
-            height: 14px;
+            width: 160px;
+            height: 12px;
             background: rgba(0,0,0,0.4);
-            border-radius: 7px;
+            border-radius: 6px;
             overflow: hidden;
             border: 2px solid #5D4037;
         }
@@ -299,92 +253,57 @@
             width: 100%;
             background: linear-gradient(to right, #4CAF50, #8BC34A);
             transition: width 0.1s linear;
-            border-radius: 5px;
         }
         #timeBarFill.warning { background: linear-gradient(to right, #FF9800, #FFC107); }
         #timeBarFill.danger { background: linear-gradient(to right, #f44336, #FF5722); }
         
-        /* Tap zones */
-        .tap-zone {
-            position: absolute;
-            top: 0;
-            width: 50%;
-            height: 100%;
-            z-index: 30;
-            cursor: pointer;
-        }
+        .tap-zone { position: absolute; top: 0; width: 50%; height: 100%; z-index: 30; cursor: pointer; }
         .tap-zone.left { left: 0; }
         .tap-zone.right { right: 0; }
         
         /* Side Panel */
-        #sidePanel { display: flex; flex-direction: column; gap: 15px; width: 260px; }
-        .panel-section {
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        button {
-            padding: 12px 18px;
-            font-size: 15px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            color: white;
-        }
+        #sidePanel { display: flex; flex-direction: column; gap: 12px; width: 250px; }
+        .panel-section { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        button { padding: 10px 16px; font-size: 14px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; width: 100%; color: white; }
         #wallet { background: linear-gradient(135deg, #667eea, #764ba2); }
         #wallet.connected { background: linear-gradient(135deg, #11998e, #38ef7d); }
-        .fund-btn { background: linear-gradient(135deg, #f093fb, #f5576c); padding: 10px 8px; font-size: 12px; flex: 1; }
-        #startBtn { background: linear-gradient(135deg, #f5576c, #f093fb); font-size: 18px; padding: 14px; }
+        .fund-btn { background: linear-gradient(135deg, #f093fb, #f5576c); padding: 8px; font-size: 11px; flex: 1; }
+        #startBtn { background: linear-gradient(135deg, #f5576c, #f093fb); font-size: 16px; padding: 12px; }
         #startBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-        #status { font-size: 12px; text-align: center; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
-        #fundOptions { display: none; margin-top: 10px; }
-        #burnerInfo { font-size: 10px; text-align: center; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-top: 10px; display: none; word-break: break-all; cursor: pointer; }
-        #withdrawSection { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
-        .instructions { font-size: 12px; line-height: 1.4; opacity: 0.8; }
-        .instructions p { margin: 4px 0; }
+        #status { font-size: 11px; text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; }
+        #fundOptions { display: none; margin-top: 8px; }
+        #burnerInfo { font-size: 10px; text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; margin-top: 8px; display: none; word-break: break-all; cursor: pointer; }
+        #withdrawSection { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .instructions { font-size: 11px; line-height: 1.4; opacity: 0.8; }
+        .instructions p { margin: 3px 0; }
         .highlight { color: #feca57; }
         
         /* Overlays */
         #startOverlay {
-            position: absolute;
-            inset: 0;
+            position: absolute; inset: 0;
             background: rgba(0,0,0,0.75);
             z-index: 50;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
         }
         #startOverlay.hidden { display: none; }
-        #startOverlay h2 { font-size: 26px; margin-bottom: 15px; }
-        #startOverlay p { font-size: 15px; opacity: 0.85; margin: 6px 0; }
-        #tapToStart { margin-top: 25px; font-size: 17px; color: #feca57; animation: pulse 1.5s infinite; }
+        #startOverlay h2 { font-size: 24px; margin-bottom: 12px; }
+        #startOverlay p { font-size: 14px; opacity: 0.85; margin: 5px 0; }
+        #tapToStart { margin-top: 20px; font-size: 16px; color: #feca57; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         
         #gameOver {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 100;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
+            display: none; position: absolute; inset: 0;
+            background: rgba(0,0,0,0.9); z-index: 100;
+            flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;
         }
-        #gameOver h2 { font-size: 26px; color: #f5576c; margin-bottom: 5px; }
+        #gameOver h2 { font-size: 24px; color: #f5576c; margin-bottom: 5px; }
         #gameOver.newRecord h2 { color: #feca57; }
-        #finalScore { font-size: 60px; font-weight: bold; color: white; margin: 8px 0; }
-        #txSummary { font-size: 16px; color: #9c27b0; margin: 8px 0; padding: 8px 18px; background: rgba(156,39,176,0.2); border-radius: 15px; }
-        #beatScore { font-size: 13px; color: #feca57; margin: 8px 0; }
-        #restartBtn { background: linear-gradient(135deg, #f5576c, #f093fb); margin-top: 18px; font-size: 16px; padding: 14px 35px; width: auto; }
-        #txLink { margin-top: 12px; }
-        #txLink a { color: #54a0ff; text-decoration: none; font-size: 13px; }
+        #finalScore { font-size: 56px; font-weight: bold; color: white; margin: 8px 0; }
+        #txSummary { font-size: 15px; color: #9c27b0; margin: 8px 0; padding: 8px 16px; background: rgba(156,39,176,0.2); border-radius: 12px; }
+        #beatScore { font-size: 12px; color: #feca57; margin: 6px 0; }
+        #restartBtn { background: linear-gradient(135deg, #f5576c, #f093fb); margin-top: 15px; font-size: 15px; padding: 12px 30px; width: auto; }
+        #txLink { margin-top: 10px; }
+        #txLink a { color: #54a0ff; text-decoration: none; font-size: 12px; }
         
         @media (max-width: 700px) {
             #mainContainer { flex-direction: column; align-items: center; }
@@ -403,14 +322,12 @@
             <div class="cloud cloud1"></div>
             <div class="cloud cloud2"></div>
             
-            <div id="treeContainer">
-                <div id="treeTop">
-                    <div class="treetop-part tt1"></div>
-                    <div class="treetop-part tt2"></div>
-                    <div class="treetop-part tt3"></div>
-                </div>
-                <div id="trunk"></div>
+            <div id="treeTop">
+                <div class="treetop-part tt1"></div>
+                <div class="treetop-part tt2"></div>
+                <div class="treetop-part tt3"></div>
             </div>
+            <div id="trunk"></div>
             
             <div id="lumberjack" class="left">
                 <img src="keone.png" alt="" id="keoneImg" onerror="this.style.background='#FFCCBC'">
@@ -432,8 +349,8 @@
             
             <div id="startOverlay">
                 <h2>🪓 TAP TO CHOP</h2>
-                <p>⬅️ Left = chop left side</p>
-                <p>➡️ Right = chop right side</p>
+                <p>⬅️ Tap left = chop left</p>
+                <p>➡️ Tap right = chop right</p>
                 <p>🌿 Avoid the branches!</p>
                 <div id="tapToStart">CONNECT WALLET TO PLAY</div>
             </div>
@@ -452,35 +369,35 @@
             <div class="panel-section">
                 <button id="wallet">Connect Wallet</button>
                 <div id="fundOptions">
-                    <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <div style="display:flex; gap:6px; margin-bottom:6px;">
                         <button class="fund-btn" data-amount="1">1 MON</button>
                         <button class="fund-btn" data-amount="10">10 MON</button>
                         <button class="fund-btn" data-amount="100">100 MON</button>
                     </div>
-                    <div style="display:flex; gap:8px;">
-                        <input type="number" id="customAmount" placeholder="Custom" style="flex:1; padding:10px; border-radius:8px; border:none; font-size:13px;">
+                    <div style="display:flex; gap:6px;">
+                        <input type="number" id="customAmount" placeholder="Custom" style="flex:1; padding:8px; border-radius:6px; border:none; font-size:12px;">
                         <button class="fund-btn" id="customFundBtn">Fund</button>
                     </div>
                 </div>
                 <div id="status">Connect wallet to play</div>
                 <div id="burnerInfo"></div>
                 <div id="withdrawSection">
-                    <div style="font-size:10px; margin-bottom:5px; opacity:0.7;">Withdraw MON:</div>
-                    <input type="text" id="withdrawAddress" placeholder="0x..." style="width:100%; padding:7px; border-radius:6px; border:none; font-size:10px; margin-bottom:5px;">
-                    <div style="display:flex; gap:5px;">
-                        <input type="number" id="withdrawAmount" placeholder="Amt" style="flex:1; padding:7px; border-radius:6px; border:none; font-size:10px;">
-                        <button id="withdrawBtn" style="padding:7px 10px; font-size:10px; background:linear-gradient(135deg,#e74c3c,#c0392b); border:none; border-radius:6px; cursor:pointer; color:white;">Send</button>
+                    <div style="font-size:10px; margin-bottom:4px; opacity:0.7;">Withdraw MON:</div>
+                    <input type="text" id="withdrawAddress" placeholder="0x..." style="width:100%; padding:6px; border-radius:5px; border:none; font-size:10px; margin-bottom:4px;">
+                    <div style="display:flex; gap:4px;">
+                        <input type="number" id="withdrawAmount" placeholder="Amt" style="flex:1; padding:6px; border-radius:5px; border:none; font-size:10px;">
+                        <button id="withdrawBtn" style="padding:6px 10px; font-size:10px; background:linear-gradient(135deg,#e74c3c,#c0392b); border:none; border-radius:5px; cursor:pointer; color:white;">Send</button>
                     </div>
                 </div>
             </div>
             <div class="panel-section">
                 <button id="startBtn" disabled>START GAME</button>
-                <div style="font-size:10px; text-align:center; opacity:0.5; margin-top:6px;">or press SPACE</div>
+                <div style="font-size:10px; text-align:center; opacity:0.5; margin-top:5px;">or press SPACE</div>
             </div>
             <div class="panel-section instructions">
                 <p><strong>How to Play:</strong></p>
                 <p>• Tap <span class="highlight">left</span> or <span class="highlight">right</span></p>
-                <p>• Stay away from branches!</p>
+                <p>• Don't get hit by branches!</p>
                 <p>• Each chop = 1 tx ⚡</p>
             </div>
         </div>
@@ -493,12 +410,11 @@
         const CHAIN_ID='0x279f', RPC='https://testnet-rpc.monad.xyz', EXPLORER='https://testnet.monadexplorer.com';
         
         let score=0, highScore=0, gameActive=false, playerSide='left';
-        let branches=[], timeLeft=100, txCount=0, nonce=null, chopCount=0, treeOffset=0;
+        let branches=[], timeLeft=100, txCount=0, nonce=null;
         let provider, signer, userAddress, burner, contract, animFrame;
         
         const $=id=>document.getElementById(id);
-        const gameArea=$('gameArea'), treeContainer=$('treeContainer');
-        const scoreDisplay=$('scoreDisplay'), timeBar=$('timeBarFill');
+        const gameArea=$('gameArea'), scoreDisplay=$('scoreDisplay'), timeBar=$('timeBarFill');
         const lumberjack=$('lumberjack'), axe=$('axe');
         const startOverlay=$('startOverlay'), gameOver=$('gameOver');
         const startBtn=$('startBtn'), walletBtn=$('wallet');
@@ -570,35 +486,34 @@
             catch(e){statusDiv.textContent='Failed';}
         };
         
-        function createBranch(side,y){
+        function createBranch(side, y){
             const el=document.createElement('div');
             el.className='branch '+side;
             el.style.bottom=y+'px';
             el.innerHTML=`
                 <div class="branch-wood"></div>
                 <div class="branch-leaves">
-                    <div class="leaf-shadow"></div>
-                    <div class="leaf-main"></div>
+                    <div class="leaf-base"></div>
                     <div class="leaf-top"></div>
                 </div>
             `;
-            treeContainer.appendChild(el);
+            gameArea.appendChild(el);
             return el;
         }
         
         function initBranches(){
             document.querySelectorAll('.branch').forEach(b=>b.remove());
             branches=[];
-            for(let i=0;i<7;i++){
+            for(let i=0;i<6;i++){
                 const side=Math.random()>0.5?'left':'right';
-                const y=120+i*70;
+                const y=165+i*70;
                 branches.push({side,y,el:createBranch(side,y)});
             }
         }
         
         function startGame(){
             if(!burner||startBtn.disabled)return;
-            score=0;txCount=0;timeLeft=100;playerSide='left';gameActive=true;chopCount=0;treeOffset=0;
+            score=0;txCount=0;timeLeft=100;playerSide='left';gameActive=true;
             startOverlay.classList.add('hidden');
             gameOver.style.display='none';
             startBtn.disabled=true;
@@ -606,7 +521,6 @@
             timeBar.style.width='100%';
             timeBar.className='';
             lumberjack.className='left';
-            treeContainer.style.transform='translateY(0)';
             initBranches();
             burner.getTransactionCount('pending').then(n=>{nonce=n;contract.startGame(userAddress,{gasLimit:100000,nonce}).catch(console.error);nonce++;});
             requestAnimationFrame(gameLoop);
@@ -614,7 +528,7 @@
         
         function gameLoop(){
             if(!gameActive)return;
-            const decay=0.1*(1+Math.floor(score/30)*0.12);
+            const decay=0.1*(1+Math.floor(score/25)*0.1);
             timeLeft-=decay;
             const pct=Math.max(0,timeLeft);
             timeBar.style.width=pct+'%';
@@ -625,34 +539,39 @@
         
         function chop(side){
             if(!gameActive)return;
+            
             playerSide=side;
             lumberjack.className=side;
+            
             axe.classList.remove('swing');
             void axe.offsetWidth;
             axe.classList.add('swing');
             
-            // Die if on same side as lowest branch
-            if(branches[0]&&branches[0].side===side){endGame();return;}
-            
-            score++;txCount++;chopCount++;
-            timeLeft=Math.min(100,timeLeft+4);
-            scoreDisplay.textContent=score;
-            
-            // Every 2 chops, scroll tree and cycle branches
-            if(chopCount>=2){
-                chopCount=0;
-                treeOffset+=35;
-                treeContainer.style.transform=`translateY(${treeOffset}px)`;
-                
-                // Remove bottom branch
-                branches[0].el.remove();
-                branches.shift();
-                
-                // Add new branch at top
-                const newSide=Math.random()>0.5?'left':'right';
-                const topY=branches.length>0?branches[branches.length-1].y+70:120+6*70;
-                branches.push({side:newSide,y:topY,el:createBranch(newSide,topY)});
+            // Check collision - die if on same side as branch
+            if(branches[0]&&branches[0].side===side){
+                endGame();
+                return;
             }
+            
+            // Remove bottom branch
+            branches[0].el.remove();
+            branches.shift();
+            
+            // Move remaining branches down
+            branches.forEach(b=>{
+                b.y-=70;
+                b.el.style.bottom=b.y+'px';
+            });
+            
+            // Add new branch at top
+            const newSide=Math.random()>0.5?'left':'right';
+            const newY=165+5*70;
+            branches.push({side:newSide,y:newY,el:createBranch(newSide,newY)});
+            
+            score++;
+            txCount++;
+            timeLeft=Math.min(100,timeLeft+5);
+            scoreDisplay.textContent=score;
             
             contract.chop(userAddress,score,{gasLimit:100000,nonce}).catch(console.error);
             nonce++;
