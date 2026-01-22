@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Monad Lumberjack</title>
+    <title>Monad Lumberjack Tournament</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -19,24 +19,25 @@
         }
         #header { text-align: center; margin-bottom: 10px; }
         h1 {
-            font-size: 32px;
+            font-size: 28px;
             margin: 10px 0 5px 0;
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        #highScoreDisplay { font-size: 16px; color: #feca57; }
+        #highScoreDisplay { font-size: 14px; color: #feca57; }
         #mainContainer { display: flex; gap: 20px; align-items: flex-start; }
         
         #gameArea {
             background: linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 100%);
             width: 380px;
-            height: 640px;
+            height: 600px;
             position: relative;
             border: 3px solid #5D4037;
             border-radius: 15px;
             overflow: hidden;
         }
+        #gameArea.tournament { border-color: #9c27b0; box-shadow: 0 0 20px rgba(156,39,176,0.5); }
         #gameArea.shake { animation: shake 0.25s ease-out; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -44,18 +45,8 @@
             40%, 80% { transform: translateX(5px); }
         }
         
-        .cloud {
-            position: absolute;
-            background: rgba(255,255,255,0.9);
-            border-radius: 50px;
-            z-index: 1;
-        }
-        .cloud::before, .cloud::after {
-            content: '';
-            position: absolute;
-            background: rgba(255,255,255,0.9);
-            border-radius: 50%;
-        }
+        .cloud { position: absolute; background: rgba(255,255,255,0.9); border-radius: 50px; z-index: 1; }
+        .cloud::before, .cloud::after { content: ''; position: absolute; background: rgba(255,255,255,0.9); border-radius: 50%; }
         .cloud1 { width: 80px; height: 28px; top: 35px; left: 15px; }
         .cloud1::before { width: 40px; height: 40px; top: -20px; left: 15px; }
         .cloud1::after { width: 50px; height: 45px; top: -22px; left: 40px; }
@@ -64,45 +55,24 @@
         .cloud2::after { width: 40px; height: 36px; top: -18px; left: 32px; }
         
         #trunk {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 80px;
-            width: 52px;
-            height: 600px;
+            position: absolute; left: 50%; transform: translateX(-50%);
+            bottom: 80px; width: 52px; height: 560px;
             background: linear-gradient(to right, #4E342E 0%, #6D4C41 15%, #8D6E63 35%, #A1887F 50%, #8D6E63 65%, #6D4C41 85%, #4E342E 100%);
             z-index: 10;
         }
         
-        .branch {
-            position: absolute;
-            left: 50%;
-            height: 50px;
-            z-index: 9;
-            transition: bottom 0.1s ease-out;
-        }
+        .branch { position: absolute; left: 50%; height: 50px; z-index: 9; transition: bottom 0.1s ease-out; }
         .branch.left { transform: translateX(-26px) translateX(-100%); }
         .branch.right { transform: translateX(26px); }
-        
-        .branch-inner {
-            position: relative;
-            width: 95px;
-            height: 50px;
-        }
+        .branch-inner { position: relative; width: 95px; height: 50px; }
         .branch-wood {
-            position: absolute;
-            bottom: 18px;
-            width: 50px;
-            height: 14px;
+            position: absolute; bottom: 18px; width: 50px; height: 14px;
             background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 50%, #6D4C41 100%);
         }
         .branch.left .branch-wood { right: 0; border-radius: 8px 0 0 8px; }
         .branch.right .branch-wood { left: 0; border-radius: 0 8px 8px 0; }
         .branch-leaf {
-            position: absolute;
-            bottom: 5px;
-            width: 52px;
-            height: 44px;
+            position: absolute; bottom: 5px; width: 52px; height: 44px;
             background: radial-gradient(ellipse at 50% 60%, #7ED67E 0%, #5CB85C 30%, #4CAF50 55%, #388E3C 80%, #2E7D32 100%);
             border-radius: 50%;
         }
@@ -110,248 +80,151 @@
         .branch.right .branch-leaf { right: 0; }
         
         #ground {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 80px;
+            position: absolute; bottom: 0; width: 100%; height: 80px;
             background: linear-gradient(to bottom, #7CB342 0%, #689F38 40%, #558B2F 70%, #33691E 100%);
             z-index: 15;
         }
         #groundHighlight {
-            position: absolute;
-            bottom: 80px;
-            width: 100%;
-            height: 12px;
+            position: absolute; bottom: 80px; width: 100%; height: 12px;
             background: linear-gradient(to bottom, #8BC34A 0%, #7CB342 100%);
-            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-            z-index: 15;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 15;
         }
         
-        #lumberjack {
-            position: absolute;
-            bottom: 90px;
-            width: 60px;
-            height: 75px;
-            z-index: 20;
-            transition: left 0.08s ease-out;
-        }
+        #lumberjack { position: absolute; bottom: 90px; width: 60px; height: 75px; z-index: 20; transition: left 0.08s ease-out; }
         #lumberjack.left { left: 70px; }
         #lumberjack.right { left: 250px; }
         
         #keoneImg {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: 3px solid #5D4037;
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #FFCCBC;
-            object-fit: cover;
-            z-index: 2;
+            width: 36px; height: 36px; border-radius: 50%; border: 3px solid #5D4037;
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            background: #FFCCBC; object-fit: cover; z-index: 2;
         }
         .lj-body {
-            position: absolute;
-            top: 31px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 32px;
-            background: #E53935;
-            border-radius: 4px;
+            position: absolute; top: 31px; left: 50%; transform: translateX(-50%);
+            width: 30px; height: 32px; background: #E53935; border-radius: 4px;
         }
         .lj-body::before {
-            content: '';
-            position: absolute;
-            inset: 3px;
+            content: ''; position: absolute; inset: 3px;
             background: repeating-linear-gradient(90deg, #C62828 0px, #C62828 3px, #1A1A1A 3px, #1A1A1A 6px);
             border-radius: 2px;
         }
         .lj-pants {
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 26px;
-            height: 16px;
-            background: #1565C0;
-            border-radius: 0 0 4px 4px;
+            position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+            width: 26px; height: 16px; background: #1565C0; border-radius: 0 0 4px 4px;
         }
-        #axe {
-            position: absolute;
-            top: 20px;
-            font-size: 26px;
-            z-index: 3;
-        }
+        #axe { position: absolute; top: 20px; font-size: 26px; z-index: 3; }
         #lumberjack.left #axe { right: -5px; transform: scaleX(-1); }
         #lumberjack.right #axe { left: -5px; transform: scaleX(1); }
         #axe.swing { animation: swing 0.06s ease-out; }
-        @keyframes swing {
-            0%, 100% { rotate: 0deg; }
-            50% { rotate: -35deg; }
-        }
+        @keyframes swing { 0%, 100% { rotate: 0deg; } 50% { rotate: -35deg; } }
         
-        .wood-chip {
-            position: absolute;
-            border-radius: 2px;
-            pointer-events: none;
-            z-index: 50;
-        }
+        .wood-chip { position: absolute; border-radius: 2px; pointer-events: none; z-index: 50; }
         
         #bottomHUD {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            z-index: 100;
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 100;
         }
         #scoreDisplay {
-            font-size: 36px;
-            font-weight: bold;
-            color: white;
+            font-size: 36px; font-weight: bold; color: white;
             text-shadow: 2px 2px 0 #5D4037, 0 0 10px rgba(0,0,0,0.5);
         }
         #timeBarContainer {
-            width: 160px;
-            height: 12px;
-            background: rgba(0,0,0,0.4);
-            border-radius: 6px;
-            overflow: hidden;
-            border: 2px solid #5D4037;
+            width: 160px; height: 12px; background: rgba(0,0,0,0.4);
+            border-radius: 6px; overflow: hidden; border: 2px solid #5D4037;
         }
-        #timeBarFill {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(to right, #4CAF50, #8BC34A);
-            transition: width 0.08s linear;
-        }
+        #timeBarFill { height: 100%; width: 100%; background: linear-gradient(to right, #4CAF50, #8BC34A); transition: width 0.08s linear; }
         #timeBarFill.warning { background: linear-gradient(to right, #FF9800, #FFC107); }
-        #timeBarFill.danger { 
-            background: linear-gradient(to right, #f44336, #FF5722);
-            animation: pulseDanger 0.4s ease-in-out infinite;
+        #timeBarFill.danger { background: linear-gradient(to right, #f44336, #FF5722); animation: pulseDanger 0.4s ease-in-out infinite; }
+        @keyframes pulseDanger { 0%, 100% { box-shadow: 0 0 5px #f44336; } 50% { box-shadow: 0 0 15px #ff0000, 0 0 25px rgba(255,0,0,0.6); } }
+        
+        #tournamentBadge {
+            display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #9c27b0, #e91e63); padding: 6px 16px;
+            border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 100;
+            animation: glow 1.5s ease-in-out infinite;
         }
-        @keyframes pulseDanger {
-            0%, 100% { box-shadow: 0 0 5px #f44336; }
-            50% { box-shadow: 0 0 15px #ff0000, 0 0 25px rgba(255,0,0,0.6); }
-        }
+        #tournamentBadge.show { display: block; }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 10px rgba(156,39,176,0.5); } 50% { box-shadow: 0 0 20px rgba(156,39,176,0.8); } }
         
         .tap-zone { position: absolute; top: 0; width: 50%; height: 100%; z-index: 30; cursor: pointer; }
         .tap-zone.left { left: 0; }
         .tap-zone.right { right: 0; }
         
-        /* Simple Side Panel */
-        #sidePanel { display: flex; flex-direction: column; gap: 12px; width: 240px; }
+        #sidePanel { display: flex; flex-direction: column; gap: 10px; width: 260px; }
         .panel-box {
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); padding: 14px;
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
         }
-        .panel-box h3 {
-            font-size: 13px;
-            margin-bottom: 10px;
-            opacity: 0.7;
-            font-weight: normal;
-        }
+        .panel-box h3 { font-size: 12px; margin-bottom: 8px; opacity: 0.7; font-weight: normal; }
         button {
-            padding: 12px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            color: white;
+            padding: 10px 14px; font-size: 13px; font-weight: bold; border: none;
+            border-radius: 8px; cursor: pointer; width: 100%; color: white;
             transition: transform 0.1s, opacity 0.1s;
         }
         button:active { transform: scale(0.98); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
         
         #connectBtn { background: linear-gradient(135deg, #667eea, #764ba2); }
-        #connectBtn.connected { background: linear-gradient(135deg, #11998e, #38ef7d); font-size: 12px; }
-        #startBtn { background: linear-gradient(135deg, #f5576c, #f093fb); font-size: 16px; padding: 14px; }
+        #connectBtn.connected { background: linear-gradient(135deg, #11998e, #38ef7d); font-size: 11px; }
+        #startBtn { background: linear-gradient(135deg, #f5576c, #f093fb); font-size: 14px; }
         
-        .wallet-info {
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 10px;
-            font-size: 11px;
-            text-align: center;
-        }
-        .wallet-info .balance {
-            font-size: 20px;
-            font-weight: bold;
-            color: #8BC34A;
-            margin: 8px 0;
-        }
-        .wallet-info .address {
-            font-size: 10px;
-            opacity: 0.6;
-            word-break: break-all;
-            cursor: pointer;
-        }
+        .wallet-info { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 10px; text-align: center; }
+        .wallet-info .balance { font-size: 18px; font-weight: bold; color: #8BC34A; margin: 6px 0; }
+        .wallet-info .address { font-size: 9px; opacity: 0.6; word-break: break-all; cursor: pointer; }
         .wallet-info .address:hover { opacity: 1; }
         
-        .action-row {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .action-row input {
-            flex: 1;
-            padding: 10px;
-            border-radius: 6px;
-            border: none;
-            font-size: 12px;
-            min-width: 0;
-        }
-        .action-row button {
-            width: auto;
-            padding: 10px 14px;
-            font-size: 12px;
-        }
+        .action-row { display: flex; gap: 6px; margin-top: 8px; }
+        .action-row input { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 11px; min-width: 0; }
+        .action-row button { width: auto; padding: 8px 12px; font-size: 11px; }
         .btn-fund { background: linear-gradient(135deg, #4CAF50, #8BC34A); }
         .btn-withdraw { background: linear-gradient(135deg, #ff9800, #f57c00); }
         
-        .quick-fund {
-            display: flex;
-            gap: 6px;
-            margin-top: 8px;
-        }
-        .quick-fund button {
-            flex: 1;
-            padding: 8px;
-            font-size: 11px;
-            background: rgba(255,255,255,0.1);
-        }
+        .quick-fund { display: flex; gap: 4px; margin-top: 6px; }
+        .quick-fund button { flex: 1; padding: 6px; font-size: 10px; background: rgba(255,255,255,0.1); }
         .quick-fund button:hover { background: rgba(255,255,255,0.2); }
         
         #walletSection { display: none; }
         
-        .instructions {
-            font-size: 11px;
-            opacity: 0.6;
-            text-align: center;
-            line-height: 1.5;
+        /* Tournament Panel */
+        .tournament-box {
+            background: linear-gradient(135deg, rgba(156,39,176,0.2), rgba(233,30,99,0.2));
+            border: 1px solid rgba(156,39,176,0.4);
         }
+        .tournament-box h3 { color: #e91e63; opacity: 1; font-size: 13px; }
+        
+        #tournamentTimer {
+            font-size: 28px; font-weight: bold; text-align: center;
+            color: #feca57; margin: 8px 0;
+        }
+        .tournament-stats { display: flex; justify-content: space-around; margin: 10px 0; text-align: center; }
+        .tournament-stats .stat-val { font-size: 18px; font-weight: bold; color: #8BC34A; }
+        .tournament-stats .stat-label { font-size: 9px; opacity: 0.7; }
+        
+        #joinTournamentBtn {
+            background: linear-gradient(135deg, #9c27b0, #e91e63);
+            font-size: 13px; margin-top: 8px;
+        }
+        #joinTournamentBtn.joined { background: linear-gradient(135deg, #4CAF50, #8BC34A); }
+        
+        .mode-toggle { display: flex; gap: 4px; margin-bottom: 10px; }
+        .mode-toggle button { flex: 1; padding: 8px; font-size: 11px; background: rgba(255,255,255,0.1); border-radius: 6px; }
+        .mode-toggle button.active { background: linear-gradient(135deg, #667eea, #764ba2); }
+        
+        #claimSection { display: none; margin-top: 10px; padding: 10px; background: rgba(76,175,80,0.2); border-radius: 8px; text-align: center; }
+        #claimSection.show { display: block; }
+        #claimBtn { background: linear-gradient(135deg, #4CAF50, #8BC34A); }
+        
+        .instructions { font-size: 10px; opacity: 0.6; text-align: center; line-height: 1.4; }
         
         /* Overlays */
         #startOverlay {
-            position: absolute; inset: 0;
-            background: rgba(0,0,0,0.75);
-            z-index: 50;
+            position: absolute; inset: 0; background: rgba(0,0,0,0.75); z-index: 50;
             display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
         }
         #startOverlay.hidden { display: none; }
-        #startOverlay h2 { font-size: 24px; margin-bottom: 12px; }
-        #startOverlay p { font-size: 14px; opacity: 0.85; margin: 5px 0; }
-        #tapToStart { margin-top: 20px; font-size: 16px; color: #feca57; animation: pulse 1.5s infinite; }
+        #startOverlay h2 { font-size: 22px; margin-bottom: 10px; }
+        #startOverlay p { font-size: 13px; opacity: 0.85; margin: 4px 0; }
+        #tapToStart { margin-top: 16px; font-size: 14px; color: #feca57; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         
         #gameOver {
@@ -363,14 +236,17 @@
         #gameOver.show { display: flex; animation: fadeIn 0.6s ease-out forwards; }
         #gameOver.show.canRestart { pointer-events: auto; }
         @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
-        #gameOver h2 { font-size: 24px; color: #f5576c; margin-bottom: 5px; }
+        #gameOver h2 { font-size: 22px; color: #f5576c; margin-bottom: 5px; }
         #gameOver.newRecord h2 { color: #feca57; }
-        #finalScore { font-size: 56px; font-weight: bold; color: white; margin: 8px 0; }
-        #txSummary { font-size: 15px; color: #9c27b0; margin: 8px 0; padding: 8px 16px; background: rgba(156,39,176,0.2); border-radius: 12px; }
-        #beatScore { font-size: 12px; color: #feca57; margin: 6px 0; }
-        #restartBtn { background: linear-gradient(135deg, #f5576c, #f093fb); margin-top: 15px; font-size: 15px; padding: 12px 30px; width: auto; }
-        #txLink { margin-top: 10px; }
-        #txLink a { color: #54a0ff; text-decoration: none; font-size: 12px; }
+        #gameOver.tournament h2 { color: #e91e63; }
+        #finalScore { font-size: 48px; font-weight: bold; color: white; margin: 6px 0; }
+        #txSummary { font-size: 13px; color: #9c27b0; margin: 6px 0; padding: 6px 14px; background: rgba(156,39,176,0.2); border-radius: 10px; }
+        #tournamentResult { display: none; font-size: 14px; color: #feca57; margin: 8px 0; padding: 8px 16px; background: rgba(255,215,0,0.2); border-radius: 10px; }
+        #tournamentResult.show { display: block; }
+        #beatScore { font-size: 11px; color: #feca57; margin: 4px 0; }
+        #restartBtn { background: linear-gradient(135deg, #f5576c, #f093fb); margin-top: 12px; font-size: 14px; padding: 10px 28px; width: auto; }
+        #txLink { margin-top: 8px; }
+        #txLink a { color: #54a0ff; text-decoration: none; font-size: 11px; }
         
         @media (max-width: 700px) {
             #mainContainer { flex-direction: column; align-items: center; }
@@ -389,6 +265,7 @@
             <div class="cloud cloud1"></div>
             <div class="cloud cloud2"></div>
             <div id="trunk"></div>
+            <div id="tournamentBadge">🏆 TOURNAMENT MODE</div>
             
             <div id="lumberjack" class="left">
                 <img src="keone.png" alt="" id="keoneImg" onerror="this.style.background='#FFCCBC'">
@@ -420,6 +297,7 @@
                 <h2>GAME OVER</h2>
                 <div id="finalScore">0</div>
                 <div id="txSummary">⚡ 0 transactions</div>
+                <div id="tournamentResult">Score submitted to tournament!</div>
                 <div id="beatScore"></div>
                 <div id="txLink"></div>
                 <button id="restartBtn">PLAY AGAIN</button>
@@ -442,26 +320,47 @@
                         <button class="btn-fund" id="fundBtn">Deposit</button>
                     </div>
                     <div class="quick-fund">
-                        <button data-amt="1">1 MON</button>
-                        <button data-amt="5">5 MON</button>
-                        <button data-amt="10">10 MON</button>
+                        <button data-amt="1">1</button>
+                        <button data-amt="5">5</button>
+                        <button data-amt="10">10</button>
+                        <button data-amt="20">20</button>
                     </div>
                     
-                    <div class="action-row" style="margin-top: 12px;">
+                    <div class="action-row" style="margin-top: 10px;">
                         <input type="text" id="withdrawAddr" placeholder="0x...">
-                        <input type="number" id="withdrawAmt" placeholder="Amt" style="width: 60px; flex: none;">
+                        <input type="number" id="withdrawAmt" placeholder="Amt" style="width: 50px; flex: none;">
                         <button class="btn-withdraw" id="withdrawBtn">Send</button>
                     </div>
                 </div>
             </div>
             
+            <!-- Tournament Panel -->
+            <div class="panel-box tournament-box">
+                <h3>🏆 TOURNAMENT</h3>
+                <div id="tournamentTimer">--:--</div>
+                <div class="tournament-stats">
+                    <div><div class="stat-val" id="prizePool">0</div><div class="stat-label">Prize Pool</div></div>
+                    <div><div class="stat-val" id="playerCount">0</div><div class="stat-label">Players</div></div>
+                    <div><div class="stat-val" id="highScoreTourney">0</div><div class="stat-label">High Score</div></div>
+                </div>
+                <button id="joinTournamentBtn" disabled>Join (10 MON)</button>
+                <div id="claimSection">
+                    <div style="margin-bottom:8px">🎉 You won!</div>
+                    <button id="claimBtn">Claim Prize</button>
+                </div>
+            </div>
+            
             <div class="panel-box">
+                <div class="mode-toggle">
+                    <button id="modeFree" class="active">Free Play</button>
+                    <button id="modeTourney">Tournament</button>
+                </div>
                 <button id="startBtn" disabled>START GAME</button>
             </div>
             
             <div class="instructions">
-                Tap left/right to chop<br>
-                Don't hit branches!<br>
+                Free Play: Practice anytime<br>
+                Tournament: Pay 10 MON, compete for prize pool!<br>
                 Each chop = 1 tx on Monad ⚡
             </div>
         </div>
@@ -470,14 +369,29 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
+        // UPDATE THIS TO YOUR NEW CONTRACT ADDRESS AFTER DEPLOYING
         const CONTRACT="0x571044cf1Fd3a1cac6c2b06e4b6A08528dFF63F0";
-        const ABI=["function startGame(address) external","function chop(address,uint256) external","function endGame(address,uint256) external"];
+        const ABI=[
+            "function startGame(address) external",
+            "function chop(address,uint256) external",
+            "function endGame(address,uint256) external",
+            "function joinTournament() external payable",
+            "function submitTournamentScore(uint256) external",
+            "function finalizeTournament() external",
+            "function claimPrize(uint256) external",
+            "function getTournamentInfo() external view returns (uint256,uint256,uint256,uint256,uint256,bool)",
+            "function isPlayerRegistered(uint256,address) external view returns (bool)",
+            "function getPlayerScore(uint256,address) external view returns (uint256)",
+            "function getTimeRemaining() external view returns (uint256)",
+            "function canClaimPrize(uint256,address) external view returns (bool)",
+            "function currentTournamentId() external view returns (uint256)"
+        ];
         const CHAIN_ID='0x279f', RPC='https://testnet-rpc.monad.xyz', EXPLORER='https://testnet.monadexplorer.com';
         
         let score=0, highScore=0, gameActive=false, playerSide='left';
         let branches=[], timeLeft=100, txCount=0, nonce=null, canRestart=false;
         let provider, signer, userAddress, burner, contract, animFrame;
-        let lastChopTime = 0;
+        let lastChopTime=0, gameMode='free', isRegistered=false, currentTournamentId=0;
         
         const $=id=>document.getElementById(id);
         const gameArea=$('gameArea'), scoreDisplay=$('scoreDisplay'), timeBar=$('timeBarFill');
@@ -486,6 +400,8 @@
         const startBtn=$('startBtn'), connectBtn=$('connectBtn');
         const tapToStart=$('tapToStart'), highScoreEl=$('highScoreTop');
         const walletSection=$('walletSection'), balanceAmt=$('balanceAmt'), walletAddr=$('walletAddr');
+        const tournamentBadge=$('tournamentBadge'), tournamentResult=$('tournamentResult');
+        const joinBtn=$('joinTournamentBtn'), claimSection=$('claimSection');
         
         highScore = parseInt(localStorage.getItem('lumberjackHS')||'0');
         highScoreEl.textContent = highScore;
@@ -510,41 +426,95 @@
             }
         }
         
-        // Wood chips
         function spawnChips(fromLeft){
-            const x = fromLeft ? 155 : 220, y = 420;
+            const x = fromLeft ? 155 : 220, y = 400;
             for(let i = 0; i < 6; i++){
                 const chip = document.createElement('div');
                 chip.className = 'wood-chip';
                 const sz = 4 + Math.random() * 6;
                 chip.style.cssText = `width:${sz}px;height:${sz*0.7}px;background:${['#8D6E63','#A1887F','#6D4C41'][i%3]};left:${x}px;top:${y}px;`;
                 gameArea.appendChild(chip);
-                
                 let vx = (2 + Math.random() * 4) * (fromLeft ? -1 : 1), vy = -3 - Math.random() * 4;
                 let cx = x, cy = y, op = 1;
                 (function anim(){
                     cx += vx; cy += vy; vy += 0.35; op -= 0.03;
-                    chip.style.left = cx + 'px';
-                    chip.style.top = cy + 'px';
-                    chip.style.opacity = op;
+                    chip.style.left = cx + 'px'; chip.style.top = cy + 'px'; chip.style.opacity = op;
                     if(op > 0) requestAnimationFrame(anim); else chip.remove();
                 })();
             }
         }
         
-        // Wallet
         function getBurner(){
             let pk = localStorage.getItem('lumberjackPK');
             if(!pk){ pk = ethers.Wallet.createRandom().privateKey; localStorage.setItem('lumberjackPK', pk); }
             return new ethers.Wallet(pk, new ethers.providers.JsonRpcProvider(RPC));
         }
+        
         async function updateBal(){
             if(!burner) return 0;
             const b = parseFloat(ethers.utils.formatEther(await burner.getBalance()));
             balanceAmt.textContent = b.toFixed(3);
-            startBtn.disabled = b < 0.001;
-            tapToStart.textContent = b < 0.001 ? 'DEPOSIT MON TO PLAY' : 'TAP TO START';
+            const minBal = gameMode === 'tournament' ? 10.01 : 0.001;
+            startBtn.disabled = b < 0.001 || (gameMode === 'tournament' && !isRegistered);
+            joinBtn.disabled = b < 10 || isRegistered;
+            updateTapToStart(b);
             return b;
+        }
+        
+        function updateTapToStart(bal){
+            if(gameMode === 'tournament'){
+                if(!isRegistered) tapToStart.textContent = 'JOIN TOURNAMENT FIRST';
+                else tapToStart.textContent = 'TAP TO START TOURNAMENT GAME';
+            } else {
+                tapToStart.textContent = bal < 0.001 ? 'DEPOSIT MON TO PLAY' : 'TAP TO START';
+            }
+        }
+        
+        async function updateTournamentInfo(){
+            if(!contract) return;
+            try {
+                const info = await contract.getTournamentInfo();
+                currentTournamentId = info[0].toNumber();
+                const endTime = info[1].toNumber();
+                const prize = parseFloat(ethers.utils.formatEther(info[2]));
+                const players = info[3].toNumber();
+                const high = info[4].toNumber();
+                const active = info[5];
+                
+                $('prizePool').textContent = prize.toFixed(0);
+                $('playerCount').textContent = players;
+                $('highScoreTourney').textContent = high;
+                
+                if(active){
+                    const remaining = await contract.getTimeRemaining();
+                    const secs = remaining.toNumber();
+                    const mins = Math.floor(secs / 60);
+                    const s = secs % 60;
+                    $('tournamentTimer').textContent = `${mins}:${s.toString().padStart(2,'0')}`;
+                } else {
+                    $('tournamentTimer').textContent = 'ENDED';
+                }
+                
+                if(burner){
+                    isRegistered = await contract.isPlayerRegistered(currentTournamentId, burner.address);
+                    joinBtn.textContent = isRegistered ? '✓ Joined' : 'Join (10 MON)';
+                    joinBtn.classList.toggle('joined', isRegistered);
+                    
+                    // Check for claimable prizes from previous tournaments
+                    for(let i = currentTournamentId - 1; i > 0 && i > currentTournamentId - 5; i--){
+                        const canClaim = await contract.canClaimPrize(i, burner.address);
+                        if(canClaim){
+                            claimSection.classList.add('show');
+                            $('claimBtn').onclick = () => claimPrize(i);
+                            break;
+                        } else {
+                            claimSection.classList.remove('show');
+                        }
+                    }
+                }
+                
+                await updateBal();
+            } catch(e){ console.error('Tournament info error:', e); }
         }
         
         connectBtn.onclick = async () => {
@@ -569,7 +539,10 @@
                 walletAddr.onclick = () => { navigator.clipboard.writeText(burner.address); walletAddr.textContent = 'Copied!'; setTimeout(() => walletAddr.textContent = burner.address, 1000); };
                 walletSection.style.display = 'block';
                 await updateBal();
+                await updateTournamentInfo();
                 initAudio();
+                
+                setInterval(updateTournamentInfo, 5000);
             } catch(e){ console.error(e); }
         };
         
@@ -595,7 +568,44 @@
             } catch(e){ console.error(e); }
         };
         
-        // Game
+        // Mode toggle
+        $('modeFree').onclick = () => { gameMode = 'free'; $('modeFree').classList.add('active'); $('modeTourney').classList.remove('active'); updateBal(); };
+        $('modeTourney').onclick = () => { gameMode = 'tournament'; $('modeTourney').classList.add('active'); $('modeFree').classList.remove('active'); updateBal(); };
+        
+        // Join tournament
+        joinBtn.onclick = async () => {
+            if(!burner || isRegistered) return;
+            try {
+                joinBtn.textContent = 'Joining...';
+                joinBtn.disabled = true;
+                const tx = await contract.joinTournament({value: ethers.utils.parseEther('10'), gasLimit: 200000});
+                await tx.wait();
+                isRegistered = true;
+                joinBtn.textContent = '✓ Joined';
+                joinBtn.classList.add('joined');
+                await updateTournamentInfo();
+            } catch(e){ 
+                console.error(e); 
+                joinBtn.textContent = 'Join (10 MON)';
+                joinBtn.disabled = false;
+            }
+        };
+        
+        async function claimPrize(tournamentId){
+            try {
+                $('claimBtn').textContent = 'Claiming...';
+                $('claimBtn').disabled = true;
+                const tx = await contract.claimPrize(tournamentId, {gasLimit: 200000});
+                await tx.wait();
+                claimSection.classList.remove('show');
+                await updateBal();
+            } catch(e){ 
+                console.error(e);
+                $('claimBtn').textContent = 'Claim Prize';
+                $('claimBtn').disabled = false;
+            }
+        }
+        
         function createBranch(side, y){
             const el = document.createElement('div');
             el.className = 'branch ' + side;
@@ -608,21 +618,21 @@
         function initBranches(){
             document.querySelectorAll('.branch').forEach(b => b.remove());
             branches = [];
-            // Start branches higher up, first one near player, rest going up and off screen
             for(let i = 0; i < 8; i++){
                 const side = Math.random() > 0.5 ? 'left' : 'right';
-                const y = 165 + i * 70; // Will go from 165 to 655 (top ones off screen)
+                const y = 165 + i * 70;
                 branches.push({side, y, el: createBranch(side, y)});
             }
         }
         
         function startGame(){
             if(!burner || startBtn.disabled) return;
+            if(gameMode === 'tournament' && !isRegistered) return;
             if(!canRestart && gameOver.classList.contains('show')) return;
             
             score = 0; txCount = 0; timeLeft = 100; playerSide = 'left'; gameActive = true; canRestart = false;
             startOverlay.classList.add('hidden');
-            gameOver.classList.remove('show', 'canRestart', 'newRecord');
+            gameOver.classList.remove('show', 'canRestart', 'newRecord', 'tournament');
             gameOver.style.display = 'none';
             startBtn.disabled = true;
             scoreDisplay.textContent = '0';
@@ -630,6 +640,15 @@
             timeBar.className = '';
             lumberjack.className = 'left';
             gameArea.classList.remove('shake');
+            
+            if(gameMode === 'tournament'){
+                gameArea.classList.add('tournament');
+                tournamentBadge.classList.add('show');
+            } else {
+                gameArea.classList.remove('tournament');
+                tournamentBadge.classList.remove('show');
+            }
+            
             initBranches();
             
             burner.getTransactionCount('pending').then(n => {
@@ -642,7 +661,6 @@
         
         function gameLoop(){
             if(!gameActive) return;
-            
             let decay = 0.08;
             if(score >= 15) decay = 0.10;
             if(score >= 30) decay = 0.13;
@@ -660,41 +678,28 @@
         
         function chop(side){
             if(!gameActive) return;
-            
-            // Smooth rate limiting - prevent too fast inputs
             const now = Date.now();
             if(now - lastChopTime < 60) return;
             lastChopTime = now;
             
             playerSide = side;
             lumberjack.className = side;
-            
             axe.classList.remove('swing');
             void axe.offsetWidth;
             axe.classList.add('swing');
-            
             spawnChips(side === 'left');
             
-            if(branches[0] && branches[0].side === side){
-                endGame();
-                return;
-            }
+            if(branches[0] && branches[0].side === side){ endGame(); return; }
             
             branches[0].el.remove();
             branches.shift();
+            branches.forEach(b => { b.y -= 70; b.el.style.bottom = b.y + 'px'; });
             
-            branches.forEach(b => {
-                b.y -= 70;
-                b.el.style.bottom = b.y + 'px';
-            });
-            
-            // Add new branch OFF SCREEN at the top
             const newSide = Math.random() > 0.5 ? 'left' : 'right';
-            const newY = branches[branches.length - 1].y + 70; // Always above the last branch
+            const newY = branches[branches.length - 1].y + 70;
             branches.push({side: newSide, y: newY, el: createBranch(newSide, newY)});
             
-            score++;
-            txCount++;
+            score++; txCount++;
             timeLeft = Math.min(100, timeLeft + 6);
             scoreDisplay.textContent = score;
             
@@ -716,7 +721,16 @@
             $('finalScore').textContent = score;
             $('txSummary').textContent = `⚡ ${txCount} transactions`;
             $('beatScore').textContent = isRecord ? '🎉 NEW RECORD!' : `Best: ${highScore}`;
+            
             if(isRecord) gameOver.classList.add('newRecord');
+            if(gameMode === 'tournament'){
+                gameOver.classList.add('tournament');
+                tournamentResult.classList.add('show');
+                tournamentResult.textContent = '🏆 Score submitted to tournament!';
+            } else {
+                tournamentResult.classList.remove('show');
+            }
+            
             gameOver.querySelector('h2').textContent = isRecord ? '🎉 NEW RECORD!' : 'GAME OVER';
             gameOver.style.display = 'flex';
             gameOver.classList.add('show');
@@ -726,27 +740,47 @@
             (async () => {
                 try {
                     const n = await burner.getTransactionCount('pending');
-                    const tx = await contract.endGame(userAddress, score, {gasLimit: 150000, nonce: n});
+                    
+                    // Submit tournament score if in tournament mode
+                    if(gameMode === 'tournament' && isRegistered){
+                        try {
+                            await contract.submitTournamentScore(score, {gasLimit: 150000, nonce: n});
+                        } catch(e){ console.error('Tournament score submit error:', e); }
+                    }
+                    
+                    const tx = await contract.endGame(userAddress, score, {gasLimit: 150000, nonce: n + 1});
                     const r = await tx.wait();
                     $('txLink').innerHTML = `<a href="${EXPLORER}/tx/${r.transactionHash}" target="_blank">View on Explorer →</a>`;
-                } catch(e){}
+                } catch(e){ console.error(e); }
                 await updateBal();
+                await updateTournamentInfo();
             })();
         }
         
         $('restartBtn').onclick = startGame;
         startBtn.onclick = startGame;
-        $('tapLeft').onclick = () => { if(!gameActive && !startBtn.disabled && (canRestart || !gameOver.classList.contains('show'))) startGame(); else chop('left'); };
-        $('tapRight').onclick = () => { if(!gameActive && !startBtn.disabled && (canRestart || !gameOver.classList.contains('show'))) startGame(); else chop('right'); };
-        $('tapLeft').ontouchstart = e => { e.preventDefault(); if(!gameActive && !startBtn.disabled && (canRestart || !gameOver.classList.contains('show'))) startGame(); else chop('left'); };
-        $('tapRight').ontouchstart = e => { e.preventDefault(); if(!gameActive && !startBtn.disabled && (canRestart || !gameOver.classList.contains('show'))) startGame(); else chop('right'); };
+        
+        function handleTap(side){
+            if(!gameActive){
+                if(!startBtn.disabled && (canRestart || !gameOver.classList.contains('show'))){
+                    startGame();
+                }
+            } else {
+                chop(side);
+            }
+        }
+        
+        $('tapLeft').onclick = () => handleTap('left');
+        $('tapRight').onclick = () => handleTap('right');
+        $('tapLeft').ontouchstart = e => { e.preventDefault(); handleTap('left'); };
+        $('tapRight').ontouchstart = e => { e.preventDefault(); handleTap('right'); };
         
         document.onkeydown = e => {
             if(e.key === ' ' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') e.preventDefault();
             if(gameOver.classList.contains('show') && canRestart && (e.key === ' ' || e.key === 'ArrowLeft' || e.key === 'ArrowRight')){ startGame(); return; }
             if(e.key === ' ' && !gameActive && !startBtn.disabled && !gameOver.classList.contains('show')) startGame();
-            if(e.key === 'ArrowLeft'){ if(!gameActive && !startBtn.disabled && !gameOver.classList.contains('show')) startGame(); else chop('left'); }
-            if(e.key === 'ArrowRight'){ if(!gameActive && !startBtn.disabled && !gameOver.classList.contains('show')) startGame(); else chop('right'); }
+            if(e.key === 'ArrowLeft') handleTap('left');
+            if(e.key === 'ArrowRight') handleTap('right');
         };
     </script>
 </body>
