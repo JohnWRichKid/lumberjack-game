@@ -571,62 +571,41 @@
                 
                 const currentBlock = await rpcProvider.getBlockNumber();
                 const scores = {};
-                const startBlock = Math.max(0, currentBlock - 100000);
                 
-                console.log('Fetching logs from block', startBlock, 'to', currentBlock);
+                // Use small range to avoid rate limit
+                const startBlock = Math.max(0, currentBlock - 10000);
                 
                 const logs = await rpcProvider.getLogs({
                     address: CONTRACT,
                     fromBlock: startBlock,
-                    toBlock: currentBlock
+                    toBlock: 'latest'
                 });
-                
-                console.log('Found', logs.length, 'total logs');
                 
                 logs.forEach(log => {
-                    // Log everything to see the structure
-                    if(log.topics && log.topics.length >= 1) {
-                        const eventSig = log.topics[0].slice(0, 10);
-                        
-                        // Look for endGame events - check different possible structures
-                        if(log.topics.length >= 2 && log.data && log.data !== '0x') {
-                            try {
-                                // Try parsing score from data
-                                // Data might be just the score, or might have multiple values
-                                let score = 0;
-                                
-                                if(log.data.length === 66) {
-                                    // Single uint256 in data
-                                    score = parseInt(log.data, 16);
-                                } else if(log.data.length > 66) {
-                                    // Multiple values - score might be first or second
-                                    const firstVal = parseInt(log.data.slice(0, 66), 16);
-                                    const secondVal = parseInt('0x' + log.data.slice(66, 130), 16);
-                                    // Use whichever looks like a reasonable score
-                                    score = (firstVal > 0 && firstVal < 1000) ? firstVal : 
-                                            (secondVal > 0 && secondVal < 1000) ? secondVal : 0;
-                                }
-                                
-                                // Address could be in topic[1] or topic[2]
-                                let addr = '';
-                                if(log.topics[1]) {
-                                    addr = '0x' + log.topics[1].slice(26).toLowerCase();
-                                }
-                                
-                                if(score > 0 && score < 1000 && addr.length === 42 && addr !== '0x0000000000000000000000000000000000000000') {
-                                    console.log('Found score:', addr, score);
-                                    if(!scores[addr] || scores[addr] < score) {
-                                        scores[addr] = score;
-                                    }
-                                }
-                            } catch(e) {
-                                console.log('Parse error', e);
+                    if(log.topics && log.topics.length >= 2 && log.data && log.data !== '0x') {
+                        try {
+                            let score = 0;
+                            
+                            // Parse score from data
+                            if(log.data.length === 66) {
+                                score = parseInt(log.data, 16);
+                            } else if(log.data.length > 66) {
+                                const firstVal = parseInt(log.data.slice(0, 66), 16);
+                                const secondVal = parseInt('0x' + log.data.slice(66, 130), 16);
+                                score = (firstVal > 0 && firstVal < 1000) ? firstVal : 
+                                        (secondVal > 0 && secondVal < 1000) ? secondVal : 0;
                             }
-                        }
+                            
+                            const addr = '0x' + log.topics[1].slice(26).toLowerCase();
+                            
+                            if(score > 0 && score < 1000 && addr.length === 42 && !addr.startsWith('0x000000000000')) {
+                                if(!scores[addr] || scores[addr] < score) {
+                                    scores[addr] = score;
+                                }
+                            }
+                        } catch(e) {}
                     }
                 });
-                
-                console.log('Parsed scores:', scores);
                 
                 const sorted = Object.entries(scores)
                     .sort((a, b) => b[1] - a[1])
@@ -643,10 +622,11 @@
                     `).join('');
                 } else {
                     $('leaderboardBox').style.display = 'block';
-                    $('lbList').innerHTML = '<div style="opacity:0.5;font-size:10px;">No scores yet - be the first!</div>';
+                    $('lbList').innerHTML = '<div style="opacity:0.5;font-size:10px;">No recent scores found</div>';
                 }
             } catch(e) {
-                console.error('Leaderboard error:', e);
+                console.log('Leaderboard unavailable');
+                $('leaderboardBox').style.display = 'none';
             }
         }
         
@@ -754,9 +734,7 @@
             initBranches();
             
             burner.getTransactionCount('pending').then(n => {
-                nonce = n;
-                contract.startGame(userAddress, {gasLimit: 100000, nonce}).catch(console.error);
-                nonce++;
+                contract.startGame(userAddress, {gasLimit: 100000, nonce: n}).catch(console.error);
             });
             requestAnimationFrame(gameLoop);
         }
@@ -819,8 +797,7 @@
             timeLeft = Math.min(100, timeLeft + 6);
             scoreDisplay.textContent = score;
             
-            contract.chop(userAddress, score, {gasLimit: 100000, nonce}).catch(console.error);
-            nonce++;
+            contract.chop(userAddress, score, {gasLimit: 100000}).catch(console.error);
         }
         
         function endGame(){
