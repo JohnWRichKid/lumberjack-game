@@ -693,9 +693,17 @@
                 // When timer hits 0 and we haven't shown countdown yet
                 if (remaining <= 0 && !countdownActive && !hasShownSignupCountdown) {
                     hasShownSignupCountdown = true;
+                    
+                    // Start countdown animation
                     startCountdown("TOURNAMENT STARTING", 5, function() {
-                        // After countdown, wait for phase to change
-                        updateTournamentInfo();
+                        // After countdown, try to advance the tournament
+                        contract.advanceTournament({ gasLimit: 500000 }).then(function() {
+                            return updateTournamentInfo();
+                        }).catch(function(e) {
+                            console.error("Advance to play error:", e);
+                            // Try again
+                            updateTournamentInfo();
+                        });
                     });
                 }
             } else if (tournamentPhase === 1) {
@@ -710,21 +718,28 @@
                 // When timer hits 0 and we haven't shown countdown yet
                 if (remaining <= 0 && !countdownActive && !hasShownPlayCountdown) {
                     hasShownPlayCountdown = true;
+                    
+                    // Start countdown animation
                     startCountdown("COMPILING RESULTS", 5, function() {
                         // After countdown, advance tournament and show results
                         contract.advanceTournament({ gasLimit: 500000 }).then(function() {
                             setTimeout(function() {
-                                showTournamentResults();
+                                updateTournamentInfo().then(function() {
+                                    showTournamentResults();
+                                });
                             }, 1000);
                         }).catch(function(e) {
-                            console.error("Advance error:", e);
+                            console.error("Advance to ended error:", e);
                             showTournamentResults();
                         });
                     });
                 }
-            } else {
-                // ENDED PHASE
+            } else if (tournamentPhase === 2) {
+                // ENDED PHASE - try to start next tournament
                 $("tournamentTimer").textContent = "0:00";
+                
+                // Keep trying to advance to next tournament
+                contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
             }
         }
         
