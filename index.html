@@ -183,12 +183,22 @@
         #tapToStart { margin-top: 16px; font-size: 14px; color: #feca57; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         
-        #finalizingOverlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #finalizingOverlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         #finalizingOverlay.show { display: flex; }
         #finalizingTitle { font-size: 28px; font-weight: bold; color: #feca57; margin-bottom: 20px; }
         #finalizingSpinner { font-size: 48px; animation: spin 2s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #finalizingText { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 20px; }
+        
+        #resultsDisplay { display: none; margin-top: 30px; }
+        #resultsDisplay.show { display: block; }
+        #resultsContent { background: rgba(156,39,176,0.3); padding: 20px; border-radius: 12px; margin: 20px 0; }
+        #resultsContent .result-winner { font-size: 18px; color: #8BC34A; font-weight: bold; margin: 10px 0; }
+        #resultsContent .result-score { font-size: 16px; color: #feca57; margin: 5px 0; }
+        #resultsContent .result-prize { font-size: 16px; color: white; margin: 5px 0; }
+        #resultsContent .result-refund { font-size: 16px; color: #ff9800; margin: 5px 0; }
+        #nextTournamentBtn { margin-top: 20px; padding: 12px 30px; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 8px; color: white; font-size: 14px; font-weight: bold; cursor: pointer; }
+        #nextTournamentBtn:hover { opacity: 0.9; }
         
         #gameOver { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; opacity: 0; pointer-events: none; }
         #gameOver.show { display: flex; animation: fadeIn 0.6s ease-out forwards; }
@@ -270,6 +280,11 @@
                 <div id="finalizingTitle">🏆 FINALIZING RESULTS</div>
                 <div id="finalizingSpinner">⏳</div>
                 <div id="finalizingText">Calculating winners and distributing prizes...</div>
+                
+                <div id="resultsDisplay">
+                    <div id="resultsContent"></div>
+                    <button id="nextTournamentBtn">Continue to Next Tournament</button>
+                </div>
             </div>
         </div>
         
@@ -393,6 +408,16 @@
         var practiceModeBtn = $("practiceModeBtn");
         var tournamentModeBtn = $("tournamentModeBtn");
         var finalizingOverlay = $("finalizingOverlay");
+        var resultsDisplay = $("resultsDisplay");
+        var resultsContent = $("resultsContent");
+        var nextTournamentBtn = $("nextTournamentBtn");
+        
+        nextTournamentBtn.onclick = function() {
+            finalizingOverlay.classList.remove("show");
+            resultsDisplay.classList.remove("show");
+            tournamentLocked = false;
+            updateModeUI();
+        };
         
         practiceModeBtn.onclick = function() {
             gameMode = "practice";
@@ -613,9 +638,20 @@
                     phaseIndicator.textContent = "📝 SIGNUP PHASE";
                     joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
                     
-                    // Hide finalizing overlay when new signup starts
+                    // Hide finalizing overlay and reset registration flag when new signup starts
                     finalizingOverlay.classList.remove("show");
+                    resultsDisplay.classList.remove("show");
                     tournamentLocked = false;
+                    
+                    // Reset isRegistered for new tournament
+                    if (burner) {
+                        contract.isPlayerRegistered(currentTournamentId, burner.address).then(function(reg) {
+                            isRegistered = reg;
+                            joinBtn.classList.toggle("joined", isRegistered);
+                            joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
+                            updateModeUI();
+                        });
+                    }
                 } else if (tournamentPhase === 1) {
                     phaseIndicator.className = "play";
                     phaseIndicator.textContent = "🎮 PLAY PHASE";
@@ -628,7 +664,7 @@
                     
                     // Show finalizing overlay in tournament mode
                     if (gameMode === "tournament") {
-                        finalizingOverlay.classList.add("show");
+                        showFinalizingScreen();
                     }
                     
                     // Try to advance
@@ -1170,6 +1206,60 @@
             if (e.key === "ArrowLeft") handleTap("left");
             if (e.key === "ArrowRight") handleTap("right");
         };
+        
+        function showFinalizingScreen() {
+            finalizingOverlay.classList.add("show");
+            resultsDisplay.classList.remove("show");
+            $("finalizingSpinner").style.display = "block";
+            $("finalizingText").style.display = "block";
+            
+            // Wait 3 seconds then fetch and show results
+            setTimeout(function() {
+                contract.getLastTournamentResult().then(function(last) {
+                    var lastId = last[0].toNumber();
+                    var winners = last[1];
+                    var lastHighScore = last[2].toNumber();
+                    var prizePerWinner = parseFloat(ethers.utils.formatEther(last[3]));
+                    var lastPlayerCount = last[4].toNumber();
+                    
+                    var html = "";
+                    
+                    if (lastPlayerCount === 0) {
+                        html = '<div class="result-refund">📭 No players joined</div>';
+                    } else if (lastPlayerCount === 1) {
+                        html = '<div class="result-refund">💸 Only 1 player joined</div>';
+                        html += '<div class="result-refund">Entry fee refunded</div>';
+                    } else if (winners.length === 0 || lastHighScore === 0) {
+                        html = '<div class="result-refund">💸 No scores submitted</div>';
+                        html += '<div class="result-refund">All players refunded</div>';
+                    } else if (winners.length === 1) {
+                        html = '<div class="result-winner">🏆 WINNER: ' + formatAddr(winners[0]) + '</div>';
+                        html += '<div class="result-score">High Score: ' + lastHighScore + '</div>';
+                        html += '<div class="result-prize">Prize: ' + prizePerWinner.toFixed(1) + ' MON</div>';
+                    } else {
+                        html = '<div class="result-winner">🏆 ' + winners.length + '-WAY TIE!</div>';
+                        html += '<div class="result-score">High Score: ' + lastHighScore + '</div>';
+                        for (var i = 0; i < winners.length; i++) {
+                            html += '<div class="result-winner">' + formatAddr(winners[i]) + '</div>';
+                        }
+                        html += '<div class="result-prize">Each won: ' + prizePerWinner.toFixed(1) + ' MON</div>';
+                    }
+                    
+                    resultsContent.innerHTML = html;
+                    
+                    // Hide spinner, show results
+                    $("finalizingSpinner").style.display = "none";
+                    $("finalizingText").style.display = "none";
+                    resultsDisplay.classList.add("show");
+                }).catch(function(e) {
+                    console.error("Results fetch error:", e);
+                    resultsContent.innerHTML = '<div class="result-refund">⚠️ Could not load results</div>';
+                    $("finalizingSpinner").style.display = "none";
+                    $("finalizingText").style.display = "none";
+                    resultsDisplay.classList.add("show");
+                });
+            }, 3000);
+        }
     </script>
 </body>
 </html>
