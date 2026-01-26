@@ -813,10 +813,8 @@
             timeLeft = Math.min(100, timeLeft + 6);
             scoreDisplay.textContent = score;
             
-            var isTournamentGame = tournamentPhase === 1 && isRegistered;
-            if (!isTournamentGame) {
-                contract.chop(userAddress, score, { gasLimit: 100000 }).catch(function() {});
-            }
+            // Always send chop transaction, tournament or not
+            contract.chop(userAddress, score, { gasLimit: 100000 }).catch(function() {});
         }
         
         function endGame() {
@@ -867,19 +865,35 @@
         
         function submitGameResults(isTournamentGame, finalScore) {
             if (isTournamentGame && isRegistered && finalScore > myCurrentTournamentScore) {
-                contract.submitScore(finalScore, { gasLimit: 300000 }).then(function(tx) {
-                    $("tournamentSubmit").textContent = "🏆 Confirming " + finalScore + "...";
-                    return tx.wait();
-                }).then(function(receipt) {
-                    $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
-                    $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
-                    myCurrentTournamentScore = finalScore;
-                    $("myScoreVal").textContent = finalScore;
-                    setTimeout(updateTournamentInfo, 1000);
-                }).catch(function(err) {
-                    console.error("Score submit failed:", err);
-                    $("tournamentSubmit").textContent = "⚠️ Failed - try playing again";
-                });
+                // Submit score with retries, regardless of phase timing
+                var submitAttempts = 0;
+                var maxAttempts = 3;
+                
+                function trySubmit() {
+                    submitAttempts++;
+                    contract.submitScore(finalScore, { gasLimit: 300000 }).then(function(tx) {
+                        $("tournamentSubmit").textContent = "🏆 Confirming " + finalScore + "...";
+                        return tx.wait();
+                    }).then(function(receipt) {
+                        $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
+                        $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
+                        myCurrentTournamentScore = finalScore;
+                        $("myScoreVal").textContent = finalScore;
+                        setTimeout(updateTournamentInfo, 1000);
+                    }).catch(function(err) {
+                        console.error("Score submit failed (attempt " + submitAttempts + "):", err);
+                        
+                        // Retry if we haven't hit max attempts
+                        if (submitAttempts < maxAttempts) {
+                            $("tournamentSubmit").textContent = "🔄 Retrying score submit...";
+                            setTimeout(trySubmit, 1000);
+                        } else {
+                            $("tournamentSubmit").textContent = "⚠️ Submit failed - score may not count";
+                        }
+                    });
+                }
+                
+                trySubmit();
             } else if (!isTournamentGame) {
                 contract.endGame(userAddress, finalScore, { gasLimit: 150000 }).catch(function() {});
             }
