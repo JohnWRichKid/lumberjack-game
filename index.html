@@ -538,8 +538,18 @@
             var s = secs % 60;
             $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
             
+            // Auto-advance when time expires
             if (remaining === 0 && contract) {
+                if (tournamentPhase === 0 || tournamentPhase === 1) {
+                    // Try to advance phase
+                    contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
+                }
                 updateTournamentInfo();
+            }
+            
+            // Also try to advance in phase 2
+            if (tournamentPhase === 2 && contract) {
+                contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
             }
         }
         
