@@ -193,6 +193,7 @@
         #txSummary { font-size: 13px; color: #9c27b0; margin: 6px 0; padding: 6px 14px; background: rgba(156,39,176,0.2); border-radius: 10px; }
         #tournamentSubmit { display: none; font-size: 13px; color: #8BC34A; margin: 8px 0; padding: 8px 16px; background: rgba(76,175,80,0.2); border-radius: 10px; }
         #tournamentSubmit.show { display: block; }
+        #tournamentSubmit.calculating { color: #feca57; background: rgba(254,202,87,0.2); }
         #beatScore { font-size: 11px; color: #feca57; margin: 4px 0; }
         #restartBtn { background: linear-gradient(135deg, #f5576c, #f093fb); margin-top: 12px; font-size: 14px; padding: 10px 28px; width: auto; }
         #txLink { margin-top: 8px; }
@@ -382,6 +383,19 @@
             gameMode = "practice";
             practiceModeBtn.classList.add("active");
             tournamentModeBtn.classList.remove("active");
+            
+            // When switching to practice mode, hide any game over screen and show start overlay
+            if (gameOver.classList.contains("show")) {
+                gameOver.classList.remove("show", "canRestart", "newRecord");
+                gameOver.style.display = "none";
+                gameActive = false;
+            }
+            
+            // Show start overlay
+            startOverlay.classList.remove("hidden");
+            gameArea.classList.remove("tournament", "shake");
+            tournamentBadge.classList.remove("show");
+            
             updateModeUI();
         };
         
@@ -900,6 +914,17 @@
         
         function gameLoop() {
             if (!gameActive) return;
+            
+            // In tournament mode, force end game when timer hits 0
+            if (gameMode === "tournament" && tournamentPhase === 1) {
+                var now = Date.now();
+                var remaining = Math.max(0, playEndTime - now);
+                if (remaining <= 0) {
+                    // Tournament time expired - force end game
+                    endGame();
+                    return;
+                }
+            }
             
             var decay = 0.08;
             if (score >= 15) decay = 0.10;
