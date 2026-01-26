@@ -389,20 +389,43 @@
             gameMode = "tournament";
             practiceModeBtn.classList.remove("active");
             tournamentModeBtn.classList.add("active");
+            
+            // When switching to tournament mode, hide any game over screen and show start overlay
+            if (gameOver.classList.contains("show")) {
+                gameOver.classList.remove("show", "canRestart", "newRecord");
+                gameOver.style.display = "none";
+                gameActive = false;
+            }
+            
+            // Show start overlay with appropriate message
+            startOverlay.classList.remove("hidden");
+            gameArea.classList.remove("tournament", "shake");
+            tournamentBadge.classList.remove("show");
+            
             updateModeUI();
         };
         
         function updateModeUI() {
             if (gameMode === "practice") {
-                tapToStart.textContent = "TAP OR PRESS SPACE TO START";
+                var bal = parseFloat(balanceAmt.textContent) || 0;
+                if (bal < 0.001) {
+                    tapToStart.textContent = "DEPOSIT MON TO PLAY";
+                } else {
+                    tapToStart.textContent = "TAP OR PRESS SPACE TO START";
+                }
                 gameArea.classList.remove("tournament");
                 tournamentBadge.classList.remove("show");
             } else {
-                // Tournament mode
-                if (tournamentPhase === 1 && isRegistered) {
+                // Tournament mode - always show fresh state
+                var bal = parseFloat(balanceAmt.textContent) || 0;
+                if (bal < 0.001) {
+                    tapToStart.textContent = "DEPOSIT MON TO JOIN";
+                } else if (tournamentPhase === 1 && isRegistered) {
                     tapToStart.textContent = "TAP TO PLAY TOURNAMENT";
-                } else if (tournamentPhase === 0) {
+                } else if (tournamentPhase === 0 && !isRegistered) {
                     tapToStart.textContent = "JOIN TOURNAMENT TO PLAY";
+                } else if (tournamentPhase === 0 && isRegistered) {
+                    tapToStart.textContent = "WAIT FOR TOURNAMENT TO START";
                 } else {
                     tapToStart.textContent = "WAIT FOR NEXT TOURNAMENT";
                 }
