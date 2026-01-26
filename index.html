@@ -354,9 +354,9 @@
         var signupEndTime = 0;
         var playEndTime = 0;
         var countdownActive = false;
-        var lastPhase = -1;
+        var hasShownSignupCountdown = false;
+        var hasShownPlayCountdown = false;
         var lastTournamentData = null;
-        var countdownShownForPhase = -1; // Track which phase we showed countdown for
         
         function $(id) { return document.getElementById(id); }
         
@@ -497,25 +497,13 @@
                 $("playerCount").textContent = players;
                 $("highScoreTourney").textContent = high;
                 
-                // Only detect transitions when phase actually changes on-chain
-                if (lastPhase !== -1 && lastPhase !== newPhase && !countdownActive) {
-                    if (lastPhase === 0 && newPhase === 1) {
-                        // Just moved to play phase on-chain
-                        console.log("Phase transition detected: signup -> play");
-                    } else if (lastPhase === 1 && newPhase === 2) {
-                        // Just moved to ended phase on-chain
-                        console.log("Phase transition detected: play -> ended");
-                    }
+                // If phase changed to 0, reset countdown flags (new tournament started)
+                if (tournamentPhase !== 0 && newPhase === 0) {
+                    hasShownSignupCountdown = false;
+                    hasShownPlayCountdown = false;
                 }
                 
                 tournamentPhase = newPhase;
-                lastPhase = newPhase;
-                
-                // Reset countdown flag when entering a new phase
-                if (newPhase === 0) {
-                    countdownShownForPhase = -1; // Reset for new tournament
-                }
-                
                 updatePhaseUI();
                 
                 if (burner) {
@@ -688,48 +676,55 @@
         }
         
         function updateTimer() {
+            if (!contract) return;
+            
             var now = Date.now();
             var remaining;
             
             if (tournamentPhase === 0) {
+                // SIGNUP PHASE - show countdown to signup end
                 remaining = Math.max(0, signupEndTime - now);
                 
-                // When signup timer hits 0, trigger countdown if not already shown for this phase
-                if (remaining === 0 && !countdownActive && countdownShownForPhase !== 0) {
-                    countdownShownForPhase = 0;
+                var secs = Math.floor(remaining / 1000);
+                var mins = Math.floor(secs / 60);
+                var s = secs % 60;
+                $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
+                
+                // When timer hits 0 and we haven't shown countdown yet
+                if (remaining <= 0 && !countdownActive && !hasShownSignupCountdown) {
+                    hasShownSignupCountdown = true;
                     startCountdown("TOURNAMENT STARTING", 5, function() {
-                        // Force phase check after countdown
+                        // After countdown, wait for phase to change
                         updateTournamentInfo();
                     });
                 }
             } else if (tournamentPhase === 1) {
+                // PLAY PHASE - show countdown to play end
                 remaining = Math.max(0, playEndTime - now);
                 
-                // When play timer hits 0, trigger results countdown if not already shown for this phase
-                if (remaining === 0 && !countdownActive && countdownShownForPhase !== 1) {
-                    countdownShownForPhase = 1;
+                var secs = Math.floor(remaining / 1000);
+                var mins = Math.floor(secs / 60);
+                var s = secs % 60;
+                $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
+                
+                // When timer hits 0 and we haven't shown countdown yet
+                if (remaining <= 0 && !countdownActive && !hasShownPlayCountdown) {
+                    hasShownPlayCountdown = true;
                     startCountdown("COMPILING RESULTS", 5, function() {
-                        // Show results then advance
+                        // After countdown, advance tournament and show results
                         contract.advanceTournament({ gasLimit: 500000 }).then(function() {
-                            return updateTournamentInfo();
-                        }).then(function() {
-                            showTournamentResults();
+                            setTimeout(function() {
+                                showTournamentResults();
+                            }, 1000);
                         }).catch(function(e) {
                             console.error("Advance error:", e);
+                            showTournamentResults();
                         });
                     });
                 }
             } else {
-                remaining = 0;
-            }
-            
-            var secs = Math.floor(remaining / 1000);
-            var mins = Math.floor(secs / 60);
-            var s = secs % 60;
-            $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
-            
-            if (remaining === 0 && contract && tournamentPhase === 2) {
-                updateTournamentInfo();
+                // ENDED PHASE
+                $("tournamentTimer").textContent = "0:00";
             }
         }
         
