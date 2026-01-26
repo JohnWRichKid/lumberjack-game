@@ -190,6 +190,14 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #finalizingText { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 20px; }
         
+        #countdownOverlay { display: none; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(156,39,176,0.98), rgba(233,30,99,0.98)); z-index: 250; flex-direction: column; align-items: center; justify-content: center; }
+        #countdownOverlay.show { display: flex; }
+        #countdownTitle { font-size: 32px; font-weight: bold; color: white; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 3px; }
+        #countdownNumber { font-size: 180px; font-weight: bold; color: #feca57; text-shadow: 0 0 40px rgba(254,202,87,0.6); animation: countPulse 1s ease-out; }
+        #countdownNumber.go { font-size: 140px; color: #8BC34A; animation: goAnimation 0.6s ease-out; }
+        @keyframes countPulse { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes goAnimation { 0% { transform: scale(0.8) rotate(-5deg); opacity: 0; } 50% { transform: scale(1.2) rotate(2deg); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+        
         #resultsDisplay { display: none; margin-top: 30px; }
         #resultsDisplay.show { display: block; }
         #resultsContent { background: rgba(156,39,176,0.3); padding: 20px; border-radius: 12px; margin: 20px 0; }
@@ -346,7 +354,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
-        var CONTRACT = "0xa55457C42c4B3e947041dC78C639Caa260dB37fd";
+        var CONTRACT = "0x91538515F09857220156b4EF1415577b1490227c";
         var ABI = [
             "function startGame(address) external",
             "function chop(address,uint256) external",
