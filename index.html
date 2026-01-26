@@ -356,6 +356,7 @@
         var countdownActive = false;
         var lastPhase = -1;
         var lastTournamentData = null;
+        var countdownShownForPhase = -1; // Track which phase we showed countdown for
         
         function $(id) { return document.getElementById(id); }
         
@@ -509,6 +510,12 @@
                 
                 tournamentPhase = newPhase;
                 lastPhase = newPhase;
+                
+                // Reset countdown flag when entering a new phase
+                if (newPhase === 0) {
+                    countdownShownForPhase = -1; // Reset for new tournament
+                }
+                
                 updatePhaseUI();
                 
                 if (burner) {
@@ -687,8 +694,9 @@
             if (tournamentPhase === 0) {
                 remaining = Math.max(0, signupEndTime - now);
                 
-                // When signup timer hits 0, trigger countdown if not already active
-                if (remaining === 0 && !countdownActive && lastPhase === 0) {
+                // When signup timer hits 0, trigger countdown if not already shown for this phase
+                if (remaining === 0 && !countdownActive && countdownShownForPhase !== 0) {
+                    countdownShownForPhase = 0;
                     startCountdown("TOURNAMENT STARTING", 5, function() {
                         // Force phase check after countdown
                         updateTournamentInfo();
@@ -697,8 +705,9 @@
             } else if (tournamentPhase === 1) {
                 remaining = Math.max(0, playEndTime - now);
                 
-                // When play timer hits 0, trigger results countdown if not already active
-                if (remaining === 0 && !countdownActive && lastPhase === 1) {
+                // When play timer hits 0, trigger results countdown if not already shown for this phase
+                if (remaining === 0 && !countdownActive && countdownShownForPhase !== 1) {
+                    countdownShownForPhase = 1;
                     startCountdown("COMPILING RESULTS", 5, function() {
                         // Show results then advance
                         contract.advanceTournament({ gasLimit: 500000 }).then(function() {
