@@ -489,30 +489,27 @@
                 var prize = parseFloat(ethers.utils.formatEther(info[3]));
                 var players = info[4].toNumber();
                 var high = info[5].toNumber();
-                tournamentPhase = info[6];
+                var newPhase = info[6];
                 
                 $("tournamentNum").textContent = currentTournamentId;
                 $("prizePool").textContent = prize.toFixed(0);
                 $("playerCount").textContent = players;
                 $("highScoreTourney").textContent = high;
                 
-                // Detect phase transitions
-                if (lastPhase === 0 && tournamentPhase === 1 && !countdownActive) {
-                    // Transition from signup to play - show countdown
-                    startCountdown("TOURNAMENT STARTING", 5, function() {
-                        // Countdown complete, update UI
-                        updatePhaseUI();
-                    });
-                } else if (lastPhase === 1 && tournamentPhase === 2 && !countdownActive) {
-                    // Transition from play to ended - show results countdown then leaderboard
-                    startCountdown("COMPILING RESULTS", 5, function() {
-                        showTournamentResults();
-                    });
-                } else {
-                    updatePhaseUI();
+                // Only detect transitions when phase actually changes on-chain
+                if (lastPhase !== -1 && lastPhase !== newPhase && !countdownActive) {
+                    if (lastPhase === 0 && newPhase === 1) {
+                        // Just moved to play phase on-chain
+                        console.log("Phase transition detected: signup -> play");
+                    } else if (lastPhase === 1 && newPhase === 2) {
+                        // Just moved to ended phase on-chain
+                        console.log("Phase transition detected: play -> ended");
+                    }
                 }
                 
-                lastPhase = tournamentPhase;
+                tournamentPhase = newPhase;
+                lastPhase = newPhase;
+                updatePhaseUI();
                 
                 if (burner) {
                     return contract.isPlayerRegistered(currentTournamentId, burner.address).then(function(reg) {
@@ -689,8 +686,30 @@
             
             if (tournamentPhase === 0) {
                 remaining = Math.max(0, signupEndTime - now);
+                
+                // When signup timer hits 0, trigger countdown if not already active
+                if (remaining === 0 && !countdownActive && lastPhase === 0) {
+                    startCountdown("TOURNAMENT STARTING", 5, function() {
+                        // Force phase check after countdown
+                        updateTournamentInfo();
+                    });
+                }
             } else if (tournamentPhase === 1) {
                 remaining = Math.max(0, playEndTime - now);
+                
+                // When play timer hits 0, trigger results countdown if not already active
+                if (remaining === 0 && !countdownActive && lastPhase === 1) {
+                    startCountdown("COMPILING RESULTS", 5, function() {
+                        // Show results then advance
+                        contract.advanceTournament({ gasLimit: 500000 }).then(function() {
+                            return updateTournamentInfo();
+                        }).then(function() {
+                            showTournamentResults();
+                        }).catch(function(e) {
+                            console.error("Advance error:", e);
+                        });
+                    });
+                }
             } else {
                 remaining = 0;
             }
@@ -700,7 +719,7 @@
             var s = secs % 60;
             $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
             
-            if (remaining === 0 && contract) {
+            if (remaining === 0 && contract && tournamentPhase === 2) {
                 updateTournamentInfo();
             }
         }
