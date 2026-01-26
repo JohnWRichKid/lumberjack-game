@@ -331,7 +331,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
-        var CONTRACT = "0x5abf9C1fcCd1709C96010C14b2320A9ff5f5440a";
+        var CONTRACT = "0xa55457C42c4B3e947041dC78C639Caa260dB37fd";
         var ABI = [
             "function startGame(address) external",
             "function chop(address,uint256) external",
@@ -612,6 +612,10 @@
                     phaseIndicator.className = "signup";
                     phaseIndicator.textContent = "📝 SIGNUP PHASE";
                     joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
+                    
+                    // Hide finalizing overlay when new signup starts
+                    finalizingOverlay.classList.remove("show");
+                    tournamentLocked = false;
                 } else if (tournamentPhase === 1) {
                     phaseIndicator.className = "play";
                     phaseIndicator.textContent = "🎮 PLAY PHASE";
@@ -1132,6 +1136,9 @@
         $("restartBtn").onclick = startGame;
         
         function handleTap(side) {
+            // Block all taps if tournament is locked
+            if (tournamentLocked) return;
+            
             if (!gameActive) {
                 if (canRestart || !gameOver.classList.contains("show")) {
                     startGame();
@@ -1147,6 +1154,9 @@
         $("tapRight").ontouchstart = function(e) { e.preventDefault(); handleTap("right"); };
         
         document.onkeydown = function(e) {
+            // Block all keyboard if tournament is locked
+            if (tournamentLocked) return;
+            
             if (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight") {
                 e.preventDefault();
             }
