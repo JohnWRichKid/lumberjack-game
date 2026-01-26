@@ -183,6 +183,13 @@
         #tapToStart { margin-top: 16px; font-size: 14px; color: #feca57; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         
+        #finalizingOverlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #finalizingOverlay.show { display: flex; }
+        #finalizingTitle { font-size: 28px; font-weight: bold; color: #feca57; margin-bottom: 20px; }
+        #finalizingSpinner { font-size: 48px; animation: spin 2s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #finalizingText { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 20px; }
+        
         #gameOver { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; opacity: 0; pointer-events: none; }
         #gameOver.show { display: flex; animation: fadeIn 0.6s ease-out forwards; }
         #gameOver.show.canRestart { pointer-events: auto; }
@@ -257,6 +264,12 @@
                 <div id="beatScore"></div>
                 <div id="txLink"></div>
                 <button id="restartBtn">PLAY AGAIN (SPACE)</button>
+            </div>
+            
+            <div id="finalizingOverlay">
+                <div id="finalizingTitle">🏆 FINALIZING RESULTS</div>
+                <div id="finalizingSpinner">⏳</div>
+                <div id="finalizingText">Calculating winners and distributing prizes...</div>
             </div>
         </div>
         
@@ -357,6 +370,7 @@
         var pendingDeposit = 0;
         var isJoiningTournament = false;
         var gameMode = "practice"; // "practice" or "tournament"
+        var tournamentLocked = false; // Prevents playing when tournament is finalizing
         
         function $(id) { return document.getElementById(id); }
         
@@ -378,6 +392,7 @@
         var phaseIndicator = $("phaseIndicator");
         var practiceModeBtn = $("practiceModeBtn");
         var tournamentModeBtn = $("tournamentModeBtn");
+        var finalizingOverlay = $("finalizingOverlay");
         
         practiceModeBtn.onclick = function() {
             gameMode = "practice";
@@ -430,18 +445,24 @@
                 gameArea.classList.remove("tournament");
                 tournamentBadge.classList.remove("show");
             } else {
-                // Tournament mode - always show fresh state
+                // Tournament mode - show clear messages based on registration and phase
                 var bal = parseFloat(balanceAmt.textContent) || 0;
                 if (bal < 0.001) {
-                    tapToStart.textContent = "DEPOSIT MON TO JOIN";
-                } else if (tournamentPhase === 1 && isRegistered) {
-                    tapToStart.textContent = "TAP TO PLAY TOURNAMENT";
+                    tapToStart.textContent = "DEPOSIT MON TO JOIN TOURNAMENT";
                 } else if (tournamentPhase === 0 && !isRegistered) {
                     tapToStart.textContent = "JOIN TOURNAMENT TO PLAY";
                 } else if (tournamentPhase === 0 && isRegistered) {
-                    tapToStart.textContent = "WAIT FOR TOURNAMENT TO START";
+                    tapToStart.textContent = "✓ YOU'RE IN! TOURNAMENT STARTS SOON";
+                    tapToStart.style.color = "#8BC34A";
+                } else if (tournamentPhase === 1 && isRegistered) {
+                    tapToStart.textContent = "TAP OR PRESS SPACE TO PLAY";
+                    tapToStart.style.color = "#feca57";
+                } else if (tournamentPhase === 1 && !isRegistered) {
+                    tapToStart.textContent = "NOT REGISTERED - WAIT FOR NEXT ROUND";
+                    tapToStart.style.color = "#f5576c";
                 } else {
-                    tapToStart.textContent = "WAIT FOR NEXT TOURNAMENT";
+                    tapToStart.textContent = "TOURNAMENT ENDED - NEXT ROUND SOON";
+                    tapToStart.style.color = "#feca57";
                 }
             }
         }
@@ -541,16 +562,27 @@
                 } else {
                     tapToStart.textContent = "TAP OR PRESS SPACE TO START";
                 }
+                tapToStart.style.color = "#feca57";
             } else {
                 // Tournament mode
                 if (bal < 0.001) {
-                    tapToStart.textContent = "DEPOSIT MON TO JOIN";
-                } else if (tournamentPhase === 1 && isRegistered) {
-                    tapToStart.textContent = "TAP TO PLAY TOURNAMENT";
-                } else if (tournamentPhase === 0) {
+                    tapToStart.textContent = "DEPOSIT MON TO JOIN TOURNAMENT";
+                    tapToStart.style.color = "#feca57";
+                } else if (tournamentPhase === 0 && !isRegistered) {
                     tapToStart.textContent = "JOIN TOURNAMENT TO PLAY";
+                    tapToStart.style.color = "#feca57";
+                } else if (tournamentPhase === 0 && isRegistered) {
+                    tapToStart.textContent = "✓ YOU'RE IN! TOURNAMENT STARTS SOON";
+                    tapToStart.style.color = "#8BC34A";
+                } else if (tournamentPhase === 1 && isRegistered) {
+                    tapToStart.textContent = "TAP OR PRESS SPACE TO PLAY";
+                    tapToStart.style.color = "#feca57";
+                } else if (tournamentPhase === 1 && !isRegistered) {
+                    tapToStart.textContent = "NOT REGISTERED - WAIT FOR NEXT ROUND";
+                    tapToStart.style.color = "#f5576c";
                 } else {
-                    tapToStart.textContent = "WAIT FOR NEXT TOURNAMENT";
+                    tapToStart.textContent = "TOURNAMENT ENDED - NEXT ROUND SOON";
+                    tapToStart.style.color = "#feca57";
                 }
             }
         }
@@ -584,10 +616,18 @@
                     phaseIndicator.className = "play";
                     phaseIndicator.textContent = "🎮 PLAY PHASE";
                     joinBtn.textContent = "Signup Closed";
+                    tournamentLocked = false; // Unlock when play phase starts
                 } else {
                     phaseIndicator.className = "ended";
                     phaseIndicator.textContent = "⏳ FINALIZING...";
                     joinBtn.textContent = "Next Round Soon";
+                    
+                    // Show finalizing overlay in tournament mode
+                    if (gameMode === "tournament") {
+                        finalizingOverlay.classList.add("show");
+                    }
+                    
+                    // Try to advance
                     contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
                 }
                 
@@ -915,12 +955,17 @@
         function gameLoop() {
             if (!gameActive) return;
             
-            // In tournament mode, force end game when timer hits 0
+            // In tournament mode, HARD STOP when timer hits 0
             if (gameMode === "tournament" && tournamentPhase === 1) {
                 var now = Date.now();
                 var remaining = Math.max(0, playEndTime - now);
                 if (remaining <= 0) {
-                    // Tournament time expired - force end game
+                    // Tournament time expired - LOCK EVERYTHING
+                    tournamentLocked = true;
+                    gameActive = false;
+                    cancelAnimationFrame(animFrame);
+                    
+                    // Force end game immediately
                     endGame();
                     return;
                 }
