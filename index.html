@@ -165,34 +165,6 @@
         #txLink { margin-top: 8px; }
         #txLink a { color: #54a0ff; text-decoration: none; font-size: 11px; }
         
-        #countdownOverlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 150; flex-direction: column; align-items: center; justify-content: center; }
-        #countdownOverlay.show { display: flex; animation: fadeIn 0.3s ease-out; }
-        #countdownText { font-size: 18px; color: #e91e63; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        #countdownNumber { font-size: 120px; font-weight: bold; color: #feca57; animation: countPulse 1s ease-in-out; text-shadow: 0 0 30px rgba(254,202,87,0.5); }
-        #countdownNumber.go { font-size: 100px; color: #8BC34A; animation: goAnimation 0.8s ease-out; }
-        @keyframes countPulse { 0% { transform: scale(0.8); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes goAnimation { 0% { transform: scale(0.5) rotate(-10deg); opacity: 0; } 50% { transform: scale(1.3) rotate(5deg); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
-        
-        #resultsOverlay { display: none; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(156,39,176,0.98), rgba(233,30,99,0.98)); z-index: 150; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        #resultsOverlay.show { display: flex; animation: fadeIn 0.5s ease-out; }
-        #resultsTitle { font-size: 28px; font-weight: bold; color: #feca57; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        #resultsSubtitle { font-size: 14px; color: white; opacity: 0.9; margin-bottom: 20px; }
-        #leaderboardList { width: 100%; max-width: 320px; }
-        .leaderboard-item { background: rgba(0,0,0,0.3); margin: 6px 0; padding: 12px 16px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; animation: slideIn 0.4s ease-out; border-left: 4px solid #8BC34A; }
-        .leaderboard-item:nth-child(1) { border-left-color: #feca57; animation-delay: 0.1s; }
-        .leaderboard-item:nth-child(2) { border-left-color: #c0c0c0; animation-delay: 0.2s; }
-        .leaderboard-item:nth-child(3) { border-left-color: #cd7f32; animation-delay: 0.3s; }
-        .leaderboard-item:nth-child(4) { animation-delay: 0.4s; }
-        .leaderboard-item:nth-child(5) { animation-delay: 0.5s; }
-        @keyframes slideIn { 0% { transform: translateX(-30px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
-        .lb-rank { font-size: 24px; font-weight: bold; color: #feca57; width: 40px; }
-        .lb-info { flex: 1; margin: 0 10px; }
-        .lb-addr { font-size: 12px; font-weight: bold; color: white; }
-        .lb-score { font-size: 10px; color: rgba(255,255,255,0.7); }
-        .lb-prize { font-size: 14px; font-weight: bold; color: #8BC34A; }
-        #resultsClose { margin-top: 20px; padding: 10px 30px; background: rgba(255,255,255,0.2); border: 2px solid white; border-radius: 8px; color: white; font-size: 13px; cursor: pointer; }
-        #resultsClose:hover { background: rgba(255,255,255,0.3); }
-        
         @media (max-width: 700px) {
             #mainContainer { flex-direction: column; align-items: center; }
             #sidePanel { width: 380px; max-width: 100%; }
@@ -246,18 +218,6 @@
                 <div id="beatScore"></div>
                 <div id="txLink"></div>
                 <button id="restartBtn">PLAY AGAIN (SPACE)</button>
-            </div>
-            
-            <div id="countdownOverlay">
-                <div id="countdownText">Tournament Starting</div>
-                <div id="countdownNumber">5</div>
-            </div>
-            
-            <div id="resultsOverlay">
-                <div id="resultsTitle">🏆 TOURNAMENT RESULTS</div>
-                <div id="resultsSubtitle">Tournament #<span id="resultsTourneyNum">1</span> Final Standings</div>
-                <div id="leaderboardList"></div>
-                <button id="resultsClose">CLOSE</button>
             </div>
         </div>
         
@@ -353,10 +313,6 @@
         var tournamentPhase = 0;
         var signupEndTime = 0;
         var playEndTime = 0;
-        var countdownActive = false;
-        var hasShownSignupCountdown = false;
-        var hasShownPlayCountdown = false;
-        var lastTournamentData = null;
         
         function $(id) { return document.getElementById(id); }
         
@@ -376,15 +332,6 @@
         var tournamentBadge = $("tournamentBadge");
         var joinBtn = $("joinTournamentBtn");
         var phaseIndicator = $("phaseIndicator");
-        var countdownOverlay = $("countdownOverlay");
-        var countdownText = $("countdownText");
-        var countdownNumber = $("countdownNumber");
-        var resultsOverlay = $("resultsOverlay");
-        var resultsClose = $("resultsClose");
-        
-        resultsClose.onclick = function() {
-            resultsOverlay.classList.remove("show");
-        };
         
         highScore = parseInt(localStorage.getItem("lumberjackHS") || "0");
         highScoreEl.textContent = highScore;
@@ -490,21 +437,27 @@
                 var prize = parseFloat(ethers.utils.formatEther(info[3]));
                 var players = info[4].toNumber();
                 var high = info[5].toNumber();
-                var newPhase = info[6];
+                tournamentPhase = info[6];
                 
                 $("tournamentNum").textContent = currentTournamentId;
                 $("prizePool").textContent = prize.toFixed(0);
                 $("playerCount").textContent = players;
                 $("highScoreTourney").textContent = high;
                 
-                // If phase changed to 0, reset countdown flags (new tournament started)
-                if (tournamentPhase !== 0 && newPhase === 0) {
-                    hasShownSignupCountdown = false;
-                    hasShownPlayCountdown = false;
+                if (tournamentPhase === 0) {
+                    phaseIndicator.className = "signup";
+                    phaseIndicator.textContent = "📝 SIGNUP PHASE";
+                    joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
+                } else if (tournamentPhase === 1) {
+                    phaseIndicator.className = "play";
+                    phaseIndicator.textContent = "🎮 PLAY PHASE";
+                    joinBtn.textContent = "Signup Closed";
+                } else {
+                    phaseIndicator.className = "ended";
+                    phaseIndicator.textContent = "⏳ FINALIZING...";
+                    joinBtn.textContent = "Next Round Soon";
+                    contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
                 }
-                
-                tournamentPhase = newPhase;
-                updatePhaseUI();
                 
                 if (burner) {
                     return contract.isPlayerRegistered(currentTournamentId, burner.address).then(function(reg) {
@@ -531,14 +484,6 @@
                 var lastHighScore = last[2].toNumber();
                 var prizePerWinner = parseFloat(ethers.utils.formatEther(last[3]));
                 var lastPlayerCount = last[4].toNumber();
-                
-                lastTournamentData = {
-                    id: lastId,
-                    winners: winners,
-                    highScore: lastHighScore,
-                    prizePerWinner: prizePerWinner,
-                    playerCount: lastPlayerCount
-                };
                 
                 if (lastId > 0) {
                     $("lastWinner").classList.add("show");
@@ -576,170 +521,25 @@
             });
         }
         
-        function updatePhaseUI() {
-            if (tournamentPhase === 0) {
-                phaseIndicator.className = "signup";
-                phaseIndicator.textContent = "📝 SIGNUP PHASE";
-                joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
-            } else if (tournamentPhase === 1) {
-                phaseIndicator.className = "play";
-                phaseIndicator.textContent = "🎮 PLAY PHASE";
-                joinBtn.textContent = "Signup Closed";
-            } else {
-                phaseIndicator.className = "ended";
-                phaseIndicator.textContent = "⏳ FINALIZING...";
-                joinBtn.textContent = "Next Round Soon";
-                contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
-            }
-        }
-        
-        function startCountdown(text, seconds, callback) {
-            countdownActive = true;
-            countdownText.textContent = text;
-            countdownOverlay.classList.add("show");
-            
-            var count = seconds;
-            
-            function updateCount() {
-                if (count > 0) {
-                    countdownNumber.textContent = count;
-                    countdownNumber.className = "";
-                    void countdownNumber.offsetWidth; // Force reflow
-                    count--;
-                    setTimeout(updateCount, 1000);
-                } else {
-                    countdownNumber.textContent = "GO!";
-                    countdownNumber.className = "go";
-                    setTimeout(function() {
-                        countdownOverlay.classList.remove("show");
-                        countdownActive = false;
-                        if (callback) callback();
-                    }, 800);
-                }
-            }
-            
-            updateCount();
-        }
-        
-        function showTournamentResults() {
-            if (!lastTournamentData || !contract) {
-                updatePhaseUI();
-                return;
-            }
-            
-            // Get all scores from the last tournament
-            contract.currentTournamentId().then(function(currId) {
-                var lastTourneyId = currId.toNumber() - 1;
-                if (lastTourneyId < 1) return;
-                
-                $("resultsTourneyNum").textContent = lastTourneyId;
-                
-                // We need to get top scores - but we only have winner addresses
-                // So let's build a simple leaderboard from what we know
-                var leaderboardHTML = "";
-                
-                if (lastTournamentData.playerCount === 0) {
-                    leaderboardHTML = '<div style="text-align:center;color:rgba(255,255,255,0.7);padding:20px;">No players joined this tournament</div>';
-                } else if (lastTournamentData.playerCount === 1) {
-                    leaderboardHTML = '<div style="text-align:center;color:rgba(255,255,255,0.7);padding:20px;">Only 1 player - Entry fee refunded</div>';
-                } else if (lastTournamentData.winners.length === 0 || lastTournamentData.highScore === 0) {
-                    leaderboardHTML = '<div style="text-align:center;color:rgba(255,255,255,0.7);padding:20px;">No scores submitted - All refunded</div>';
-                } else {
-                    // Show winners with their scores
-                    for (var i = 0; i < Math.min(lastTournamentData.winners.length, 5); i++) {
-                        var rank = i + 1;
-                        var addr = lastTournamentData.winners[i];
-                        var prize = lastTournamentData.prizePerWinner;
-                        
-                        leaderboardHTML += '<div class="leaderboard-item">';
-                        leaderboardHTML += '<div class="lb-rank">' + (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '#' + rank) + '</div>';
-                        leaderboardHTML += '<div class="lb-info">';
-                        leaderboardHTML += '<div class="lb-addr">' + formatAddr(addr) + '</div>';
-                        leaderboardHTML += '<div class="lb-score">Score: ' + lastTournamentData.highScore + '</div>';
-                        leaderboardHTML += '</div>';
-                        leaderboardHTML += '<div class="lb-prize">+' + prize.toFixed(1) + ' MON</div>';
-                        leaderboardHTML += '</div>';
-                    }
-                }
-                
-                $("leaderboardList").innerHTML = leaderboardHTML;
-                resultsOverlay.classList.add("show");
-                
-                // Auto-advance tournament after showing results
-                setTimeout(function() {
-                    updatePhaseUI();
-                }, 100);
-            }).catch(function(e) {
-                console.error("Results error:", e);
-                updatePhaseUI();
-            });
-        }
-        
         function updateTimer() {
-            if (!contract) return;
-            
             var now = Date.now();
             var remaining;
             
             if (tournamentPhase === 0) {
-                // SIGNUP PHASE - show countdown to signup end
                 remaining = Math.max(0, signupEndTime - now);
-                
-                var secs = Math.floor(remaining / 1000);
-                var mins = Math.floor(secs / 60);
-                var s = secs % 60;
-                $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
-                
-                // When timer hits 0 and we haven't shown countdown yet
-                if (remaining <= 0 && !countdownActive && !hasShownSignupCountdown) {
-                    hasShownSignupCountdown = true;
-                    
-                    // Start countdown animation
-                    startCountdown("TOURNAMENT STARTING", 5, function() {
-                        // After countdown, try to advance the tournament
-                        contract.advanceTournament({ gasLimit: 500000 }).then(function() {
-                            return updateTournamentInfo();
-                        }).catch(function(e) {
-                            console.error("Advance to play error:", e);
-                            // Try again
-                            updateTournamentInfo();
-                        });
-                    });
-                }
             } else if (tournamentPhase === 1) {
-                // PLAY PHASE - show countdown to play end
                 remaining = Math.max(0, playEndTime - now);
-                
-                var secs = Math.floor(remaining / 1000);
-                var mins = Math.floor(secs / 60);
-                var s = secs % 60;
-                $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
-                
-                // When timer hits 0 and we haven't shown countdown yet
-                if (remaining <= 0 && !countdownActive && !hasShownPlayCountdown) {
-                    hasShownPlayCountdown = true;
-                    
-                    // Start countdown animation
-                    startCountdown("COMPILING RESULTS", 5, function() {
-                        // After countdown, advance tournament and show results
-                        contract.advanceTournament({ gasLimit: 500000 }).then(function() {
-                            setTimeout(function() {
-                                updateTournamentInfo().then(function() {
-                                    showTournamentResults();
-                                });
-                            }, 1000);
-                        }).catch(function(e) {
-                            console.error("Advance to ended error:", e);
-                            showTournamentResults();
-                        });
-                    });
-                }
-            } else if (tournamentPhase === 2) {
-                // ENDED PHASE - try to start next tournament
-                $("tournamentTimer").textContent = "0:00";
-                
-                // Keep trying to advance to next tournament
-                contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
+            } else {
+                remaining = 0;
+            }
+            
+            var secs = Math.floor(remaining / 1000);
+            var mins = Math.floor(secs / 60);
+            var s = secs % 60;
+            $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
+            
+            if (remaining === 0 && contract) {
+                updateTournamentInfo();
             }
         }
         
