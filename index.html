@@ -19,35 +19,6 @@
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        #modeToggle { 
-            position: absolute; 
-            top: 15px; 
-            left: 15px; 
-            display: flex; 
-            gap: 5px; 
-            background: rgba(0,0,0,0.3); 
-            padding: 5px; 
-            border-radius: 8px; 
-            z-index: 200;
-        }
-        .mode-btn { 
-            padding: 8px 16px; 
-            font-size: 11px; 
-            font-weight: bold; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            background: rgba(255,255,255,0.1); 
-            color: rgba(255,255,255,0.5); 
-            transition: all 0.2s;
-        }
-        .mode-btn.active { 
-            background: linear-gradient(135deg, #667eea, #764ba2); 
-            color: white; 
-        }
-        .mode-btn.tournament.active { 
-            background: linear-gradient(135deg, #9c27b0, #e91e63); 
-        }
         #highScoreDisplay { font-size: 14px; color: #feca57; }
         #mainContainer { display: flex; gap: 20px; align-items: flex-start; }
         
@@ -56,11 +27,7 @@
             width: 380px; height: 600px; position: relative;
             border: 3px solid #5D4037; border-radius: 15px; overflow: hidden;
         }
-        #gameArea.tournament { border-color: #9c27b0; box-shadow: 0 0 20px rgba(156,39,176,0.5); animation: tournamentPulse 2s ease-in-out infinite; }
-        @keyframes tournamentPulse { 
-            0%, 100% { box-shadow: 0 0 20px rgba(156,39,176,0.5); } 
-            50% { box-shadow: 0 0 30px rgba(156,39,176,0.8), 0 0 40px rgba(233,30,99,0.4); } 
-        }
+        #gameArea.tournament { border-color: #9c27b0; box-shadow: 0 0 20px rgba(156,39,176,0.5); }
         #gameArea.shake { animation: shake 0.25s ease-out; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
         
@@ -141,7 +108,7 @@
         
         .action-row { display: flex; gap: 6px; margin-top: 8px; }
         .action-row input { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 11px; min-width: 0; }
-        .action-row button { width: auto; padding: 8px 12px; font-size: 11px; flex-shrink: 0; }
+        .action-row button { width: auto; padding: 8px 12px; font-size: 11px; }
         .btn-fund { background: linear-gradient(135deg, #4CAF50, #8BC34A); }
         .btn-withdraw { background: linear-gradient(135deg, #ff9800, #f57c00); }
         
@@ -205,11 +172,6 @@
     </style>
 </head>
 <body>
-    <div id="modeToggle">
-        <button class="mode-btn active" id="practiceModeBtn">🎮 PRACTICE</button>
-        <button class="mode-btn tournament" id="tournamentModeBtn">🏆 TOURNAMENT</button>
-    </div>
-    
     <div id="header">
         <h1>🪓 MONAD LUMBERJACK</h1>
         <div id="highScoreDisplay">🏆 Best: <span id="highScoreTop">0</span></div>
@@ -280,7 +242,7 @@
                     </div>
                     <div class="action-row" style="margin-top: 10px;">
                         <input type="text" id="withdrawAddr" placeholder="0x...">
-                        <input type="number" id="withdrawAmt" placeholder="Amt" style="width: 60px; flex: none;">
+                        <input type="number" id="withdrawAmt" placeholder="Amt" style="width: 50px; flex: none;">
                         <button class="btn-withdraw" id="withdrawBtn">Send</button>
                     </div>
                 </div>
@@ -289,7 +251,7 @@
             <div class="panel-box tournament-box">
                 <h3>🏆 TOURNAMENT #<span id="tournamentNum">1</span></h3>
                 <div id="phaseIndicator" class="signup">📝 SIGNUP PHASE</div>
-                <div id="tournamentTimer">1:00</div>
+                <div id="tournamentTimer">5:00</div>
                 <div class="tournament-stats">
                     <div><div class="stat-val" id="prizePool">0</div><div class="stat-label">Prize (MON)</div></div>
                     <div><div class="stat-val" id="playerCount">0</div><div class="stat-label">Players</div></div>
@@ -317,7 +279,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
-        var CONTRACT = "0x6a8d5209280456519832A5770F11e43e8533f7Fc";
+        var CONTRACT = "0x1F5C1Dd0066268ff90E7FAe1baEBF0F7FdcbBa43";
         var ABI = [
             "function startGame(address) external",
             "function chop(address,uint256) external",
@@ -351,14 +313,6 @@
         var tournamentPhase = 0;
         var signupEndTime = 0;
         var playEndTime = 0;
-        var chopsSinceLastTx = 0;
-        var CHOPS_PER_TX = 10;
-        var pendingDeposit = 0;
-        var isJoiningTournament = false;
-        var gameMode = "practice";
-        
-        // For smooth timer countdown
-        var timerEndTime = 0;
         
         function $(id) { return document.getElementById(id); }
         
@@ -378,69 +332,6 @@
         var tournamentBadge = $("tournamentBadge");
         var joinBtn = $("joinTournamentBtn");
         var phaseIndicator = $("phaseIndicator");
-        var practiceModeBtn = $("practiceModeBtn");
-        var tournamentModeBtn = $("tournamentModeBtn");
-        
-        practiceModeBtn.onclick = function() {
-            gameMode = "practice";
-            practiceModeBtn.classList.add("active");
-            tournamentModeBtn.classList.remove("active");
-            if (gameOver.classList.contains("show")) {
-                gameOver.classList.remove("show", "canRestart", "newRecord");
-                gameOver.style.display = "none";
-                gameActive = false;
-            }
-            startOverlay.classList.remove("hidden");
-            gameArea.classList.remove("tournament", "shake");
-            tournamentBadge.classList.remove("show");
-            updateModeUI();
-        };
-        
-        tournamentModeBtn.onclick = function() {
-            gameMode = "tournament";
-            practiceModeBtn.classList.remove("active");
-            tournamentModeBtn.classList.add("active");
-            if (gameOver.classList.contains("show")) {
-                gameOver.classList.remove("show", "canRestart", "newRecord");
-                gameOver.style.display = "none";
-                gameActive = false;
-            }
-            startOverlay.classList.remove("hidden");
-            gameArea.classList.remove("tournament", "shake");
-            tournamentBadge.classList.remove("show");
-            updateModeUI();
-        };
-        
-        function updateModeUI() {
-            var bal = parseFloat(balanceAmt.textContent) || 0;
-            tapToStart.style.color = "#feca57";
-            
-            if (gameMode === "practice") {
-                if (bal < 0.001) {
-                    tapToStart.textContent = "DEPOSIT MON TO PLAY";
-                } else {
-                    tapToStart.textContent = "TAP OR PRESS SPACE TO START";
-                }
-                gameArea.classList.remove("tournament");
-                tournamentBadge.classList.remove("show");
-            } else {
-                if (bal < 0.001) {
-                    tapToStart.textContent = "DEPOSIT MON TO JOIN TOURNAMENT";
-                } else if (tournamentPhase === 0 && !isRegistered) {
-                    tapToStart.textContent = "JOIN TOURNAMENT TO PLAY";
-                } else if (tournamentPhase === 0 && isRegistered) {
-                    tapToStart.textContent = "✓ YOU'RE IN! TOURNAMENT STARTS SOON";
-                    tapToStart.style.color = "#8BC34A";
-                } else if (tournamentPhase === 1 && isRegistered) {
-                    tapToStart.textContent = "TAP OR PRESS SPACE TO PLAY";
-                } else if (tournamentPhase === 1 && !isRegistered) {
-                    tapToStart.textContent = "NOT REGISTERED - WAIT FOR NEXT ROUND";
-                    tapToStart.style.color = "#f5576c";
-                } else {
-                    tapToStart.textContent = "TOURNAMENT ENDED - NEXT ROUND SOON";
-                }
-            }
-        }
         
         highScore = parseInt(localStorage.getItem("lumberjackHS") || "0");
         highScoreEl.textContent = highScore;
@@ -517,13 +408,19 @@
             if (!burner) return Promise.resolve(0);
             return burner.getBalance().then(function(bal) {
                 var b = parseFloat(ethers.utils.formatEther(bal));
-                var displayBal = b + pendingDeposit;
-                balanceAmt.textContent = displayBal.toFixed(3);
-                balanceAmt.style.opacity = pendingDeposit > 0 ? "0.7" : "1";
-                joinBtn.disabled = b < 10 || isRegistered || tournamentPhase !== 0 || isJoiningTournament;
-                updateModeUI();
+                balanceAmt.textContent = b.toFixed(3);
+                joinBtn.disabled = b < 10 || isRegistered || tournamentPhase !== 0;
+                updateTapToStart(b);
                 return b;
             });
+        }
+        
+        function updateTapToStart(bal) {
+            if (bal < 0.001) {
+                tapToStart.textContent = "DEPOSIT MON TO PLAY";
+            } else {
+                tapToStart.textContent = "TAP OR PRESS SPACE TO START";
+            }
         }
         
         function formatAddr(addr) {
@@ -547,34 +444,25 @@
                 $("playerCount").textContent = players;
                 $("highScoreTourney").textContent = high;
                 
-                // Set timer end time for smooth countdown
                 if (tournamentPhase === 0) {
-                    timerEndTime = signupEndTime;
                     phaseIndicator.className = "signup";
                     phaseIndicator.textContent = "📝 SIGNUP PHASE";
                     joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
                 } else if (tournamentPhase === 1) {
-                    timerEndTime = playEndTime;
                     phaseIndicator.className = "play";
                     phaseIndicator.textContent = "🎮 PLAY PHASE";
                     joinBtn.textContent = "Signup Closed";
                 } else {
-                    timerEndTime = 0;
                     phaseIndicator.className = "ended";
                     phaseIndicator.textContent = "⏳ FINALIZING...";
                     joinBtn.textContent = "Next Round Soon";
                     contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
                 }
                 
-                updateModeUI();
-                
                 if (burner) {
                     return contract.isPlayerRegistered(currentTournamentId, burner.address).then(function(reg) {
                         isRegistered = reg;
                         joinBtn.classList.toggle("joined", isRegistered);
-                        if (tournamentPhase === 0) {
-                            joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
-                        }
                         
                         if (isRegistered) {
                             return contract.getPlayerScore(currentTournamentId, burner.address).then(function(myScore) {
@@ -633,19 +521,24 @@
             });
         }
         
-        // Smooth timer - counts down locally every second
         function updateTimer() {
             var now = Date.now();
-            var remaining = Math.max(0, timerEndTime - now);
+            var remaining;
             
-            var secs = Math.ceil(remaining / 1000);
+            if (tournamentPhase === 0) {
+                remaining = Math.max(0, signupEndTime - now);
+            } else if (tournamentPhase === 1) {
+                remaining = Math.max(0, playEndTime - now);
+            } else {
+                remaining = 0;
+            }
+            
+            var secs = Math.floor(remaining / 1000);
             var mins = Math.floor(secs / 60);
             var s = secs % 60;
             $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
             
-            // When timer hits 0, try to advance and refresh
-            if (remaining <= 0 && contract) {
-                contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
+            if (remaining === 0 && contract) {
                 updateTournamentInfo();
             }
         }
@@ -710,10 +603,8 @@
                 
                 initAudio();
                 
-                // Timer updates every second locally
                 setInterval(updateTimer, 1000);
-                // Tournament info updates every 5 seconds from contract
-                setInterval(updateTournamentInfo, 5000);
+                setInterval(updateTournamentInfo, 10000);
                 
                 return updateTournamentInfo();
             }).catch(function(e) {
@@ -726,9 +617,6 @@
         function fund(amt) {
             if (!amt || amt <= 0 || !signer) return;
             
-            pendingDeposit = amt;
-            updateBal();
-            
             signer.sendTransaction({ 
                 to: burner.address, 
                 value: ethers.utils.parseEther(amt.toString()) 
@@ -737,13 +625,10 @@
                 return tx.wait();
             }).then(function() {
                 connectBtn.textContent = formatAddr(userAddress);
-                pendingDeposit = 0;
                 return updateBal();
             }).catch(function(e) {
                 console.error(e);
                 connectBtn.textContent = formatAddr(userAddress);
-                pendingDeposit = 0;
-                updateBal();
             });
         }
         
@@ -771,9 +656,8 @@
         };
         
         joinBtn.onclick = function() {
-            if (!burner || isRegistered || tournamentPhase !== 0 || isJoiningTournament) return;
+            if (!burner || isRegistered || tournamentPhase !== 0) return;
             
-            isJoiningTournament = true;
             joinBtn.textContent = "Joining...";
             joinBtn.disabled = true;
             
@@ -785,13 +669,11 @@
                 return tx.wait();
             }).then(function() {
                 isRegistered = true;
-                isJoiningTournament = false;
                 joinBtn.textContent = "✓ Registered";
                 joinBtn.classList.add("joined");
                 return updateTournamentInfo();
             }).catch(function(e) {
                 console.error("Join error:", e);
-                isJoiningTournament = false;
                 joinBtn.textContent = "Join Tournament (10 MON)";
                 joinBtn.disabled = false;
                 updateBal();
@@ -823,17 +705,11 @@
         
         function startGame() {
             if (!burner) return;
-            
             var bal = parseFloat(balanceAmt.textContent);
             if (bal < 0.001) return;
+            if (!canRestart && gameOver.classList.contains("show")) return;
             
-            if (gameMode === "tournament") {
-                if (tournamentPhase !== 1 || !isRegistered) {
-                    return;
-                }
-            }
-            
-            var isTournamentGame = (gameMode === "tournament" && tournamentPhase === 1 && isRegistered);
+            var isTournamentGame = tournamentPhase === 1 && isRegistered;
             
             score = 0;
             txCount = 0;
@@ -841,7 +717,6 @@
             playerSide = "left";
             gameActive = true;
             canRestart = false;
-            chopsSinceLastTx = 0;
             
             startOverlay.classList.add("hidden");
             gameOver.classList.remove("show", "canRestart", "newRecord");
@@ -871,15 +746,6 @@
         
         function gameLoop() {
             if (!gameActive) return;
-            
-            // In tournament mode, stop when play phase ends
-            if (gameMode === "tournament" && tournamentPhase === 1) {
-                var now = Date.now();
-                if (now >= playEndTime) {
-                    endGame();
-                    return;
-                }
-            }
             
             var decay = 0.08;
             if (score >= 15) decay = 0.10;
@@ -944,12 +810,11 @@
             
             score++;
             txCount++;
-            chopsSinceLastTx++;
             timeLeft = Math.min(100, timeLeft + 6);
             scoreDisplay.textContent = score;
             
-            if (chopsSinceLastTx >= CHOPS_PER_TX) {
-                chopsSinceLastTx = 0;
+            var isTournamentGame = tournamentPhase === 1 && isRegistered;
+            if (!isTournamentGame) {
                 contract.chop(userAddress, score, { gasLimit: 100000 }).catch(function() {});
             }
         }
@@ -981,13 +846,11 @@
                 $("tournamentSubmit").classList.add("show");
                 if (score > myCurrentTournamentScore) {
                     $("tournamentSubmit").textContent = "🏆 Submitting score " + score + "...";
-                    submitScore(score);
                 } else {
                     $("tournamentSubmit").textContent = "Score " + score + " (your best: " + myCurrentTournamentScore + ")";
                 }
             } else {
                 $("tournamentSubmit").classList.remove("show");
-                contract.endGame(userAddress, score, { gasLimit: 150000 }).catch(function() {});
             }
             
             gameOver.querySelector("h2").textContent = isRecord ? "🎉 NEW RECORD!" : "GAME OVER";
@@ -999,30 +862,32 @@
                 gameOver.classList.add("canRestart");
             }, 800);
             
+            submitGameResults(isTournamentGame, score);
+        }
+        
+        function submitGameResults(isTournamentGame, finalScore) {
+            if (isTournamentGame && isRegistered && finalScore > myCurrentTournamentScore) {
+                contract.submitScore(finalScore, { gasLimit: 300000 }).then(function(tx) {
+                    $("tournamentSubmit").textContent = "🏆 Confirming " + finalScore + "...";
+                    return tx.wait();
+                }).then(function(receipt) {
+                    $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
+                    $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
+                    myCurrentTournamentScore = finalScore;
+                    $("myScoreVal").textContent = finalScore;
+                    setTimeout(updateTournamentInfo, 1000);
+                }).catch(function(err) {
+                    console.error("Score submit failed:", err);
+                    $("tournamentSubmit").textContent = "⚠️ Failed - try playing again";
+                });
+            } else if (!isTournamentGame) {
+                contract.endGame(userAddress, finalScore, { gasLimit: 150000 }).catch(function() {});
+            }
+            
             updateBal();
         }
         
-        function submitScore(finalScore) {
-            contract.submitScore(finalScore, { gasLimit: 300000 }).then(function(tx) {
-                $("tournamentSubmit").textContent = "🏆 Confirming " + finalScore + "...";
-                return tx.wait();
-            }).then(function(receipt) {
-                $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
-                $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
-                myCurrentTournamentScore = finalScore;
-                $("myScoreVal").textContent = finalScore;
-            }).catch(function(err) {
-                console.error("Score submit failed:", err);
-                $("tournamentSubmit").textContent = "⚠️ Submit failed - try again";
-            });
-        }
-        
-        $("restartBtn").onclick = function() {
-            gameOver.classList.remove("show", "canRestart", "newRecord");
-            gameOver.style.display = "none";
-            startOverlay.classList.remove("hidden");
-            updateModeUI();
-        };
+        $("restartBtn").onclick = startGame;
         
         function handleTap(side) {
             if (!gameActive) {
@@ -1043,202 +908,13 @@
             if (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight") {
                 e.preventDefault();
             }
-            
-            // Space or arrows can restart from game over screen
-            if (gameOver.classList.contains("show") && canRestart) {
-                if (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight") {
-                    gameOver.classList.remove("show", "canRestart", "newRecord");
-                    gameOver.style.display = "none";
-                    startOverlay.classList.remove("hidden");
-                    updateModeUI();
-                    return;
-                }
-            }
-            
-            // Space to start from start screen
-            if (e.key === " " && !gameActive && !gameOver.classList.contains("show")) {
+            if (gameOver.classList.contains("show") && canRestart && (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight")) {
                 startGame();
                 return;
             }
-            
-            // Arrow keys during game
-            if (e.key === "ArrowLeft") handleTap("left");
-            if (e.key === "ArrowRight") handleTap("right");
-        };
-    </script>
-</body>
-</html>ct + "%";
-            
-            if (pct > 50) {
-                timeBar.className = "";
-            } else if (pct > 25) {
-                timeBar.className = "warning";
-            } else {
-                timeBar.className = "danger";
-            }
-            
-            if (timeLeft <= 0) {
-                endGame();
-                return;
-            }
-            
-            animFrame = requestAnimationFrame(gameLoop);
-        }
-        
-        function chop(side) {
-            if (!gameActive) return;
-            
-            var now = Date.now();
-            if (now - lastChopTime < 60) return;
-            lastChopTime = now;
-            
-            playerSide = side;
-            lumberjack.className = side;
-            
-            axe.classList.remove("swing");
-            void axe.offsetWidth;
-            axe.classList.add("swing");
-            
-            spawnChips(side === "left");
-            
-            if (branches[0] && branches[0].side === side) {
-                endGame();
-                return;
-            }
-            
-            branches[0].el.remove();
-            branches.shift();
-            
-            for (var i = 0; i < branches.length; i++) {
-                branches[i].y -= 70;
-                branches[i].el.style.bottom = branches[i].y + "px";
-            }
-            
-            var newSide = Math.random() > 0.5 ? "left" : "right";
-            var newY = branches[branches.length - 1].y + 70;
-            var newEl = createBranch(newSide, newY);
-            branches.push({ side: newSide, y: newY, el: newEl });
-            
-            score++;
-            txCount++;
-            chopsSinceLastTx++;
-            timeLeft = Math.min(100, timeLeft + 6);
-            scoreDisplay.textContent = score;
-            
-            if (chopsSinceLastTx >= CHOPS_PER_TX) {
-                chopsSinceLastTx = 0;
-                contract.chop(userAddress, score, { gasLimit: 100000 }).catch(function() {});
-            }
-        }
-        
-        function endGame() {
-            gameActive = false;
-            cancelAnimationFrame(animFrame);
-            
-            var isTournamentGame = gameArea.classList.contains("tournament");
-            
-            gameArea.classList.add("shake");
-            playDeathSound();
-            setTimeout(function() { gameArea.classList.remove("shake"); }, 250);
-            
-            var isRecord = score > highScore;
-            if (isRecord) {
-                highScore = score;
-                localStorage.setItem("lumberjackHS", highScore);
-                highScoreEl.textContent = highScore;
-            }
-            
-            $("finalScore").textContent = score;
-            $("txSummary").textContent = "⚡ " + txCount + " chops";
-            $("beatScore").textContent = isRecord ? "🎉 NEW RECORD!" : "Best: " + highScore;
-            
-            if (isRecord) gameOver.classList.add("newRecord");
-            
-            if (isTournamentGame) {
-                $("tournamentSubmit").classList.add("show");
-                if (score > myCurrentTournamentScore) {
-                    $("tournamentSubmit").textContent = "🏆 Submitting score " + score + "...";
-                    submitScore(score);
-                } else {
-                    $("tournamentSubmit").textContent = "Score " + score + " (your best: " + myCurrentTournamentScore + ")";
-                }
-            } else {
-                $("tournamentSubmit").classList.remove("show");
-                contract.endGame(userAddress, score, { gasLimit: 150000 }).catch(function() {});
-            }
-            
-            gameOver.querySelector("h2").textContent = isRecord ? "🎉 NEW RECORD!" : "GAME OVER";
-            gameOver.style.display = "flex";
-            gameOver.classList.add("show");
-            
-            setTimeout(function() {
-                canRestart = true;
-                gameOver.classList.add("canRestart");
-            }, 800);
-            
-            updateBal();
-        }
-        
-        function submitScore(finalScore) {
-            contract.submitScore(finalScore, { gasLimit: 300000 }).then(function(tx) {
-                $("tournamentSubmit").textContent = "🏆 Confirming " + finalScore + "...";
-                return tx.wait();
-            }).then(function(receipt) {
-                $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
-                $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
-                myCurrentTournamentScore = finalScore;
-                $("myScoreVal").textContent = finalScore;
-            }).catch(function(err) {
-                console.error("Score submit failed:", err);
-                $("tournamentSubmit").textContent = "⚠️ Submit failed - try again";
-            });
-        }
-        
-        $("restartBtn").onclick = function() {
-            gameOver.classList.remove("show", "canRestart", "newRecord");
-            gameOver.style.display = "none";
-            startOverlay.classList.remove("hidden");
-            updateModeUI();
-        };
-        
-        function handleTap(side) {
-            if (!gameActive) {
-                if (canRestart || !gameOver.classList.contains("show")) {
-                    startGame();
-                }
-            } else {
-                chop(side);
-            }
-        }
-        
-        $("tapLeft").onclick = function() { handleTap("left"); };
-        $("tapRight").onclick = function() { handleTap("right"); };
-        $("tapLeft").ontouchstart = function(e) { e.preventDefault(); handleTap("left"); };
-        $("tapRight").ontouchstart = function(e) { e.preventDefault(); handleTap("right"); };
-        
-        document.onkeydown = function(e) {
-            if (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight") {
-                e.preventDefault();
-            }
-            
-            // Space or arrows can restart from game over screen
-            if (gameOver.classList.contains("show") && canRestart) {
-                if (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight") {
-                    gameOver.classList.remove("show", "canRestart", "newRecord");
-                    gameOver.style.display = "none";
-                    startOverlay.classList.remove("hidden");
-                    updateModeUI();
-                    return;
-                }
-            }
-            
-            // Space starts game from start screen
             if (e.key === " " && !gameActive && !gameOver.classList.contains("show")) {
                 startGame();
-                return;
             }
-            
-            // Arrows chop or start
             if (e.key === "ArrowLeft") handleTap("left");
             if (e.key === "ArrowRight") handleTap("right");
         };
