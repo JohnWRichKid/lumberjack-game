@@ -5,686 +5,497 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Monad Lumberjack</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Arial Black',Arial,sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:10px;user-select:none}
-button{padding:10px 14px;font-size:13px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;width:100%;color:#fff;transition:transform .1s}
-button:active{transform:scale(.98)}button:disabled{opacity:.5;cursor:not-allowed}
-input{padding:8px;border-radius:6px;border:none;font-size:11px}
-#header{text-align:center;margin-bottom:10px}
-h1{font-size:28px;margin:10px 0 5px;background:linear-gradient(135deg,#f093fb,#f5576c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-#modeToggle{position:absolute;top:15px;left:15px;display:flex;gap:5px;background:rgba(0,0,0,.3);padding:5px;border-radius:8px;z-index:200}
-.mode-btn{padding:8px 16px;font-size:11px;font-weight:bold;border:none;border-radius:6px;cursor:pointer;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5)}
-.mode-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
-.mode-btn.tournament.active{background:linear-gradient(135deg,#9c27b0,#e91e63)}
-#highScoreDisplay{font-size:14px;color:#feca57}
-#mainContainer{display:flex;gap:20px;align-items:flex-start}
-#gameArea{background:linear-gradient(to bottom,#87CEEB,#B0E0E6);width:380px;height:600px;position:relative;border:3px solid #5D4037;border-radius:15px;overflow:hidden}
-#gameArea.tournament{border-color:#9c27b0;box-shadow:0 0 20px rgba(156,39,176,.5)}
-#gameArea.shake{animation:shake .25s ease-out}
-@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
-.cloud{position:absolute;background:rgba(255,255,255,.9);border-radius:50px;z-index:1}
-.cloud::before,.cloud::after{content:'';position:absolute;background:rgba(255,255,255,.9);border-radius:50%}
-.cloud1{width:80px;height:28px;top:35px;left:15px}.cloud1::before{width:40px;height:40px;top:-20px;left:15px}.cloud1::after{width:50px;height:45px;top:-22px;left:40px}
-.cloud2{width:65px;height:24px;top:80px;right:25px}.cloud2::before{width:32px;height:32px;top:-16px;left:12px}.cloud2::after{width:40px;height:36px;top:-18px;left:32px}
-#trunk{position:absolute;left:50%;transform:translateX(-50%);bottom:80px;width:52px;height:560px;background:linear-gradient(to right,#4E342E,#6D4C41 15%,#8D6E63 35%,#A1887F 50%,#8D6E63 65%,#6D4C41 85%,#4E342E);z-index:10}
-.branch{position:absolute;left:50%;height:50px;z-index:9;transition:bottom .1s ease-out}
-.branch.left{transform:translateX(-26px) translateX(-100%)}.branch.right{transform:translateX(26px)}
-.branch-inner{position:relative;width:95px;height:50px}
-.branch-wood{position:absolute;bottom:18px;width:50px;height:14px;background:linear-gradient(to bottom,#A1887F,#8D6E63 50%,#6D4C41)}
-.branch.left .branch-wood{right:0;border-radius:8px 0 0 8px}.branch.right .branch-wood{left:0;border-radius:0 8px 8px 0}
-.branch-leaf{position:absolute;bottom:5px;width:52px;height:44px;background:radial-gradient(ellipse at 50% 60%,#7ED67E,#5CB85C 30%,#4CAF50 55%,#388E3C 80%,#2E7D32);border-radius:50%}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Arial Black',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:10px;user-select:none}
+h1{font-size:24px;margin:10px 0;background:linear-gradient(135deg,#f093fb,#f5576c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+button{padding:10px 16px;font-size:13px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;color:#fff;transition:transform .1s}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.5;cursor:not-allowed}
+input{padding:8px;border-radius:6px;border:none;font-size:12px}
+#main{display:flex;gap:20px;align-items:flex-start}
+#game{background:linear-gradient(to bottom,#87CEEB,#B0E0E6);width:380px;height:600px;position:relative;border:3px solid #5D4037;border-radius:15px;overflow:hidden}
+#game.tournament{border-color:#9c27b0;box-shadow:0 0 20px rgba(156,39,176,.5)}
+#game.shake{animation:shake .2s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-5px)}50%{transform:translateX(5px)}}
+.cloud{position:absolute;background:#fff;border-radius:50px;opacity:.9}
+.c1{width:70px;height:25px;top:40px;left:20px}.c2{width:60px;height:20px;top:80px;right:30px}
+#trunk{position:absolute;left:50%;transform:translateX(-50%);bottom:80px;width:50px;height:520px;background:linear-gradient(90deg,#5D4037,#8D6E63,#5D4037);z-index:10}
+.branch{position:absolute;left:50%;height:45px;z-index:9}
+.branch.left{transform:translateX(-25px) translateX(-100%)}
+.branch.right{transform:translateX(25px)}
+.branch-wood{position:absolute;bottom:15px;width:45px;height:12px;background:#6D4C41}
+.branch.left .branch-wood{right:0;border-radius:6px 0 0 6px}
+.branch.right .branch-wood{left:0;border-radius:0 6px 6px 0}
+.branch-leaf{position:absolute;bottom:5px;width:45px;height:38px;background:radial-gradient(ellipse,#4CAF50,#2E7D32);border-radius:50%}
 .branch.left .branch-leaf{left:0}.branch.right .branch-leaf{right:0}
-#ground{position:absolute;bottom:0;width:100%;height:80px;background:linear-gradient(to bottom,#7CB342,#689F38 40%,#558B2F 70%,#33691E);z-index:15}
-#groundHighlight{position:absolute;bottom:80px;width:100%;height:12px;background:linear-gradient(to bottom,#8BC34A,#7CB342);border-radius:50% 50% 0 0/100% 100% 0 0;z-index:15}
-#lumberjack{position:absolute;bottom:90px;width:60px;height:75px;z-index:20;transition:left .08s ease-out}
-#lumberjack.left{left:70px}#lumberjack.right{left:250px}
-#keoneImg{width:36px;height:36px;border-radius:50%;border:3px solid #5D4037;position:absolute;top:0;left:50%;transform:translateX(-50%);background:#FFCCBC;object-fit:cover;z-index:2}
-.lj-body{position:absolute;top:31px;left:50%;transform:translateX(-50%);width:30px;height:32px;background:#E53935;border-radius:4px}
-.lj-body::before{content:'';position:absolute;inset:3px;background:repeating-linear-gradient(90deg,#C62828 0 3px,#1A1A1A 3px 6px);border-radius:2px}
-.lj-pants{position:absolute;top:60px;left:50%;transform:translateX(-50%);width:26px;height:16px;background:#1565C0;border-radius:0 0 4px 4px}
-#axe{position:absolute;top:20px;font-size:26px;z-index:3}
-#lumberjack.left #axe{right:-5px;transform:scaleX(-1)}#lumberjack.right #axe{left:-5px}
-#axe.swing{animation:swing .06s ease-out}
-@keyframes swing{0%,100%{rotate:0deg}50%{rotate:-35deg}}
-.wood-chip{position:absolute;border-radius:2px;pointer-events:none;z-index:50}
-#bottomHUD{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:100}
-#scoreDisplay{font-size:36px;font-weight:bold;color:#fff;text-shadow:2px 2px 0 #5D4037,0 0 10px rgba(0,0,0,.5)}
-#timeBarContainer{width:160px;height:12px;background:rgba(0,0,0,.4);border-radius:6px;overflow:hidden;border:2px solid #5D4037}
-#timeBarFill{height:100%;width:100%;background:linear-gradient(to right,#4CAF50,#8BC34A);transition:width .08s linear}
-#timeBarFill.warning{background:linear-gradient(to right,#FF9800,#FFC107)}
-#timeBarFill.danger{background:linear-gradient(to right,#f44336,#FF5722);animation:pulseDanger .4s infinite}
-@keyframes pulseDanger{0%,100%{box-shadow:0 0 5px #f44336}50%{box-shadow:0 0 15px #f00,0 0 25px rgba(255,0,0,.6)}}
-#tournamentBadge,#tournamentCountdown{display:none;position:absolute;left:50%;transform:translateX(-50%);border-radius:20px;font-size:12px;font-weight:bold;z-index:100}
-#tournamentBadge{top:10px;background:linear-gradient(135deg,#9c27b0,#e91e63);padding:6px 16px}
-#tournamentBadge.show,#tournamentCountdown.show{display:block}
-#tournamentCountdown{top:50px;background:rgba(0,0,0,.8);padding:4px 12px;font-size:18px;color:#feca57}
-#tournamentCountdown.urgent{color:#f44336;animation:pulseDanger .5s infinite}
-.tap-zone{position:absolute;top:0;width:50%;height:100%;z-index:30;cursor:pointer}
-.tap-zone.left{left:0}.tap-zone.right{right:0}
-#sidePanel{display:flex;flex-direction:column;gap:10px;width:280px}
-.panel-box{background:rgba(255,255,255,.05);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.1)}
-.panel-box h3{font-size:12px;margin-bottom:8px;opacity:.7;font-weight:normal}
-#connectBtn{background:linear-gradient(135deg,#667eea,#764ba2)}
-#connectBtn.connected{background:linear-gradient(135deg,#11998e,#38ef7d);font-size:11px}
-.wallet-info{background:rgba(0,0,0,.3);border-radius:8px;padding:10px;margin-top:8px;font-size:10px;text-align:center}
-.wallet-info .balance{font-size:18px;font-weight:bold;color:#8BC34A;margin:6px 0}
-.wallet-info .address{font-size:9px;opacity:.6;word-break:break-all;cursor:pointer}
-.action-row{display:flex;gap:6px;margin-top:8px}
-.action-row input{flex:1;min-width:0}
-.action-row button{width:auto;padding:8px 12px;font-size:11px}
-.btn-fund{background:linear-gradient(135deg,#4CAF50,#8BC34A)}
-.btn-withdraw{background:linear-gradient(135deg,#ff9800,#f57c00)}
-.quick-fund{display:flex;gap:4px;margin-top:6px}
-.quick-fund button{flex:1;padding:6px;font-size:10px;background:rgba(255,255,255,.1)}
-#walletSection{display:none}
-.tournament-box{background:linear-gradient(135deg,rgba(156,39,176,.2),rgba(233,30,99,.2));border:1px solid rgba(156,39,176,.4)}
-.tournament-box h3{color:#e91e63;opacity:1;font-size:13px}
-#phaseIndicator{text-align:center;margin-bottom:8px;padding:8px;border-radius:8px;font-size:14px;font-weight:bold}
-#phaseIndicator.signup{background:rgba(76,175,80,.3);color:#8BC34A}
-#phaseIndicator.play{background:rgba(233,30,99,.3);color:#e91e63}
-#phaseIndicator.ended{background:rgba(255,152,0,.3);color:#FFC107}
-#tournamentTimer{font-size:32px;font-weight:bold;text-align:center;color:#feca57;margin:5px 0}
-.tournament-stats{display:flex;justify-content:space-around;margin:10px 0;text-align:center}
-.tournament-stats .stat-val{font-size:18px;font-weight:bold;color:#8BC34A}
-.tournament-stats .stat-label{font-size:9px;opacity:.7}
-#joinTournamentBtn{background:linear-gradient(135deg,#9c27b0,#e91e63);font-size:13px;margin-top:8px}
-#joinTournamentBtn.joined{background:linear-gradient(135deg,#4CAF50,#8BC34A)}
-#lastWinner{margin-top:10px;padding:10px;background:rgba(76,175,80,.2);border-radius:8px;text-align:center;font-size:11px;display:none}
-#lastWinner.show{display:block}
-#lastWinner .winner-addr{color:#8BC34A;font-weight:bold;font-size:13px}
-#lastWinner .winner-prize{color:#feca57}
-#myTournamentScore{margin-top:8px;padding:8px;background:rgba(0,0,0,.3);border-radius:6px;text-align:center;font-size:11px;display:none}
-#myTournamentScore.show{display:block}
-.instructions{font-size:10px;opacity:.6;text-align:center;line-height:1.4}
+#ground{position:absolute;bottom:0;width:100%;height:80px;background:linear-gradient(#7CB342,#33691E);z-index:15}
+#player{position:absolute;bottom:85px;width:50px;height:70px;z-index:20;transition:left .07s}
+#player.left{left:75px}#player.right{left:255px}
+#player::before{content:'🪓';position:absolute;top:15px;font-size:24px}
+#player.left::before{right:-8px;transform:scaleX(-1)}
+#player.right::before{left:-8px}
+.head{width:30px;height:30px;background:#FFCCBC;border-radius:50%;border:2px solid #5D4037;margin:0 auto}
+.body{width:24px;height:28px;background:#E53935;border-radius:3px;margin:2px auto 0}
+.legs{width:20px;height:12px;background:#1565C0;border-radius:0 0 3px 3px;margin:0 auto}
+#hud{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);text-align:center;z-index:100}
+#score{font-size:36px;text-shadow:2px 2px #5D4037}
+#timebar{width:150px;height:10px;background:rgba(0,0,0,.3);border-radius:5px;margin-top:5px;overflow:hidden}
+#timefill{height:100%;width:100%;background:linear-gradient(90deg,#4CAF50,#8BC34A);transition:width .1s}
+#timefill.warn{background:linear-gradient(90deg,#FF9800,#FFC107)}
+#timefill.danger{background:#f44336}
+#badge{display:none;position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#9c27b0,#e91e63);padding:5px 12px;border-radius:15px;font-size:11px;z-index:100}
+#badge.show{display:block}
+#gameTimer{display:none;position:absolute;top:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:3px 10px;border-radius:10px;font-size:16px;color:#feca57;z-index:100}
+#gameTimer.show{display:block}
+#gameTimer.urgent{color:#f44336}
+.zone{position:absolute;top:0;width:50%;height:100%;z-index:30;cursor:pointer}
+.zone.left{left:0}.zone.right{right:0}
 .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
-#startOverlay{background:rgba(0,0,0,.75);z-index:50}
-#startOverlay.hidden{display:none}
-#startOverlay h2{font-size:22px;margin-bottom:10px}
-#startOverlay p{font-size:13px;opacity:.85;margin:4px 0}
-#tapToStart{margin-top:16px;font-size:14px;color:#feca57;animation:pulse 1.5s infinite}
+#start{background:rgba(0,0,0,.7);z-index:50}
+#start.hidden{display:none}
+#start h2{font-size:20px;margin-bottom:10px}
+#start p{font-size:12px;opacity:.8;margin:3px 0}
+#tapMsg{margin-top:15px;font-size:13px;color:#feca57;animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
-#gameOver{background:rgba(0,0,0,.9);z-index:100;display:none;opacity:0;pointer-events:none}
-#gameOver.show{display:flex;animation:fadeIn .6s forwards}
-#gameOver.show.canRestart{pointer-events:auto}
-@keyframes fadeIn{to{opacity:1}}
-#gameOver h2{font-size:22px;color:#f5576c;margin-bottom:5px}
-#gameOver.newRecord h2{color:#feca57}
-#finalScore{font-size:48px;font-weight:bold;margin:6px 0}
-#txSummary{font-size:13px;color:#9c27b0;margin:6px 0;padding:6px 14px;background:rgba(156,39,176,.2);border-radius:10px}
-#tournamentSubmit{display:none;font-size:13px;color:#8BC34A;margin:8px 0;padding:8px 16px;background:rgba(76,175,80,.2);border-radius:10px}
-#tournamentSubmit.show{display:block}
-#beatScore{font-size:11px;color:#feca57;margin:4px 0}
-#restartBtn{background:linear-gradient(135deg,#f5576c,#f093fb);margin-top:12px;font-size:14px;padding:10px 28px;width:auto}
-#txLink{margin-top:8px}#txLink a{color:#54a0ff;text-decoration:none;font-size:11px}
-#lockedOverlay{background:rgba(0,0,0,.85);z-index:150;display:none}
-#lockedOverlay.show{display:flex}
-#lockedTitle{font-size:24px;font-weight:bold;color:#feca57;margin-bottom:15px}
-#lockedSpinner{font-size:40px;animation:spin 1.5s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#lockedText{font-size:14px;color:rgba(255,255,255,.7);margin-top:15px}
-#lockedResults{margin-top:20px;padding:15px;background:rgba(156,39,176,.3);border-radius:12px;display:none}
-#lockedResults.show{display:block}
-.result-title{font-size:18px;color:#8BC34A;font-weight:bold;margin-bottom:10px}
-.result-info{font-size:14px;margin:5px 0}
-#nextRoundTimer{margin-top:15px;font-size:16px;color:#feca57}
-@media(max-width:700px){#mainContainer{flex-direction:column;align-items:center}#sidePanel{width:380px;max-width:100%}}
+#end{background:rgba(0,0,0,.85);z-index:100;display:none}
+#end.show{display:flex}
+#end h2{font-size:20px;color:#f5576c}
+#end.record h2{color:#feca57}
+#finalScore{font-size:42px;font-weight:bold;margin:8px 0}
+#endMsg{font-size:12px;color:#feca57;margin:5px 0}
+#submitStatus{font-size:11px;color:#8BC34A;margin:8px 0;display:none}
+#submitStatus.show{display:block}
+#restartBtn{background:linear-gradient(135deg,#f5576c,#f093fb);margin-top:10px}
+#side{width:260px;display:flex;flex-direction:column;gap:10px}
+.box{background:rgba(255,255,255,.05);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.1)}
+#connectBtn{background:linear-gradient(135deg,#667eea,#764ba2);width:100%}
+#connectBtn.connected{background:linear-gradient(135deg,#11998e,#38ef7d);font-size:10px}
+#wallet{display:none;margin-top:8px;text-align:center}
+.bal{font-size:20px;font-weight:bold;color:#8BC34A;margin:5px 0}
+.addr{font-size:9px;opacity:.6;cursor:pointer}
+.row{display:flex;gap:5px;margin-top:8px}
+.row input{flex:1;min-width:0}
+.row button{padding:8px 10px;font-size:11px}
+.fundBtn{background:#4CAF50}
+.sendBtn{background:#ff9800}
+.quick{display:flex;gap:4px;margin-top:5px}
+.quick button{flex:1;padding:5px;font-size:10px;background:rgba(255,255,255,.1)}
+.tbox{background:linear-gradient(135deg,rgba(156,39,176,.2),rgba(233,30,99,.2));border-color:rgba(156,39,176,.4)}
+.tbox h3{color:#e91e63;font-size:12px;margin-bottom:8px}
+#phase{text-align:center;padding:6px;border-radius:6px;font-size:13px;font-weight:bold;margin-bottom:5px}
+#phase.signup{background:rgba(76,175,80,.3);color:#8BC34A}
+#phase.play{background:rgba(233,30,99,.3);color:#e91e63}
+#timer{font-size:28px;font-weight:bold;text-align:center;color:#feca57}
+.stats{display:flex;justify-content:space-around;margin:8px 0;text-align:center}
+.stats .v{font-size:16px;font-weight:bold;color:#8BC34A}
+.stats .l{font-size:9px;opacity:.7}
+#joinBtn{background:linear-gradient(135deg,#9c27b0,#e91e63);width:100%;margin-top:5px}
+#joinBtn.joined{background:#4CAF50}
+#myScore{margin-top:6px;padding:6px;background:rgba(0,0,0,.3);border-radius:5px;text-align:center;font-size:11px;display:none}
+#myScore.show{display:block}
+#lastResult{margin-top:8px;padding:8px;background:rgba(76,175,80,.2);border-radius:6px;text-align:center;font-size:11px;display:none}
+#lastResult.show{display:block}
+#lastResult .winner{color:#8BC34A;font-weight:bold;font-size:12px}
+#lastResult .prize{color:#feca57}
+.mode{display:flex;gap:5px;margin-bottom:10px}
+.mode button{flex:1;padding:8px;font-size:11px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5)}
+.mode button.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+.mode button.tournament.active{background:linear-gradient(135deg,#9c27b0,#e91e63)}
+.info{font-size:9px;opacity:.5;text-align:center;line-height:1.4;margin-top:10px}
+@media(max-width:700px){#main{flex-direction:column;align-items:center}#side{width:380px}}
 </style>
 </head>
 <body>
-<div id="modeToggle">
-    <button class="mode-btn active" id="practiceModeBtn">🎮 PRACTICE</button>
-    <button class="mode-btn tournament" id="tournamentModeBtn">🏆 TOURNAMENT</button>
+<h1>🪓 MONAD LUMBERJACK</h1>
+<div id="main">
+<div id="game">
+    <div class="cloud c1"></div><div class="cloud c2"></div>
+    <div id="trunk"></div>
+    <div id="badge">🏆 TOURNAMENT</div>
+    <div id="gameTimer">0:00</div>
+    <div id="player" class="left"><div class="head"></div><div class="body"></div><div class="legs"></div></div>
+    <div id="ground"></div>
+    <div id="hud"><div id="score">0</div><div id="timebar"><div id="timefill"></div></div></div>
+    <div class="zone left"></div><div class="zone right"></div>
+    <div id="start" class="overlay">
+        <h2>🪓 TAP TO CHOP</h2>
+        <p>⬅️ Left side = chop left</p>
+        <p>➡️ Right side = chop right</p>
+        <p>🌿 Don't hit branches!</p>
+        <div id="tapMsg">CONNECT WALLET TO PLAY</div>
+    </div>
+    <div id="end" class="overlay">
+        <h2>GAME OVER</h2>
+        <div id="finalScore">0</div>
+        <div id="endMsg"></div>
+        <div id="submitStatus"></div>
+        <button id="restartBtn">PLAY AGAIN</button>
+    </div>
 </div>
-<div id="header">
-    <h1>🪓 MONAD LUMBERJACK</h1>
-    <div id="highScoreDisplay">🏆 Best: <span id="highScoreTop">0</span></div>
-</div>
-<div id="mainContainer">
-    <div id="gameArea">
-        <div class="cloud cloud1"></div>
-        <div class="cloud cloud2"></div>
-        <div id="trunk"></div>
-        <div id="tournamentBadge">🏆 TOURNAMENT</div>
-        <div id="tournamentCountdown">0:00</div>
-        <div id="lumberjack" class="left">
-            <img src="keone.png" alt="" id="keoneImg" onerror="this.style.background='#FFCCBC'">
-            <div class="lj-body"></div>
-            <div class="lj-pants"></div>
-            <div id="axe">🪓</div>
-        </div>
-        <div id="groundHighlight"></div>
-        <div id="ground"></div>
-        <div id="bottomHUD">
-            <div id="scoreDisplay">0</div>
-            <div id="timeBarContainer"><div id="timeBarFill"></div></div>
-        </div>
-        <div class="tap-zone left" id="tapLeft"></div>
-        <div class="tap-zone right" id="tapRight"></div>
-        <div id="startOverlay" class="overlay">
-            <h2>🪓 TAP TO CHOP</h2>
-            <p>⬅️ Left = chop left</p>
-            <p>➡️ Right = chop right</p>
-            <p>🌿 Avoid branches!</p>
-            <div id="tapToStart">CONNECT WALLET TO PLAY</div>
-        </div>
-        <div id="gameOver" class="overlay">
-            <h2>GAME OVER</h2>
-            <div id="finalScore">0</div>
-            <div id="txSummary">⚡ 0 chops</div>
-            <div id="tournamentSubmit">🏆 Score submitted!</div>
-            <div id="beatScore"></div>
-            <div id="txLink"></div>
-            <button id="restartBtn">PLAY AGAIN (SPACE)</button>
-        </div>
-        <div id="lockedOverlay" class="overlay">
-            <div id="lockedTitle">🏆 TOURNAMENT ENDED</div>
-            <div id="lockedSpinner">⏳</div>
-            <div id="lockedText">Calculating results...</div>
-            <div id="lockedResults">
-                <div class="result-title">Results</div>
-                <div class="result-info" id="resultWinner"></div>
-                <div class="result-info" id="resultPrize"></div>
+<div id="side">
+    <div class="mode">
+        <button class="active" id="practiceBtn">🎮 PRACTICE</button>
+        <button class="tournament" id="tournamentBtn">🏆 TOURNAMENT</button>
+    </div>
+    <div class="box">
+        <button id="connectBtn">Connect Wallet</button>
+        <div id="wallet">
+            <div>Game Wallet</div>
+            <div class="bal"><span id="balAmt">0</span> MON</div>
+            <div class="addr" id="walletAddr">-</div>
+            <div class="row">
+                <input type="number" id="fundAmt" placeholder="Amount">
+                <button class="fundBtn" id="fundBtn">Deposit</button>
             </div>
-            <div id="nextRoundTimer">Next round in: --</div>
+            <div class="quick">
+                <button data-v="1">1</button><button data-v="5">5</button>
+                <button data-v="10">10</button><button data-v="25">25</button>
+            </div>
+            <div class="row" style="margin-top:8px">
+                <input type="text" id="sendAddr" placeholder="0x...">
+                <input type="number" id="sendAmt" placeholder="Amt" style="width:45px">
+                <button class="sendBtn" id="sendBtn">Send</button>
+            </div>
         </div>
     </div>
-    <div id="sidePanel">
-        <div class="panel-box">
-            <button id="connectBtn">Connect Wallet</button>
-            <div id="walletSection">
-                <div class="wallet-info">
-                    <div>Game Wallet</div>
-                    <div class="balance"><span id="balanceAmt">0</span> MON</div>
-                    <div class="address" id="walletAddr">-</div>
-                </div>
-                <div class="action-row">
-                    <input type="number" id="fundAmt" placeholder="Amount">
-                    <button class="btn-fund" id="fundBtn">Deposit</button>
-                </div>
-                <div class="quick-fund">
-                    <button data-amt="1">1</button>
-                    <button data-amt="5">5</button>
-                    <button data-amt="15">15</button>
-                    <button data-amt="25">25</button>
-                </div>
-                <div class="action-row" style="margin-top:10px">
-                    <input type="text" id="withdrawAddr" placeholder="0x...">
-                    <input type="number" id="withdrawAmt" placeholder="Amt" style="width:50px;flex:none">
-                    <button class="btn-withdraw" id="withdrawBtn">Send</button>
-                </div>
-            </div>
+    <div class="box tbox">
+        <h3>🏆 TOURNAMENT #<span id="tNum">1</span></h3>
+        <div id="phase" class="signup">📝 SIGNUP</div>
+        <div id="timer">1:00</div>
+        <div class="stats">
+            <div><div class="v" id="tPrize">0</div><div class="l">Prize Pool</div></div>
+            <div><div class="v" id="tPlayers">0</div><div class="l">Players</div></div>
+            <div><div class="v" id="tHigh">0</div><div class="l">High Score</div></div>
         </div>
-        <div class="panel-box tournament-box">
-            <h3>🏆 TOURNAMENT #<span id="tournamentNum">1</span></h3>
-            <div id="phaseIndicator" class="signup">📝 SIGNUP PHASE</div>
-            <div id="tournamentTimer">1:00</div>
-            <div class="tournament-stats">
-                <div><div class="stat-val" id="prizePool">0</div><div class="stat-label">Prize (MON)</div></div>
-                <div><div class="stat-val" id="playerCount">0</div><div class="stat-label">Players</div></div>
-                <div><div class="stat-val" id="highScoreTourney">0</div><div class="stat-label">High Score</div></div>
-            </div>
-            <button id="joinTournamentBtn" disabled>Join Tournament (10 MON)</button>
-            <div id="myTournamentScore">Your score: <span id="myScoreVal">0</span></div>
-            <div id="lastWinner">
-                <div id="lastWinnerTitle">🎉 Last Winner</div>
-                <div class="winner-addr" id="winnerAddr">-</div>
-                <div class="winner-prize" id="winnerPrizeText"></div>
-            </div>
-        </div>
-        <div class="instructions">
-            <div style="font-size:12px;font-weight:bold;margin-bottom:6px;color:#feca57">HOW TOURNAMENTS WORK</div>
-            📝 <b>Signup (1 min)</b>: Pay 10 MON to enter<br>
-            🎮 <b>Play (1 min)</b>: Compete! Highest score wins<br>
-            🏆 <b>Winner</b>: Takes the entire prize pool!<br>
-            <div style="margin-top:6px;opacity:.5">Ties split pool. Solo player = refunded.</div>
+        <button id="joinBtn" disabled>Join (10 MON)</button>
+        <div id="myScore">Your best: <span id="myScoreVal">0</span></div>
+        <div id="lastResult">
+            <div id="lastTitle">🎉 Last Winner</div>
+            <div class="winner" id="lastWinner">-</div>
+            <div class="prize" id="lastPrize"></div>
         </div>
     </div>
+    <div class="info">
+        📝 Signup (1 min) → 🎮 Play (1 min) → 🏆 Winner takes all!<br>
+        Ties split pot. Solo player refunded.
+    </div>
+</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 <script>
-const C={addr:"0x4732b3b111A95a4306eaA15d497cdc13d9624956",chainId:"0x279f",rpc:"https://testnet-rpc.monad.xyz",explorer:"https://testnet.monadexplorer.com"};
-const ABI=["function startGame(address) external","function chop(address,uint256) external","function endGame(address,uint256) external","function joinTournament() external payable","function submitScore(uint256) external","function advanceTournament() external","function getTournamentInfo() external view returns (uint256,uint256,uint256,uint256,uint256,uint256,uint8,bool)","function isPlayerRegistered(uint256,address) external view returns (bool)","function getPlayerScore(uint256,address) external view returns (uint256)","function getLastTournamentResult() external view returns (uint256,address[],uint256,uint256,uint256)"];
-
-let score=0,highScore=parseInt(localStorage.getItem("lumberjackHS")||"0"),gameActive=false,playerSide="left";
-let branches=[],timeLeft=100,txCount=0,canRestart=false,animFrame;
-let provider,signer,userAddress,burner,contract;
-let lastChopTime=0,isRegistered=false,currentTournamentId=0,myScore=0;
-let phase=0,signupEnd=0,playEnd=0,chopsSinceTx=0,pendingDeposit=0,isJoining=false;
-let mode="practice",locked=false,cachedPlayEnd=0;
-let deathSound=null;
+const CONTRACT="0xYOUR_NEW_CONTRACT_ADDRESS";
+const ABI=["function joinTournament() payable","function submitScore(uint256)","function advance()","function getTournamentInfo() view returns (uint256,uint8,uint256,uint256,uint256,uint256)","function isRegistered(address) view returns (bool)","function getMyScore() view returns (uint256)","function getLastResult() view returns (address[],uint256,uint256,uint256)","function startGame()","function endGame(uint256)"];
+const RPC="https://testnet-rpc.monad.xyz",CHAIN="0x279f",EXPLORER="https://testnet.monadexplorer.com";
 
 const $=id=>document.getElementById(id);
 const fmt=a=>a.slice(0,6)+"..."+a.slice(-4);
-const el={
-    game:$("gameArea"),score:$("scoreDisplay"),timeBar:$("timeBarFill"),lj:$("lumberjack"),
-    axe:$("axe"),start:$("startOverlay"),over:$("gameOver"),connect:$("connectBtn"),
-    tap:$("tapToStart"),hs:$("highScoreTop"),wallet:$("walletSection"),bal:$("balanceAmt"),
-    addr:$("walletAddr"),badge:$("tournamentBadge"),countdown:$("tournamentCountdown"),
-    join:$("joinTournamentBtn"),phase:$("phaseIndicator"),locked:$("lockedOverlay")
-};
 
-el.hs.textContent=highScore;
+let provider,signer,userAddr,burner,contract;
+let mode="practice",phase=0,playEndTime=0,registered=false,myBestScore=0;
+let score=0,highScore=+(localStorage.lumberjackHS||0),timeLeft=100;
+let branches=[],gameActive=false,canRestart=true,lastChop=0;
 
-function initAudio(){
-    Tone.start().then(()=>{
-        deathSound=new Tone.MembraneSynth({pitchDecay:.05,octaves:4,envelope:{attack:.001,decay:.4,sustain:.01,release:.3}}).toDestination();
-        deathSound.volume.value=-8;
-    }).catch(()=>{});
-}
+// DOM
+const game=$("game"),scoreEl=$("score"),timefill=$("timefill"),player=$("player");
+const startEl=$("start"),endEl=$("end"),tapMsg=$("tapMsg"),badge=$("badge"),gameTimer=$("gameTimer");
+const connectBtn=$("connectBtn"),joinBtn=$("joinBtn"),phaseEl=$("phase"),timerEl=$("timer");
 
-function playDeath(){
-    if(!deathSound)return;
-    deathSound.triggerAttackRelease("G2","8n");
-    setTimeout(()=>deathSound.triggerAttackRelease("D2","8n"),100);
-    setTimeout(()=>deathSound.triggerAttackRelease("A1","4n"),200);
-}
+// Init
+$("practiceBtn").onclick=()=>{mode="practice";$("practiceBtn").classList.add("active");$("tournamentBtn").classList.remove("active");updateUI();};
+$("tournamentBtn").onclick=()=>{mode="tournament";$("tournamentBtn").classList.add("active");$("practiceBtn").classList.remove("active");updateUI();};
 
-function spawnChips(left){
-    const x=left?155:220,y=400,colors=["#8D6E63","#A1887F","#6D4C41"];
-    for(let i=0;i<6;i++){
-        const chip=document.createElement("div");
-        chip.className="wood-chip";
-        const sz=4+Math.random()*6;
-        chip.style.cssText=`width:${sz}px;height:${sz*.7}px;background:${colors[i%3]};left:${x}px;top:${y}px`;
-        el.game.appendChild(chip);
-        let cx=x,cy=y,vx=(2+Math.random()*4)*(left?-1:1),vy=-3-Math.random()*4,op=1;
-        (function anim(){
-            cx+=vx;cy+=vy;vy+=.35;op-=.03;
-            chip.style.left=cx+"px";chip.style.top=cy+"px";chip.style.opacity=op;
-            op>0?requestAnimationFrame(anim):chip.remove();
-        })();
+function updateUI(){
+    const bal=parseFloat($("balAmt").textContent)||0;
+    if(mode==="practice"){
+        tapMsg.textContent=bal<0.001?"DEPOSIT MON TO PLAY":"TAP OR SPACE TO START";
+        tapMsg.style.color="#feca57";
+    }else{
+        if(bal<0.001){tapMsg.textContent="DEPOSIT MON TO JOIN";tapMsg.style.color="#feca57";}
+        else if(phase===0&&!registered){tapMsg.textContent="JOIN TOURNAMENT TO PLAY";tapMsg.style.color="#feca57";}
+        else if(phase===0&&registered){tapMsg.textContent="✓ REGISTERED - WAITING";tapMsg.style.color="#8BC34A";}
+        else if(phase===1&&registered){tapMsg.textContent="TAP OR SPACE TO PLAY!";tapMsg.style.color="#feca57";}
+        else if(phase===1&&!registered){tapMsg.textContent="NOT REGISTERED";tapMsg.style.color="#f5576c";}
+        else{tapMsg.textContent="LOADING...";tapMsg.style.color="#feca57";}
     }
 }
 
 function getBurner(){
-    let pk=localStorage.getItem("lumberjackPK");
-    if(!pk){pk=ethers.Wallet.createRandom().privateKey;localStorage.setItem("lumberjackPK",pk);}
-    return new ethers.Wallet(pk,new ethers.providers.JsonRpcProvider(C.rpc));
+    let pk=localStorage.lumberjackPK;
+    if(!pk){pk=ethers.Wallet.createRandom().privateKey;localStorage.lumberjackPK=pk;}
+    return new ethers.Wallet(pk,new ethers.providers.JsonRpcProvider(RPC));
 }
 
 async function updateBal(){
-    if(!burner)return 0;
-    const bal=parseFloat(ethers.utils.formatEther(await burner.getBalance()));
-    el.bal.textContent=(bal+pendingDeposit).toFixed(3);
-    el.bal.style.opacity=pendingDeposit>0?".7":"1";
-    el.join.disabled=bal<10||isRegistered||phase!==0||isJoining;
-    updateModeUI();
-    return bal;
-}
-
-function updateModeUI(){
-    const bal=parseFloat(el.bal.textContent)||0;
-    el.tap.style.color="#feca57";
-    if(mode==="practice"){
-        el.game.classList.remove("tournament");
-        el.badge.classList.remove("show");
-        el.tap.textContent=bal<.001?"DEPOSIT MON TO PLAY":"TAP OR PRESS SPACE TO START";
-    }else{
-        if(bal<.001)el.tap.textContent="DEPOSIT MON TO JOIN";
-        else if(phase===0&&!isRegistered)el.tap.textContent="JOIN TOURNAMENT TO PLAY";
-        else if(phase===0&&isRegistered){el.tap.textContent="✓ REGISTERED! WAITING...";el.tap.style.color="#8BC34A";}
-        else if(phase===1&&isRegistered)el.tap.textContent="TAP OR PRESS SPACE TO PLAY";
-        else if(phase===1&&!isRegistered){el.tap.textContent="NOT REGISTERED - WAIT";el.tap.style.color="#f5576c";}
-        else el.tap.textContent="FINALIZING...";
-    }
+    if(!burner)return;
+    const bal=+ethers.utils.formatEther(await burner.getBalance());
+    $("balAmt").textContent=bal.toFixed(3);
+    joinBtn.disabled=bal<10||registered||phase!==0;
+    updateUI();
 }
 
 async function updateTournament(){
     if(!contract)return;
     try{
-        const info=await contract.getTournamentInfo();
-        const prevId=currentTournamentId;
-        currentTournamentId=info[0].toNumber();
-        signupEnd=info[1].toNumber()*1000;
-        playEnd=info[2].toNumber()*1000;
-        const prize=parseFloat(ethers.utils.formatEther(info[3]));
-        phase=info[6];
-        const finalized=info[7];
+        await contract.advance().catch(()=>{});
+        const[id,ph,timeRem,prize,players,high]=await contract.getTournamentInfo();
+        $("tNum").textContent=id.toString();
+        phase=ph;
+        $("tPrize").textContent=(+ethers.utils.formatEther(prize)).toFixed(0);
+        $("tPlayers").textContent=players.toString();
+        $("tHigh").textContent=high.toString();
         
-        $("tournamentNum").textContent=currentTournamentId;
-        $("prizePool").textContent=prize.toFixed(0);
-        $("playerCount").textContent=info[4].toNumber();
-        $("highScoreTourney").textContent=info[5].toNumber();
-        
-        if(currentTournamentId!==prevId){isRegistered=false;myScore=0;$("myTournamentScore").classList.remove("show");el.locked.classList.remove("show");locked=false;}
+        const secs=timeRem.toNumber(),m=Math.floor(secs/60),s=secs%60;
+        timerEl.textContent=`${m}:${s<10?"0":""}${s}`;
         
         if(phase===0){
-            el.phase.className="signup";el.phase.textContent="📝 SIGNUP PHASE";
-            el.join.textContent=isRegistered?"✓ Registered":"Join Tournament (10 MON)";
-            el.locked.classList.remove("show");locked=false;
+            phaseEl.className="signup";phaseEl.textContent="📝 SIGNUP";
+            playEndTime=Date.now()+secs*1000+60000;
         }else if(phase===1){
-            el.phase.className="play";el.phase.textContent="🎮 PLAY PHASE";
-            el.join.textContent="Signup Closed";el.locked.classList.remove("show");locked=false;
+            phaseEl.className="play";phaseEl.textContent="🎮 PLAY";
+            playEndTime=Date.now()+secs*1000;
         }else{
-            el.phase.className="ended";el.phase.textContent=finalized?"✓ FINALIZED":"⏳ FINALIZING...";
-            el.join.textContent="Next Round Soon";
-            if(mode==="tournament"&&!locked)showLocked();
-            contract.advanceTournament({gasLimit:500000}).catch(()=>{});
+            phaseEl.className="signup";phaseEl.textContent="⏳ NEXT...";
         }
         
-        if(burner){
-            isRegistered=await contract.isPlayerRegistered(currentTournamentId,burner.address);
-            el.join.classList.toggle("joined",isRegistered);
-            if(phase===0)el.join.textContent=isRegistered?"✓ Registered":"Join Tournament (10 MON)";
-            if(isRegistered){
-                myScore=(await contract.getPlayerScore(currentTournamentId,burner.address)).toNumber();
-                $("myScoreVal").textContent=myScore;
-                $("myTournamentScore").classList.add("show");
-            }else $("myTournamentScore").classList.remove("show");
+        registered=await contract.isRegistered(burner.address);
+        joinBtn.textContent=registered?"✓ Joined":"Join (10 MON)";
+        joinBtn.classList.toggle("joined",registered);
+        
+        if(registered){
+            myBestScore=(await contract.getMyScore()).toNumber();
+            $("myScoreVal").textContent=myBestScore;
+            $("myScore").classList.add("show");
+        }else{
+            $("myScore").classList.remove("show");
         }
         
-        const last=await contract.getLastTournamentResult();
-        const lastId=last[0].toNumber(),winners=last[1],lastHS=last[2].toNumber();
-        const prizePerWinner=parseFloat(ethers.utils.formatEther(last[3])),lastPlayers=last[4].toNumber();
-        
-        if(lastId>0){
-            $("lastWinner").classList.add("show");
-            if(lastPlayers===0){$("lastWinnerTitle").textContent="📭 Last Tournament";$("winnerAddr").textContent="No players";$("winnerPrizeText").textContent="";}
-            else if(lastPlayers===1){$("lastWinnerTitle").textContent="💸 Refunded";$("winnerAddr").textContent="Only 1 player";$("winnerPrizeText").textContent="";}
-            else if(!winners.length||!lastHS){$("lastWinnerTitle").textContent="💸 All Refunded";$("winnerAddr").textContent="No scores";$("winnerPrizeText").textContent="";}
-            else if(winners.length===1){$("lastWinnerTitle").textContent="🎉 Last Winner";$("winnerAddr").textContent=fmt(winners[0]);$("winnerPrizeText").textContent=`Won ${prizePerWinner.toFixed(1)} MON (score: ${lastHS})`;}
-            else{$("lastWinnerTitle").textContent=`🎉 ${winners.length}-Way Tie!`;$("winnerAddr").textContent=winners.map(fmt).join(", ");$("winnerPrizeText").textContent=`Each won ${prizePerWinner.toFixed(1)} MON`;}
-            if(el.locked.classList.contains("show"))updateLockedResults(winners,lastHS,prizePerWinner,lastPlayers);
+        const[winners,lastHS,prizePerWinner,lastPlayers]=await contract.getLastResult();
+        if(lastPlayers>0){
+            $("lastResult").classList.add("show");
+            if(lastPlayers===1){$("lastTitle").textContent="💸 Refunded";$("lastWinner").textContent="Solo player";$("lastPrize").textContent="";}
+            else if(!winners.length||lastHS===0){$("lastTitle").textContent="💸 Refunded";$("lastWinner").textContent="No scores";$("lastPrize").textContent="";}
+            else if(winners.length===1){$("lastTitle").textContent="🎉 Winner";$("lastWinner").textContent=fmt(winners[0]);$("lastPrize").textContent=`${(+ethers.utils.formatEther(prizePerWinner)).toFixed(1)} MON (score: ${lastHS})`;}
+            else{$("lastTitle").textContent=`🎉 ${winners.length}-Way Tie`;$("lastWinner").textContent=winners.map(fmt).join(", ");$("lastPrize").textContent=`${(+ethers.utils.formatEther(prizePerWinner)).toFixed(1)} MON each`;}
         }
-        updateModeUI();
+        
+        updateUI();
         await updateBal();
     }catch(e){console.error(e);}
 }
 
-function showLocked(){
-    locked=true;gameActive=false;cancelAnimationFrame(animFrame);
-    el.locked.classList.add("show");$("lockedResults").classList.remove("show");
-    $("lockedSpinner").style.display="block";$("lockedText").textContent="Calculating results...";
-    setTimeout(async()=>{
-        try{
-            const last=await contract.getLastTournamentResult();
-            updateLockedResults(last[1],last[2].toNumber(),parseFloat(ethers.utils.formatEther(last[3])),last[4].toNumber());
-        }catch(e){}
-    },2000);
-}
-
-function updateLockedResults(winners,hs,prize,players){
-    $("lockedSpinner").style.display="none";$("lockedText").textContent="Results ready!";
-    if(!players){$("resultWinner").textContent="No players joined";$("resultPrize").textContent="";}
-    else if(players===1){$("resultWinner").textContent="Only 1 player - Refunded";$("resultPrize").textContent="";}
-    else if(!winners.length||!hs){$("resultWinner").textContent="No scores - All Refunded";$("resultPrize").textContent="";}
-    else if(winners.length===1){$("resultWinner").textContent="🏆 Winner: "+fmt(winners[0]);$("resultPrize").textContent=`Score: ${hs} | Prize: ${prize.toFixed(1)} MON`;}
-    else{$("resultWinner").textContent=`🏆 ${winners.length}-Way Tie!`;$("resultPrize").textContent=`Score: ${hs} | Each: ${prize.toFixed(1)} MON`;}
-    $("lockedResults").classList.add("show");
-}
-
-function updateTimer(){
-    const now=Date.now();
-    let remaining=phase===0?Math.max(0,signupEnd-now):phase===1?Math.max(0,playEnd-now):0;
-    const secs=Math.floor(remaining/1000),mins=Math.floor(secs/60),s=secs%60;
-    $("tournamentTimer").textContent=`${mins}:${s<10?"0":""}${s}`;
-    
-    if(gameActive&&mode==="tournament"&&cachedPlayEnd>0){
-        const gameRem=Math.max(0,cachedPlayEnd-now);
-        const gs=Math.floor(gameRem/1000),gm=Math.floor(gs/60),gss=gs%60;
-        el.countdown.textContent=`${gm}:${gss<10?"0":""}${gss}`;
-        el.countdown.classList.toggle("urgent",gs<=10);
-        if(gameRem<=0){forceEnd("TIME'S UP!");return;}
-    }
-    
-    if(el.locked.classList.contains("show"))$("nextRoundTimer").textContent="Next round starting soon...";
-    if(contract&&remaining<=500)contract.advanceTournament({gasLimit:500000}).catch(()=>{});
-}
-
-function forceEnd(reason){
-    if(!gameActive)return;
-    gameActive=false;cancelAnimationFrame(animFrame);locked=true;
-    el.game.classList.add("shake");playDeath();
-    setTimeout(()=>el.game.classList.remove("shake"),250);
-    
-    if(score>highScore){highScore=score;localStorage.setItem("lumberjackHS",highScore);el.hs.textContent=highScore;}
-    
-    $("finalScore").textContent=score;
-    $("txSummary").textContent=reason||`⚡ ${txCount} chops`;
-    $("beatScore").textContent=score>highScore?"🎉 NEW RECORD!":"Best: "+highScore;
-    el.over.classList.toggle("newRecord",score>highScore);
-    el.over.querySelector("h2").textContent=reason?`⏱️ ${reason}`:(score>highScore?"🎉 NEW RECORD!":"GAME OVER");
-    
-    const isTourney=el.game.classList.contains("tournament");
-    if(isTourney){
-        $("tournamentSubmit").classList.add("show");
-        $("tournamentSubmit").textContent=`🏆 Submitting score ${score}...`;
-        submitWithRetry(score,0);
-        $("restartBtn").style.display="none";
-        setTimeout(()=>{showLocked();el.over.classList.remove("show");el.over.style.display="none";},2000);
-    }else{
-        $("tournamentSubmit").classList.remove("show");
-        $("restartBtn").style.display="block";
-        setTimeout(()=>{canRestart=true;el.over.classList.add("canRestart");},800);
-    }
-    
-    el.over.style.display="flex";el.over.classList.add("show");
-}
-
-async function submitWithRetry(s,attempt){
+connectBtn.onclick=async()=>{
+    if(!window.ethereum)return alert("Install MetaMask!");
+    connectBtn.disabled=true;connectBtn.textContent="...";
     try{
-        const tx=await contract.submitScore(s,{gasLimit:300000});
-        $("tournamentSubmit").textContent="🏆 Confirming...";
-        const r=await tx.wait();
-        $("tournamentSubmit").textContent=`✅ Score ${s} confirmed!`;
-        $("txLink").innerHTML=`<a href="${C.explorer}/tx/${r.transactionHash}" target="_blank">View tx →</a>`;
-        myScore=Math.max(myScore,s);$("myScoreVal").textContent=myScore;
-    }catch(e){
-        console.error("Submit attempt",attempt+1,"failed:",e);
-        if(attempt<2){
-            $("tournamentSubmit").textContent=`🔄 Retrying... (${attempt+2}/3)`;
-            setTimeout(()=>submitWithRetry(s,attempt+1),1500);
-        }else $("tournamentSubmit").textContent="⚠️ Submit failed";
-    }
-}
-
-el.connect.onclick=async()=>{
-    if(!window.ethereum){alert("Please install MetaMask!");return;}
-    el.connect.textContent="Connecting...";el.connect.disabled=true;
-    try{
-        const accts=await window.ethereum.request({method:"eth_requestAccounts"});
-        if(!accts?.length)throw new Error("No accounts");
+        await window.ethereum.request({method:"eth_requestAccounts"});
         provider=new ethers.providers.Web3Provider(window.ethereum);
         const net=await provider.getNetwork();
         if(net.chainId!==10143){
-            try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:C.chainId}]});}
-            catch(e){if(e.code===4902)await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:C.chainId,chainName:"Monad Testnet",nativeCurrency:{name:"MON",symbol:"MON",decimals:18},rpcUrls:[C.rpc],blockExplorerUrls:[C.explorer]}]});}
+            try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:CHAIN}]});}
+            catch(e){if(e.code===4902)await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:CHAIN,chainName:"Monad Testnet",nativeCurrency:{name:"MON",symbol:"MON",decimals:18},rpcUrls:[RPC],blockExplorerUrls:[EXPLORER]}]});}
             provider=new ethers.providers.Web3Provider(window.ethereum);
         }
         signer=provider.getSigner();
-        userAddress=await signer.getAddress();
+        userAddr=await signer.getAddress();
         burner=getBurner();
-        contract=new ethers.Contract(C.addr,ABI,burner);
+        contract=new ethers.Contract(CONTRACT,ABI,burner);
         
-        el.connect.textContent=fmt(userAddress);el.connect.classList.add("connected");el.connect.disabled=false;
-        el.addr.textContent=burner.address;
-        el.addr.onclick=()=>{navigator.clipboard.writeText(burner.address);el.addr.textContent="Copied!";setTimeout(()=>el.addr.textContent=burner.address,1000);};
-        el.wallet.style.display="block";
+        connectBtn.textContent=fmt(userAddr);connectBtn.classList.add("connected");
+        $("walletAddr").textContent=burner.address;
+        $("walletAddr").onclick=()=>{navigator.clipboard.writeText(burner.address);$("walletAddr").textContent="Copied!";setTimeout(()=>$("walletAddr").textContent=burner.address,1000);};
+        $("wallet").style.display="block";
         
-        initAudio();
         setInterval(updateTimer,100);
-        setInterval(updateTournament,5000);
+        setInterval(updateTournament,3000);
         await updateTournament();
-    }catch(e){console.error(e);el.connect.textContent="Connect Wallet";el.connect.disabled=false;}
+    }catch(e){console.error(e);connectBtn.textContent="Connect Wallet";}
+    connectBtn.disabled=false;
 };
 
 async function fund(amt){
-    if(!amt||amt<=0||!signer)return;
-    pendingDeposit=amt;updateBal();
+    if(!amt||!signer)return;
     try{
-        el.connect.textContent="Depositing...";
-        const tx=await signer.sendTransaction({to:burner.address,value:ethers.utils.parseEther(amt.toString())});
-        await tx.wait();
-    }catch(e){console.error(e);}
-    el.connect.textContent=fmt(userAddress);pendingDeposit=0;updateBal();
+        connectBtn.textContent="...";
+        await(await signer.sendTransaction({to:burner.address,value:ethers.utils.parseEther(amt.toString())})).wait();
+        connectBtn.textContent=fmt(userAddr);
+        await updateBal();
+    }catch(e){console.error(e);connectBtn.textContent=fmt(userAddr);}
 }
-
-$("fundBtn").onclick=()=>fund(parseFloat($("fundAmt").value));
-document.querySelectorAll(".quick-fund button").forEach(b=>b.onclick=()=>fund(parseFloat(b.dataset.amt)));
-
-$("withdrawBtn").onclick=async()=>{
-    const addr=$("withdrawAddr").value.trim(),amt=parseFloat($("withdrawAmt").value);
+$("fundBtn").onclick=()=>fund(+$("fundAmt").value);
+document.querySelectorAll(".quick button").forEach(b=>b.onclick=()=>fund(+b.dataset.v));
+$("sendBtn").onclick=async()=>{
+    const addr=$("sendAddr").value,amt=+$("sendAmt").value;
     if(!addr||!amt)return;
     try{await(await burner.sendTransaction({to:addr,value:ethers.utils.parseEther(amt.toString()),gasLimit:21000})).wait();updateBal();}catch(e){console.error(e);}
 };
 
-el.join.onclick=async()=>{
-    if(!burner||isRegistered||phase!==0||isJoining)return;
-    isJoining=true;el.join.textContent="Joining...";el.join.disabled=true;
+joinBtn.onclick=async()=>{
+    if(registered||phase!==0)return;
+    joinBtn.disabled=true;joinBtn.textContent="...";
     try{
-        const tx=await contract.joinTournament({value:ethers.utils.parseEther("10"),gasLimit:300000});
-        el.join.textContent="Confirming...";
-        await tx.wait();
-        isRegistered=true;isJoining=false;
-        el.join.textContent="✓ Registered";el.join.classList.add("joined");
+        await(await contract.joinTournament({value:ethers.utils.parseEther("10"),gasLimit:200000})).wait();
+        registered=true;joinBtn.textContent="✓ Joined";joinBtn.classList.add("joined");
         updateTournament();
-    }catch(e){console.error(e);isJoining=false;el.join.textContent="Join Tournament (10 MON)";el.join.disabled=false;updateBal();}
+    }catch(e){console.error(e);joinBtn.textContent="Join (10 MON)";joinBtn.disabled=false;}
 };
 
+function updateTimer(){
+    if(!contract)return;
+    const now=Date.now(),rem=Math.max(0,playEndTime-now);
+    const secs=Math.floor(rem/1000),m=Math.floor(secs/60),s=secs%60;
+    timerEl.textContent=`${m}:${s<10?"0":""}${s}`;
+    
+    if(gameActive&&mode==="tournament"){
+        gameTimer.textContent=`${m}:${s<10?"0":""}${s}`;
+        gameTimer.classList.toggle("urgent",secs<=10);
+        if(rem<=0)endGame("⏱️ TIME!");
+    }
+    
+    if(rem<=0)contract.advance().catch(()=>{});
+}
+
 function createBranch(side,y){
-    const b=document.createElement("div");
-    b.className="branch "+side;b.style.bottom=y+"px";
-    b.innerHTML='<div class="branch-inner"><div class="branch-wood"></div><div class="branch-leaf"></div></div>';
-    el.game.appendChild(b);return b;
+    const el=document.createElement("div");
+    el.className="branch "+side;el.style.bottom=y+"px";
+    el.innerHTML='<div class="branch-wood"></div><div class="branch-leaf"></div>';
+    game.appendChild(el);
+    return{side,y,el};
 }
 
 function initBranches(){
     document.querySelectorAll(".branch").forEach(b=>b.remove());
     branches=[];
-    for(let i=0;i<8;i++){
-        const side=Math.random()>.5?"left":"right",y=165+i*70;
-        branches.push({side,y,el:createBranch(side,y)});
-    }
+    for(let i=0;i<8;i++)branches.push(createBranch(Math.random()>.5?"left":"right",160+i*65));
 }
 
 function startGame(){
-    if(!burner||locked)return;
-    const bal=parseFloat(el.bal.textContent);
-    if(bal<.001)return;
-    if(!canRestart&&el.over.classList.contains("show"))return;
+    if(!burner||gameActive)return;
+    const bal=+$("balAmt").textContent;
+    if(bal<0.001)return;
     
-    const isTourney=mode==="tournament"&&phase===1&&isRegistered;
+    const isTourney=mode==="tournament"&&phase===1&&registered;
     if(mode==="tournament"&&!isTourney)return;
     
-    score=0;txCount=0;timeLeft=100;playerSide="left";gameActive=true;canRestart=false;chopsSinceTx=0;
-    cachedPlayEnd=isTourney?playEnd:0;
-    
-    el.start.classList.add("hidden");
-    el.over.classList.remove("show","canRestart","newRecord");el.over.style.display="none";
-    el.score.textContent="0";el.timeBar.style.width="100%";el.timeBar.className="";
-    el.lj.className="left";el.game.classList.remove("shake");$("txLink").innerHTML="";
-    
-    if(isTourney){el.game.classList.add("tournament");el.badge.classList.add("show");el.countdown.classList.add("show");}
-    else{el.game.classList.remove("tournament");el.badge.classList.remove("show");el.countdown.classList.remove("show");contract.startGame(userAddress,{gasLimit:100000}).catch(()=>{});}
+    score=0;timeLeft=100;gameActive=true;canRestart=false;
+    startEl.classList.add("hidden");
+    endEl.classList.remove("show");
+    scoreEl.textContent="0";
+    timefill.style.width="100%";timefill.className="";
+    player.className="left";
+    game.classList.toggle("tournament",isTourney);
+    badge.classList.toggle("show",isTourney);
+    gameTimer.classList.toggle("show",isTourney);
     
     initBranches();
-    requestAnimationFrame(gameLoop);
+    if(!isTourney)contract.startGame({gasLimit:50000}).catch(()=>{});
+    requestAnimationFrame(loop);
 }
 
-function gameLoop(){
+function loop(){
     if(!gameActive)return;
-    if(mode==="tournament"&&cachedPlayEnd>0&&cachedPlayEnd-Date.now()<=0){forceEnd("TIME'S UP!");return;}
     
+    // Check tournament time
+    if(mode==="tournament"&&phase===1&&playEndTime-Date.now()<=0){
+        endGame("⏱️ TIME!");return;
+    }
+    
+    // Decay
     let decay=.08;
-    if(score>=15)decay=.1;if(score>=30)decay=.13;if(score>=50)decay=.17;if(score>=75)decay=.22;if(score>=100)decay=.28;
+    if(score>=20)decay=.1;
+    if(score>=40)decay=.14;
+    if(score>=70)decay=.2;
+    if(score>=100)decay=.28;
     
     timeLeft-=decay;
     const pct=Math.max(0,timeLeft);
-    el.timeBar.style.width=pct+"%";
-    el.timeBar.className=pct>50?"":pct>25?"warning":"danger";
+    timefill.style.width=pct+"%";
+    timefill.className=pct>50?"":pct>25?"warn":"danger";
     
     if(timeLeft<=0){endGame();return;}
-    animFrame=requestAnimationFrame(gameLoop);
+    requestAnimationFrame(loop);
 }
 
 function chop(side){
-    if(!gameActive||locked)return;
+    if(!gameActive)return;
     const now=Date.now();
-    if(now-lastChopTime<60)return;
-    lastChopTime=now;
+    if(now-lastChop<50)return;
+    lastChop=now;
     
-    playerSide=side;el.lj.className=side;
-    el.axe.classList.remove("swing");void el.axe.offsetWidth;el.axe.classList.add("swing");
-    spawnChips(side==="left");
+    player.className=side;
     
     if(branches[0]?.side===side){endGame();return;}
     
-    branches[0].el.remove();branches.shift();
-    branches.forEach(b=>{b.y-=70;b.el.style.bottom=b.y+"px";});
+    branches[0].el.remove();
+    branches.shift();
+    branches.forEach(b=>{b.y-=65;b.el.style.bottom=b.y+"px";});
+    branches.push(createBranch(Math.random()>.5?"left":"right",branches[branches.length-1].y+65));
     
-    const newSide=Math.random()>.5?"left":"right",newY=branches[branches.length-1].y+70;
-    branches.push({side:newSide,y:newY,el:createBranch(newSide,newY)});
-    
-    score++;txCount++;chopsSinceTx++;
-    timeLeft=Math.min(100,timeLeft+6);
-    el.score.textContent=score;
-    
-    if(chopsSinceTx>=10){chopsSinceTx=0;contract.chop(userAddress,score,{gasLimit:100000}).catch(()=>{});}
+    score++;
+    timeLeft=Math.min(100,timeLeft+5);
+    scoreEl.textContent=score;
 }
 
-function endGame(){
+function endGame(reason){
     if(!gameActive)return;
-    gameActive=false;cancelAnimationFrame(animFrame);
+    gameActive=false;
+    game.classList.add("shake");
+    setTimeout(()=>game.classList.remove("shake"),200);
+    gameTimer.classList.remove("show");
     
-    el.game.classList.add("shake");playDeath();
-    setTimeout(()=>el.game.classList.remove("shake"),250);
-    el.countdown.classList.remove("show","urgent");
-    
-    if(score>highScore){highScore=score;localStorage.setItem("lumberjackHS",highScore);el.hs.textContent=highScore;}
+    const isRecord=score>highScore;
+    if(isRecord){highScore=score;localStorage.lumberjackHS=highScore;}
     
     $("finalScore").textContent=score;
-    $("txSummary").textContent=`⚡ ${txCount} chops`;
-    $("beatScore").textContent=score>highScore?"🎉 NEW RECORD!":"Best: "+highScore;
-    el.over.classList.toggle("newRecord",score>highScore);
-    el.over.querySelector("h2").textContent=score>highScore?"🎉 NEW RECORD!":"GAME OVER";
+    $("endMsg").textContent=reason||(isRecord?"🎉 NEW RECORD!":"Best: "+highScore);
+    endEl.classList.toggle("record",isRecord);
+    endEl.querySelector("h2").textContent=reason?"GAME OVER":(isRecord?"NEW RECORD!":"GAME OVER");
     
-    const isTourney=el.game.classList.contains("tournament");
-    if(isTourney&&isRegistered){
-        $("tournamentSubmit").classList.add("show");
-        if(score>myScore){$("tournamentSubmit").textContent=`🏆 Submitting score ${score}...`;submitWithRetry(score,0);}
-        else $("tournamentSubmit").textContent=`Score ${score} (your best: ${myScore})`;
+    const isTourney=game.classList.contains("tournament");
+    const submitEl=$("submitStatus");
+    
+    if(isTourney&&registered&&score>0){
+        submitEl.classList.add("show");
+        submitEl.textContent="Submitting score...";
+        contract.submitScore(score,{gasLimit:200000}).then(tx=>tx.wait()).then(()=>{
+            submitEl.textContent="✅ Score submitted!";
+            if(score>myBestScore){myBestScore=score;$("myScoreVal").textContent=score;}
+        }).catch(e=>{
+            console.error(e);
+            submitEl.textContent="⚠️ Submit failed";
+        });
     }else{
-        $("tournamentSubmit").classList.remove("show");
-        contract.endGame(userAddress,score,{gasLimit:150000}).catch(()=>{});
+        submitEl.classList.remove("show");
+        if(!isTourney)contract.endGame(score,{gasLimit:50000}).catch(()=>{});
     }
     
-    el.over.style.display="flex";el.over.classList.add("show");
-    $("restartBtn").style.display="block";
-    setTimeout(()=>{canRestart=true;el.over.classList.add("canRestart");},800);
+    endEl.classList.add("show");
+    setTimeout(()=>canRestart=true,500);
     updateBal();
 }
 
-$("restartBtn").onclick=startGame;
-
-function handleTap(side){
-    if(locked)return;
-    if(!gameActive){if(canRestart||!el.over.classList.contains("show"))startGame();}
-    else chop(side);
+function handleInput(side){
+    if(!gameActive&&canRestart&&!startEl.classList.contains("hidden")){startGame();return;}
+    if(!gameActive&&canRestart&&endEl.classList.contains("show")){
+        endEl.classList.remove("show");
+        startEl.classList.remove("hidden");
+        updateUI();
+        return;
+    }
+    chop(side);
 }
 
-$("tapLeft").onclick=()=>handleTap("left");
-$("tapRight").onclick=()=>handleTap("right");
-$("tapLeft").ontouchstart=e=>{e.preventDefault();handleTap("left");};
-$("tapRight").ontouchstart=e=>{e.preventDefault();handleTap("right");};
+document.querySelector(".zone.left").onclick=()=>handleInput("left");
+document.querySelector(".zone.right").onclick=()=>handleInput("right");
+document.querySelector(".zone.left").ontouchstart=e=>{e.preventDefault();handleInput("left");};
+document.querySelector(".zone.right").ontouchstart=e=>{e.preventDefault();handleInput("right");};
+$("restartBtn").onclick=()=>{endEl.classList.remove("show");startEl.classList.remove("hidden");updateUI();};
 
 document.onkeydown=e=>{
-    if(locked)return;
     if([" ","ArrowLeft","ArrowRight"].includes(e.key))e.preventDefault();
-    if(el.over.classList.contains("show")&&canRestart&&[" ","ArrowLeft","ArrowRight"].includes(e.key)){startGame();return;}
-    if(e.key===" "&&!gameActive&&!el.over.classList.contains("show"))startGame();
-    if(e.key==="ArrowLeft")handleTap("left");
-    if(e.key==="ArrowRight")handleTap("right");
+    if(e.key==="ArrowLeft")handleInput("left");
+    else if(e.key==="ArrowRight")handleInput("right");
+    else if(e.key===" ")handleInput("left");
 };
-
-function resetToStart(){
-    if(el.over.classList.contains("show")){el.over.classList.remove("show","canRestart","newRecord");el.over.style.display="none";gameActive=false;}
-    el.start.classList.remove("hidden");el.game.classList.remove("tournament","shake");
-    el.badge.classList.remove("show");el.countdown.classList.remove("show","urgent");el.locked.classList.remove("show");
-}
-
-$("practiceModeBtn").onclick=function(){mode="practice";this.classList.add("active");$("tournamentModeBtn").classList.remove("active");resetToStart();updateModeUI();};
-$("tournamentModeBtn").onclick=function(){mode="tournament";this.classList.add("active");$("practiceModeBtn").classList.remove("active");resetToStart();updateModeUI();};
 </script>
 </body>
 </html>
