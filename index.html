@@ -20,34 +20,18 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         #modeToggle { 
-            position: absolute; 
-            top: 15px; 
-            left: 15px; 
-            display: flex; 
-            gap: 5px; 
-            background: rgba(0,0,0,0.3); 
-            padding: 5px; 
-            border-radius: 8px; 
-            z-index: 200;
+            position: absolute; top: 15px; left: 15px; 
+            display: flex; gap: 5px; background: rgba(0,0,0,0.3); 
+            padding: 5px; border-radius: 8px; z-index: 200;
         }
         .mode-btn { 
-            padding: 8px 16px; 
-            font-size: 11px; 
-            font-weight: bold; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            background: rgba(255,255,255,0.1); 
-            color: rgba(255,255,255,0.5); 
+            padding: 8px 16px; font-size: 11px; font-weight: bold; 
+            border: none; border-radius: 6px; cursor: pointer; 
+            background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); 
             transition: all 0.2s;
         }
-        .mode-btn.active { 
-            background: linear-gradient(135deg, #667eea, #764ba2); 
-            color: white; 
-        }
-        .mode-btn.tournament.active { 
-            background: linear-gradient(135deg, #9c27b0, #e91e63); 
-        }
+        .mode-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .mode-btn.tournament.active { background: linear-gradient(135deg, #9c27b0, #e91e63); }
         #highScoreDisplay { font-size: 14px; color: #feca57; }
         #mainContainer { display: flex; gap: 20px; align-items: flex-start; }
         
@@ -56,11 +40,7 @@
             width: 380px; height: 600px; position: relative;
             border: 3px solid #5D4037; border-radius: 15px; overflow: hidden;
         }
-        #gameArea.tournament { border-color: #9c27b0; box-shadow: 0 0 20px rgba(156,39,176,0.5); animation: tournamentPulse 2s ease-in-out infinite; }
-        @keyframes tournamentPulse { 
-            0%, 100% { box-shadow: 0 0 20px rgba(156,39,176,0.5); } 
-            50% { box-shadow: 0 0 30px rgba(156,39,176,0.8), 0 0 40px rgba(233,30,99,0.4); } 
-        }
+        #gameArea.tournament { border-color: #9c27b0; box-shadow: 0 0 20px rgba(156,39,176,0.5); }
         #gameArea.shake { animation: shake 0.25s ease-out; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
         
@@ -120,6 +100,10 @@
         
         #tournamentBadge { display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #9c27b0, #e91e63); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 100; }
         #tournamentBadge.show { display: block; }
+        
+        #tournamentCountdown { display: none; position: absolute; top: 50px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); padding: 4px 12px; border-radius: 15px; font-size: 18px; font-weight: bold; color: #feca57; z-index: 100; }
+        #tournamentCountdown.show { display: block; }
+        #tournamentCountdown.urgent { color: #f44336; animation: pulseDanger 0.5s ease-in-out infinite; }
         
         .tap-zone { position: absolute; top: 0; width: 50%; height: 100%; z-index: 30; cursor: pointer; }
         .tap-zone.left { left: 0; }
@@ -183,31 +167,6 @@
         #tapToStart { margin-top: 16px; font-size: 14px; color: #feca57; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         
-        #finalizingOverlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        #finalizingOverlay.show { display: flex; }
-        #finalizingTitle { font-size: 28px; font-weight: bold; color: #feca57; margin-bottom: 20px; }
-        #finalizingSpinner { font-size: 48px; animation: spin 2s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #finalizingText { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 20px; }
-        
-        #countdownOverlay { display: none; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(156,39,176,0.98), rgba(233,30,99,0.98)); z-index: 250; flex-direction: column; align-items: center; justify-content: center; }
-        #countdownOverlay.show { display: flex; }
-        #countdownTitle { font-size: 32px; font-weight: bold; color: white; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 3px; }
-        #countdownNumber { font-size: 180px; font-weight: bold; color: #feca57; text-shadow: 0 0 40px rgba(254,202,87,0.6); animation: countPulse 1s ease-out; }
-        #countdownNumber.go { font-size: 140px; color: #8BC34A; animation: goAnimation 0.6s ease-out; }
-        @keyframes countPulse { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes goAnimation { 0% { transform: scale(0.8) rotate(-5deg); opacity: 0; } 50% { transform: scale(1.2) rotate(2deg); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
-        
-        #resultsDisplay { display: none; margin-top: 30px; }
-        #resultsDisplay.show { display: block; }
-        #resultsContent { background: rgba(156,39,176,0.3); padding: 20px; border-radius: 12px; margin: 20px 0; }
-        #resultsContent .result-winner { font-size: 18px; color: #8BC34A; font-weight: bold; margin: 10px 0; }
-        #resultsContent .result-score { font-size: 16px; color: #feca57; margin: 5px 0; }
-        #resultsContent .result-prize { font-size: 16px; color: white; margin: 5px 0; }
-        #resultsContent .result-refund { font-size: 16px; color: #ff9800; margin: 5px 0; }
-        #nextTournamentBtn { margin-top: 20px; padding: 12px 30px; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 8px; color: white; font-size: 14px; font-weight: bold; cursor: pointer; }
-        #nextTournamentBtn:hover { opacity: 0.9; }
-        
         #gameOver { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; opacity: 0; pointer-events: none; }
         #gameOver.show { display: flex; animation: fadeIn 0.6s ease-out forwards; }
         #gameOver.show.canRestart { pointer-events: auto; }
@@ -218,11 +177,22 @@
         #txSummary { font-size: 13px; color: #9c27b0; margin: 6px 0; padding: 6px 14px; background: rgba(156,39,176,0.2); border-radius: 10px; }
         #tournamentSubmit { display: none; font-size: 13px; color: #8BC34A; margin: 8px 0; padding: 8px 16px; background: rgba(76,175,80,0.2); border-radius: 10px; }
         #tournamentSubmit.show { display: block; }
-        #tournamentSubmit.calculating { color: #feca57; background: rgba(254,202,87,0.2); }
         #beatScore { font-size: 11px; color: #feca57; margin: 4px 0; }
         #restartBtn { background: linear-gradient(135deg, #f5576c, #f093fb); margin-top: 12px; font-size: 14px; padding: 10px 28px; width: auto; }
         #txLink { margin-top: 8px; }
         #txLink a { color: #54a0ff; text-decoration: none; font-size: 11px; }
+        
+        #lockedOverlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 150; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #lockedOverlay.show { display: flex; }
+        #lockedTitle { font-size: 24px; font-weight: bold; color: #feca57; margin-bottom: 15px; }
+        #lockedSpinner { font-size: 40px; animation: spin 1.5s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #lockedText { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 15px; max-width: 280px; }
+        #lockedResults { margin-top: 20px; padding: 15px; background: rgba(156,39,176,0.3); border-radius: 12px; display: none; }
+        #lockedResults.show { display: block; }
+        #lockedResults .result-title { font-size: 18px; color: #8BC34A; font-weight: bold; margin-bottom: 10px; }
+        #lockedResults .result-info { font-size: 14px; color: white; margin: 5px 0; }
+        #nextRoundTimer { margin-top: 15px; font-size: 16px; color: #feca57; }
         
         @media (max-width: 700px) {
             #mainContainer { flex-direction: column; align-items: center; }
@@ -247,6 +217,7 @@
             <div class="cloud cloud2"></div>
             <div id="trunk"></div>
             <div id="tournamentBadge">🏆 TOURNAMENT</div>
+            <div id="tournamentCountdown">0:00</div>
             
             <div id="lumberjack" class="left">
                 <img src="keone.png" alt="" id="keoneImg" onerror="this.style.background='#FFCCBC'">
@@ -277,22 +248,23 @@
             <div id="gameOver">
                 <h2>GAME OVER</h2>
                 <div id="finalScore">0</div>
-                <div id="txSummary">⚡ 0 transactions</div>
-                <div id="tournamentSubmit">🏆 Score submitted to tournament!</div>
+                <div id="txSummary">⚡ 0 chops</div>
+                <div id="tournamentSubmit">🏆 Score submitted!</div>
                 <div id="beatScore"></div>
                 <div id="txLink"></div>
                 <button id="restartBtn">PLAY AGAIN (SPACE)</button>
             </div>
             
-            <div id="finalizingOverlay">
-                <div id="finalizingTitle">🏆 FINALIZING RESULTS</div>
-                <div id="finalizingSpinner">⏳</div>
-                <div id="finalizingText">Calculating winners and distributing prizes...</div>
-                
-                <div id="resultsDisplay">
-                    <div id="resultsContent"></div>
-                    <button id="nextTournamentBtn">Continue to Next Tournament</button>
+            <div id="lockedOverlay">
+                <div id="lockedTitle">🏆 TOURNAMENT ENDED</div>
+                <div id="lockedSpinner">⏳</div>
+                <div id="lockedText">Calculating results...</div>
+                <div id="lockedResults">
+                    <div class="result-title">Results</div>
+                    <div class="result-info" id="resultWinner"></div>
+                    <div class="result-info" id="resultPrize"></div>
                 </div>
+                <div id="nextRoundTimer">Next round in: --</div>
             </div>
         </div>
         
@@ -326,14 +298,14 @@
             <div class="panel-box tournament-box">
                 <h3>🏆 TOURNAMENT #<span id="tournamentNum">1</span></h3>
                 <div id="phaseIndicator" class="signup">📝 SIGNUP PHASE</div>
-                <div id="tournamentTimer">5:00</div>
+                <div id="tournamentTimer">1:00</div>
                 <div class="tournament-stats">
                     <div><div class="stat-val" id="prizePool">0</div><div class="stat-label">Prize (MON)</div></div>
                     <div><div class="stat-val" id="playerCount">0</div><div class="stat-label">Players</div></div>
                     <div><div class="stat-val" id="highScoreTourney">0</div><div class="stat-label">High Score</div></div>
                 </div>
                 <button id="joinTournamentBtn" disabled>Join Tournament (10 MON)</button>
-                <div id="myTournamentScore">Your tournament score: <span id="myScoreVal">0</span></div>
+                <div id="myTournamentScore">Your score: <span id="myScoreVal">0</span></div>
                 <div id="lastWinner">
                     <div id="lastWinnerTitle">🎉 Last Winner</div>
                     <div class="winner-addr" id="winnerAddr">-</div>
@@ -343,10 +315,10 @@
             
             <div class="instructions">
                 <div style="font-size:12px;font-weight:bold;margin-bottom:6px;color:#feca57;">HOW TOURNAMENTS WORK</div>
-                📝 <b>Signup (5 min)</b>: Pay 10 MON to enter. Practice for free!<br>
-                🎮 <b>Play (5 min)</b>: Compete! Only your highest score counts.<br>
-                🏆 <b>Winner</b>: Highest score takes the entire prize pool!<br>
-                <div style="margin-top:6px;opacity:0.5;">Ties split the pool. Solo player = refunded.</div>
+                📝 <b>Signup (1 min)</b>: Pay 10 MON to enter<br>
+                🎮 <b>Play (1 min)</b>: Compete! Highest score wins<br>
+                🏆 <b>Winner</b>: Takes the entire prize pool!<br>
+                <div style="margin-top:6px;opacity:0.5;">Ties split pool. Solo player = refunded.</div>
             </div>
         </div>
     </div>
@@ -354,7 +326,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>
-        var CONTRACT = "0x91538515F09857220156b4EF1415577b1490227c";
+        var CONTRACT = "0x4732b3b111A95a4306eaA15d497cdc13d9624956";
         var ABI = [
             "function startGame(address) external",
             "function chop(address,uint256) external",
@@ -372,130 +344,83 @@
         var RPC = "https://testnet-rpc.monad.xyz";
         var EXPLORER = "https://testnet.monadexplorer.com";
         
-        var score = 0;
-        var highScore = 0;
-        var gameActive = false;
-        var playerSide = "left";
-        var branches = [];
-        var timeLeft = 100;
-        var txCount = 0;
-        var canRestart = false;
+        var score = 0, highScore = 0, gameActive = false, playerSide = "left";
+        var branches = [], timeLeft = 100, txCount = 0, canRestart = false;
         var provider, signer, userAddress, burner, contract, animFrame;
-        var lastChopTime = 0;
-        var isRegistered = false;
-        var currentTournamentId = 0;
-        var myCurrentTournamentScore = 0;
-        var tournamentPhase = 0;
-        var signupEndTime = 0;
-        var playEndTime = 0;
-        var chopsSinceLastTx = 0;
-        var CHOPS_PER_TX = 10;
-        var pendingDeposit = 0;
-        var isJoiningTournament = false;
-        var gameMode = "practice"; // "practice" or "tournament"
-        var tournamentLocked = false; // Prevents playing when tournament is finalizing
+        var lastChopTime = 0, isRegistered = false, currentTournamentId = 0;
+        var myCurrentTournamentScore = 0, tournamentPhase = 0;
+        var signupEndTime = 0, playEndTime = 0;
+        var chopsSinceLastTx = 0, CHOPS_PER_TX = 10;
+        var pendingDeposit = 0, isJoiningTournament = false;
+        var gameMode = "practice";
+        var tournamentLocked = false;
+        var cachedPlayEndTime = 0; // Store play end time when game starts
         
         function $(id) { return document.getElementById(id); }
         
-        var gameArea = $("gameArea");
-        var scoreDisplay = $("scoreDisplay");
-        var timeBar = $("timeBarFill");
-        var lumberjack = $("lumberjack");
-        var axe = $("axe");
-        var startOverlay = $("startOverlay");
-        var gameOver = $("gameOver");
-        var connectBtn = $("connectBtn");
-        var tapToStart = $("tapToStart");
-        var highScoreEl = $("highScoreTop");
-        var walletSection = $("walletSection");
-        var balanceAmt = $("balanceAmt");
-        var walletAddr = $("walletAddr");
-        var tournamentBadge = $("tournamentBadge");
-        var joinBtn = $("joinTournamentBtn");
-        var phaseIndicator = $("phaseIndicator");
-        var practiceModeBtn = $("practiceModeBtn");
-        var tournamentModeBtn = $("tournamentModeBtn");
-        var finalizingOverlay = $("finalizingOverlay");
-        var resultsDisplay = $("resultsDisplay");
-        var resultsContent = $("resultsContent");
-        var nextTournamentBtn = $("nextTournamentBtn");
+        var gameArea = $("gameArea"), scoreDisplay = $("scoreDisplay");
+        var timeBar = $("timeBarFill"), lumberjack = $("lumberjack");
+        var axe = $("axe"), startOverlay = $("startOverlay");
+        var gameOver = $("gameOver"), connectBtn = $("connectBtn");
+        var tapToStart = $("tapToStart"), highScoreEl = $("highScoreTop");
+        var walletSection = $("walletSection"), balanceAmt = $("balanceAmt");
+        var walletAddr = $("walletAddr"), tournamentBadge = $("tournamentBadge");
+        var joinBtn = $("joinTournamentBtn"), phaseIndicator = $("phaseIndicator");
+        var lockedOverlay = $("lockedOverlay");
+        var tournamentCountdown = $("tournamentCountdown");
         
-        nextTournamentBtn.onclick = function() {
-            finalizingOverlay.classList.remove("show");
-            resultsDisplay.classList.remove("show");
-            tournamentLocked = false;
-            updateModeUI();
-        };
-        
-        practiceModeBtn.onclick = function() {
+        $("practiceModeBtn").onclick = function() {
             gameMode = "practice";
-            practiceModeBtn.classList.add("active");
-            tournamentModeBtn.classList.remove("active");
-            
-            // When switching to practice mode, hide any game over screen and show start overlay
-            if (gameOver.classList.contains("show")) {
-                gameOver.classList.remove("show", "canRestart", "newRecord");
-                gameOver.style.display = "none";
-                gameActive = false;
-            }
-            
-            // Show start overlay
-            startOverlay.classList.remove("hidden");
-            gameArea.classList.remove("tournament", "shake");
-            tournamentBadge.classList.remove("show");
-            
+            this.classList.add("active");
+            $("tournamentModeBtn").classList.remove("active");
+            resetToStartScreen();
             updateModeUI();
         };
         
-        tournamentModeBtn.onclick = function() {
+        $("tournamentModeBtn").onclick = function() {
             gameMode = "tournament";
-            practiceModeBtn.classList.remove("active");
-            tournamentModeBtn.classList.add("active");
-            
-            // When switching to tournament mode, hide any game over screen and show start overlay
+            this.classList.add("active");
+            $("practiceModeBtn").classList.remove("active");
+            resetToStartScreen();
+            updateModeUI();
+        };
+        
+        function resetToStartScreen() {
             if (gameOver.classList.contains("show")) {
                 gameOver.classList.remove("show", "canRestart", "newRecord");
                 gameOver.style.display = "none";
                 gameActive = false;
             }
-            
-            // Show start overlay with appropriate message
             startOverlay.classList.remove("hidden");
             gameArea.classList.remove("tournament", "shake");
             tournamentBadge.classList.remove("show");
-            
-            updateModeUI();
-        };
+            tournamentCountdown.classList.remove("show", "urgent");
+            lockedOverlay.classList.remove("show");
+        }
         
         function updateModeUI() {
+            var bal = parseFloat(balanceAmt.textContent) || 0;
+            tapToStart.style.color = "#feca57";
+            
             if (gameMode === "practice") {
-                var bal = parseFloat(balanceAmt.textContent) || 0;
-                if (bal < 0.001) {
-                    tapToStart.textContent = "DEPOSIT MON TO PLAY";
-                } else {
-                    tapToStart.textContent = "TAP OR PRESS SPACE TO START";
-                }
                 gameArea.classList.remove("tournament");
                 tournamentBadge.classList.remove("show");
+                tapToStart.textContent = bal < 0.001 ? "DEPOSIT MON TO PLAY" : "TAP OR PRESS SPACE TO START";
             } else {
-                // Tournament mode - show clear messages based on registration and phase
-                var bal = parseFloat(balanceAmt.textContent) || 0;
                 if (bal < 0.001) {
-                    tapToStart.textContent = "DEPOSIT MON TO JOIN TOURNAMENT";
+                    tapToStart.textContent = "DEPOSIT MON TO JOIN";
                 } else if (tournamentPhase === 0 && !isRegistered) {
                     tapToStart.textContent = "JOIN TOURNAMENT TO PLAY";
                 } else if (tournamentPhase === 0 && isRegistered) {
-                    tapToStart.textContent = "✓ YOU'RE IN! TOURNAMENT STARTS SOON";
+                    tapToStart.textContent = "✓ REGISTERED! WAITING...";
                     tapToStart.style.color = "#8BC34A";
                 } else if (tournamentPhase === 1 && isRegistered) {
                     tapToStart.textContent = "TAP OR PRESS SPACE TO PLAY";
-                    tapToStart.style.color = "#feca57";
                 } else if (tournamentPhase === 1 && !isRegistered) {
-                    tapToStart.textContent = "NOT REGISTERED - WAIT FOR NEXT ROUND";
+                    tapToStart.textContent = "NOT REGISTERED - WAIT";
                     tapToStart.style.color = "#f5576c";
                 } else {
-                    tapToStart.textContent = "TOURNAMENT ENDED - NEXT ROUND SOON";
-                    tapToStart.style.color = "#feca57";
+                    tapToStart.textContent = "FINALIZING...";
                 }
             }
         }
@@ -504,12 +429,10 @@
         highScoreEl.textContent = highScore;
         
         var deathSound = null;
-        
         function initAudio() {
             Tone.start().then(function() {
                 deathSound = new Tone.MembraneSynth({
-                    pitchDecay: 0.05,
-                    octaves: 4,
+                    pitchDecay: 0.05, octaves: 4,
                     envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.3 }
                 }).toDestination();
                 deathSound.volume.value = -8;
@@ -525,8 +448,7 @@
         }
         
         function spawnChips(fromLeft) {
-            var x = fromLeft ? 155 : 220;
-            var y = 400;
+            var x = fromLeft ? 155 : 220, y = 400;
             for (var i = 0; i < 6; i++) {
                 var chip = document.createElement("div");
                 chip.className = "wood-chip";
@@ -540,34 +462,18 @@
         
         function animateChip(chip, startX, startY, fromLeft) {
             var vx = (2 + Math.random() * 4) * (fromLeft ? -1 : 1);
-            var vy = -3 - Math.random() * 4;
-            var cx = startX;
-            var cy = startY;
-            var op = 1;
-            
+            var vy = -3 - Math.random() * 4, cx = startX, cy = startY, op = 1;
             function animate() {
-                cx += vx;
-                cy += vy;
-                vy += 0.35;
-                op -= 0.03;
-                chip.style.left = cx + "px";
-                chip.style.top = cy + "px";
-                chip.style.opacity = op;
-                if (op > 0) {
-                    requestAnimationFrame(animate);
-                } else {
-                    chip.remove();
-                }
+                cx += vx; cy += vy; vy += 0.35; op -= 0.03;
+                chip.style.left = cx + "px"; chip.style.top = cy + "px"; chip.style.opacity = op;
+                if (op > 0) requestAnimationFrame(animate); else chip.remove();
             }
             requestAnimationFrame(animate);
         }
         
         function getBurner() {
             var pk = localStorage.getItem("lumberjackPK");
-            if (!pk) {
-                pk = ethers.Wallet.createRandom().privateKey;
-                localStorage.setItem("lumberjackPK", pk);
-            }
+            if (!pk) { pk = ethers.Wallet.createRandom().privateKey; localStorage.setItem("lumberjackPK", pk); }
             return new ethers.Wallet(pk, new ethers.providers.JsonRpcProvider(RPC));
         }
         
@@ -577,57 +483,22 @@
                 var b = parseFloat(ethers.utils.formatEther(bal));
                 var displayBal = b + pendingDeposit;
                 balanceAmt.textContent = displayBal.toFixed(3);
-                if (pendingDeposit > 0) {
-                    balanceAmt.style.opacity = "0.7";
-                } else {
-                    balanceAmt.style.opacity = "1";
-                }
+                balanceAmt.style.opacity = pendingDeposit > 0 ? "0.7" : "1";
                 joinBtn.disabled = b < 10 || isRegistered || tournamentPhase !== 0 || isJoiningTournament;
-                updateTapToStart(b);
+                updateModeUI();
                 return b;
             });
         }
         
-        function updateTapToStart(bal) {
-            if (gameMode === "practice") {
-                if (bal < 0.001) {
-                    tapToStart.textContent = "DEPOSIT MON TO PLAY";
-                } else {
-                    tapToStart.textContent = "TAP OR PRESS SPACE TO START";
-                }
-                tapToStart.style.color = "#feca57";
-            } else {
-                // Tournament mode
-                if (bal < 0.001) {
-                    tapToStart.textContent = "DEPOSIT MON TO JOIN TOURNAMENT";
-                    tapToStart.style.color = "#feca57";
-                } else if (tournamentPhase === 0 && !isRegistered) {
-                    tapToStart.textContent = "JOIN TOURNAMENT TO PLAY";
-                    tapToStart.style.color = "#feca57";
-                } else if (tournamentPhase === 0 && isRegistered) {
-                    tapToStart.textContent = "✓ YOU'RE IN! TOURNAMENT STARTS SOON";
-                    tapToStart.style.color = "#8BC34A";
-                } else if (tournamentPhase === 1 && isRegistered) {
-                    tapToStart.textContent = "TAP OR PRESS SPACE TO PLAY";
-                    tapToStart.style.color = "#feca57";
-                } else if (tournamentPhase === 1 && !isRegistered) {
-                    tapToStart.textContent = "NOT REGISTERED - WAIT FOR NEXT ROUND";
-                    tapToStart.style.color = "#f5576c";
-                } else {
-                    tapToStart.textContent = "TOURNAMENT ENDED - NEXT ROUND SOON";
-                    tapToStart.style.color = "#feca57";
-                }
-            }
-        }
-        
-        function formatAddr(addr) {
-            return addr.slice(0, 6) + "..." + addr.slice(-4);
-        }
+        function formatAddr(addr) { return addr.slice(0, 6) + "..." + addr.slice(-4); }
         
         function updateTournamentInfo() {
             if (!contract) return Promise.resolve();
             
             return contract.getTournamentInfo().then(function(info) {
+                var prevPhase = tournamentPhase;
+                var prevTournamentId = currentTournamentId;
+                
                 currentTournamentId = info[0].toNumber();
                 signupEndTime = info[1].toNumber() * 1000;
                 playEndTime = info[2].toNumber() * 1000;
@@ -635,57 +506,55 @@
                 var players = info[4].toNumber();
                 var high = info[5].toNumber();
                 tournamentPhase = info[6];
+                var finalized = info[7];
                 
                 $("tournamentNum").textContent = currentTournamentId;
                 $("prizePool").textContent = prize.toFixed(0);
                 $("playerCount").textContent = players;
                 $("highScoreTourney").textContent = high;
                 
+                // New tournament started - reset registration
+                if (currentTournamentId !== prevTournamentId) {
+                    isRegistered = false;
+                    myCurrentTournamentScore = 0;
+                    $("myTournamentScore").classList.remove("show");
+                    lockedOverlay.classList.remove("show");
+                    tournamentLocked = false;
+                }
+                
                 if (tournamentPhase === 0) {
                     phaseIndicator.className = "signup";
                     phaseIndicator.textContent = "📝 SIGNUP PHASE";
                     joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
-                    
-                    // Hide finalizing overlay and reset registration flag when new signup starts
-                    finalizingOverlay.classList.remove("show");
-                    resultsDisplay.classList.remove("show");
+                    lockedOverlay.classList.remove("show");
                     tournamentLocked = false;
-                    
-                    // Reset isRegistered for new tournament
-                    if (burner) {
-                        contract.isPlayerRegistered(currentTournamentId, burner.address).then(function(reg) {
-                            isRegistered = reg;
-                            joinBtn.classList.toggle("joined", isRegistered);
-                            joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
-                            updateModeUI();
-                        });
-                    }
                 } else if (tournamentPhase === 1) {
                     phaseIndicator.className = "play";
                     phaseIndicator.textContent = "🎮 PLAY PHASE";
                     joinBtn.textContent = "Signup Closed";
-                    tournamentLocked = false; // Unlock when play phase starts
+                    lockedOverlay.classList.remove("show");
+                    tournamentLocked = false;
                 } else {
                     phaseIndicator.className = "ended";
-                    phaseIndicator.textContent = "⏳ FINALIZING...";
+                    phaseIndicator.textContent = finalized ? "✓ FINALIZED" : "⏳ FINALIZING...";
                     joinBtn.textContent = "Next Round Soon";
                     
-                    // Show finalizing overlay IMMEDIATELY in tournament mode
-                    if (gameMode === "tournament" && !finalizingOverlay.classList.contains("show")) {
-                        showFinalizingScreen();
+                    if (gameMode === "tournament" && !tournamentLocked) {
+                        showLockedScreen();
                     }
                     
-                    // Try to advance
                     contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
                 }
                 
-                // Update mode UI whenever phase changes
                 updateModeUI();
                 
                 if (burner) {
                     return contract.isPlayerRegistered(currentTournamentId, burner.address).then(function(reg) {
                         isRegistered = reg;
                         joinBtn.classList.toggle("joined", isRegistered);
+                        if (tournamentPhase === 0) {
+                            joinBtn.textContent = isRegistered ? "✓ Registered" : "Join Tournament (10 MON)";
+                        }
                         
                         if (isRegistered) {
                             return contract.getPlayerScore(currentTournamentId, burner.address).then(function(myScore) {
@@ -694,7 +563,6 @@
                                 $("myTournamentScore").classList.add("show");
                             });
                         } else {
-                            myCurrentTournamentScore = 0;
                             $("myTournamentScore").classList.remove("show");
                         }
                     });
@@ -713,15 +581,15 @@
                     
                     if (lastPlayerCount === 0) {
                         $("lastWinnerTitle").textContent = "📭 Last Tournament";
-                        $("winnerAddr").textContent = "No players joined";
+                        $("winnerAddr").textContent = "No players";
                         $("winnerPrizeText").textContent = "";
                     } else if (lastPlayerCount === 1) {
-                        $("lastWinnerTitle").textContent = "💸 Last Tournament";
-                        $("winnerAddr").textContent = "Only 1 player - refunded";
+                        $("lastWinnerTitle").textContent = "💸 Refunded";
+                        $("winnerAddr").textContent = "Only 1 player";
                         $("winnerPrizeText").textContent = "";
                     } else if (winners.length === 0 || lastHighScore === 0) {
-                        $("lastWinnerTitle").textContent = "💸 Last Tournament";
-                        $("winnerAddr").textContent = "No scores - all refunded";
+                        $("lastWinnerTitle").textContent = "💸 All Refunded";
+                        $("winnerAddr").textContent = "No scores submitted";
                         $("winnerPrizeText").textContent = "";
                     } else if (winners.length === 1) {
                         $("lastWinnerTitle").textContent = "🎉 Last Winner";
@@ -729,19 +597,66 @@
                         $("winnerPrizeText").innerHTML = "Won " + prizePerWinner.toFixed(1) + " MON (score: " + lastHighScore + ")";
                     } else {
                         $("lastWinnerTitle").textContent = "🎉 " + winners.length + "-Way Tie!";
-                        var winnerStrs = [];
-                        for (var i = 0; i < winners.length; i++) {
-                            winnerStrs.push(formatAddr(winners[i]));
-                        }
-                        $("winnerAddr").textContent = winnerStrs.join(", ");
-                        $("winnerPrizeText").innerHTML = "Each won " + prizePerWinner.toFixed(1) + " MON (score: " + lastHighScore + ")";
+                        var ws = [];
+                        for (var i = 0; i < winners.length; i++) ws.push(formatAddr(winners[i]));
+                        $("winnerAddr").textContent = ws.join(", ");
+                        $("winnerPrizeText").innerHTML = "Each won " + prizePerWinner.toFixed(1) + " MON";
+                    }
+                    
+                    // Update locked screen results too
+                    if (lockedOverlay.classList.contains("show")) {
+                        updateLockedResults(winners, lastHighScore, prizePerWinner, lastPlayerCount);
                     }
                 }
             }).then(function() {
                 return updateBal();
-            }).catch(function(e) {
-                console.error("Tournament info error:", e);
-            });
+            }).catch(function(e) { console.error("Tournament info error:", e); });
+        }
+        
+        function showLockedScreen() {
+            tournamentLocked = true;
+            gameActive = false;
+            cancelAnimationFrame(animFrame);
+            
+            lockedOverlay.classList.add("show");
+            $("lockedResults").classList.remove("show");
+            $("lockedSpinner").style.display = "block";
+            $("lockedText").textContent = "Calculating results...";
+            
+            // Fetch results after short delay
+            setTimeout(function() {
+                contract.getLastTournamentResult().then(function(last) {
+                    var winners = last[1];
+                    var lastHighScore = last[2].toNumber();
+                    var prizePerWinner = parseFloat(ethers.utils.formatEther(last[3]));
+                    var lastPlayerCount = last[4].toNumber();
+                    updateLockedResults(winners, lastHighScore, prizePerWinner, lastPlayerCount);
+                }).catch(function() {});
+            }, 2000);
+        }
+        
+        function updateLockedResults(winners, highScore, prizePerWinner, playerCount) {
+            $("lockedSpinner").style.display = "none";
+            $("lockedText").textContent = "Results ready!";
+            
+            if (playerCount === 0) {
+                $("resultWinner").textContent = "No players joined";
+                $("resultPrize").textContent = "";
+            } else if (playerCount === 1) {
+                $("resultWinner").textContent = "Only 1 player - Refunded";
+                $("resultPrize").textContent = "";
+            } else if (winners.length === 0 || highScore === 0) {
+                $("resultWinner").textContent = "No scores - All Refunded";
+                $("resultPrize").textContent = "";
+            } else if (winners.length === 1) {
+                $("resultWinner").textContent = "🏆 Winner: " + formatAddr(winners[0]);
+                $("resultPrize").textContent = "Score: " + highScore + " | Prize: " + prizePerWinner.toFixed(1) + " MON";
+            } else {
+                $("resultWinner").textContent = "🏆 " + winners.length + "-Way Tie!";
+                $("resultPrize").textContent = "Score: " + highScore + " | Each: " + prizePerWinner.toFixed(1) + " MON";
+            }
+            
+            $("lockedResults").classList.add("show");
         }
         
         function updateTimer() {
@@ -761,39 +676,116 @@
             var s = secs % 60;
             $("tournamentTimer").textContent = mins + ":" + (s < 10 ? "0" : "") + s;
             
-            // Auto-advance when time expires or is close to expiring
-            if (contract) {
-                if (remaining <= 1000 && (tournamentPhase === 0 || tournamentPhase === 1)) {
-                    // Start trying to advance 1 second before timer hits 0
-                    contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
-                }
+            // Update in-game countdown during tournament
+            if (gameActive && gameMode === "tournament" && cachedPlayEndTime > 0) {
+                var gameRemaining = Math.max(0, cachedPlayEndTime - now);
+                var gameSecs = Math.floor(gameRemaining / 1000);
+                var gameMins = Math.floor(gameSecs / 60);
+                var gameS = gameSecs % 60;
+                tournamentCountdown.textContent = gameMins + ":" + (gameS < 10 ? "0" : "") + gameS;
+                tournamentCountdown.classList.toggle("urgent", gameSecs <= 10);
                 
-                if (remaining === 0) {
-                    // Keep trying when at 0
-                    contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
-                    updateTournamentInfo();
+                // HARD STOP when tournament time runs out
+                if (gameRemaining <= 0) {
+                    forceEndGame("TIME'S UP!");
+                    return;
                 }
-                
-                // Also aggressively try to advance in phase 2
-                if (tournamentPhase === 2) {
-                    contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
-                }
+            }
+            
+            // Update next round timer on locked screen
+            if (lockedOverlay.classList.contains("show")) {
+                $("nextRoundTimer").textContent = "Next round starting soon...";
+            }
+            
+            // Auto-advance
+            if (contract && remaining <= 500) {
+                contract.advanceTournament({ gasLimit: 500000 }).catch(function() {});
             }
         }
         
-        connectBtn.onclick = function() {
-            if (!window.ethereum) {
-                alert("Please install MetaMask!");
-                return;
+        function forceEndGame(reason) {
+            if (!gameActive) return;
+            gameActive = false;
+            cancelAnimationFrame(animFrame);
+            tournamentLocked = true;
+            
+            gameArea.classList.add("shake");
+            playDeathSound();
+            setTimeout(function() { gameArea.classList.remove("shake"); }, 250);
+            
+            var isRecord = score > highScore;
+            if (isRecord) {
+                highScore = score;
+                localStorage.setItem("lumberjackHS", highScore);
+                highScoreEl.textContent = highScore;
             }
+            
+            $("finalScore").textContent = score;
+            $("txSummary").textContent = reason || "⚡ " + txCount + " chops";
+            $("beatScore").textContent = isRecord ? "🎉 NEW RECORD!" : "Best: " + highScore;
+            
+            if (isRecord) gameOver.classList.add("newRecord");
+            gameOver.querySelector("h2").textContent = reason ? "⏱️ " + reason : (isRecord ? "🎉 NEW RECORD!" : "GAME OVER");
+            
+            var isTournamentGame = gameArea.classList.contains("tournament");
+            if (isTournamentGame) {
+                $("tournamentSubmit").classList.add("show");
+                $("tournamentSubmit").textContent = "🏆 Submitting score " + score + "...";
+                submitScoreWithRetry(score, 0);
+            } else {
+                $("tournamentSubmit").classList.remove("show");
+            }
+            
+            gameOver.style.display = "flex";
+            gameOver.classList.add("show");
+            
+            // Don't allow restart during tournament finalization
+            if (isTournamentGame) {
+                $("restartBtn").style.display = "none";
+                setTimeout(function() {
+                    showLockedScreen();
+                    gameOver.classList.remove("show");
+                    gameOver.style.display = "none";
+                }, 2000);
+            } else {
+                $("restartBtn").style.display = "block";
+                setTimeout(function() {
+                    canRestart = true;
+                    gameOver.classList.add("canRestart");
+                }, 800);
+            }
+        }
+        
+        function submitScoreWithRetry(finalScore, attempt) {
+            var maxAttempts = 3;
+            
+            contract.submitScore(finalScore, { gasLimit: 300000 }).then(function(tx) {
+                $("tournamentSubmit").textContent = "🏆 Confirming...";
+                return tx.wait();
+            }).then(function(receipt) {
+                $("tournamentSubmit").textContent = "✅ Score " + finalScore + " confirmed!";
+                $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View tx →</a>';
+                myCurrentTournamentScore = Math.max(myCurrentTournamentScore, finalScore);
+                $("myScoreVal").textContent = myCurrentTournamentScore;
+            }).catch(function(err) {
+                console.error("Submit attempt " + (attempt + 1) + " failed:", err);
+                if (attempt < maxAttempts - 1) {
+                    $("tournamentSubmit").textContent = "🔄 Retrying... (" + (attempt + 2) + "/" + maxAttempts + ")";
+                    setTimeout(function() { submitScoreWithRetry(finalScore, attempt + 1); }, 1500);
+                } else {
+                    $("tournamentSubmit").textContent = "⚠️ Submit failed - try again next game";
+                }
+            });
+        }
+        
+        connectBtn.onclick = function() {
+            if (!window.ethereum) { alert("Please install MetaMask!"); return; }
             
             connectBtn.textContent = "Connecting...";
             connectBtn.disabled = true;
             
             window.ethereum.request({ method: "eth_requestAccounts" }).then(function(accounts) {
-                if (!accounts || accounts.length === 0) {
-                    throw new Error("No accounts");
-                }
+                if (!accounts || accounts.length === 0) throw new Error("No accounts");
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 return provider.getNetwork();
             }).then(function(net) {
@@ -806,18 +798,14 @@
                             return window.ethereum.request({
                                 method: "wallet_addEthereumChain",
                                 params: [{
-                                    chainId: CHAIN_ID,
-                                    chainName: "Monad Testnet",
+                                    chainId: CHAIN_ID, chainName: "Monad Testnet",
                                     nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
-                                    rpcUrls: [RPC],
-                                    blockExplorerUrls: [EXPLORER]
+                                    rpcUrls: [RPC], blockExplorerUrls: [EXPLORER]
                                 }]
                             });
                         }
                         throw e;
-                    }).then(function() {
-                        provider = new ethers.providers.Web3Provider(window.ethereum);
-                    });
+                    }).then(function() { provider = new ethers.providers.Web3Provider(window.ethereum); });
                 }
             }).then(function() {
                 signer = provider.getSigner();
@@ -840,10 +828,8 @@
                 walletSection.style.display = "block";
                 
                 initAudio();
-                
-                setInterval(updateTimer, 1000);
-                setInterval(updateTournamentInfo, 10000);
-                
+                setInterval(updateTimer, 100); // More frequent for smoother countdown
+                setInterval(updateTournamentInfo, 5000);
                 return updateTournamentInfo();
             }).catch(function(e) {
                 console.error("Connection error:", e);
@@ -854,14 +840,10 @@
         
         function fund(amt) {
             if (!amt || amt <= 0 || !signer) return;
-            
             pendingDeposit = amt;
             updateBal();
             
-            signer.sendTransaction({ 
-                to: burner.address, 
-                value: ethers.utils.parseEther(amt.toString()) 
-            }).then(function(tx) {
+            signer.sendTransaction({ to: burner.address, value: ethers.utils.parseEther(amt.toString()) }).then(function(tx) {
                 connectBtn.textContent = "Depositing...";
                 return tx.wait();
             }).then(function() {
@@ -877,7 +859,6 @@
         }
         
         $("fundBtn").onclick = function() { fund(parseFloat($("fundAmt").value)); };
-        
         var quickFundBtns = document.querySelectorAll(".quick-fund button");
         for (var i = 0; i < quickFundBtns.length; i++) {
             quickFundBtns[i].onclick = function() { fund(parseFloat(this.dataset.amt)); };
@@ -887,16 +868,9 @@
             var addr = $("withdrawAddr").value.trim();
             var amt = parseFloat($("withdrawAmt").value);
             if (!addr || !amt) return;
-            
-            burner.sendTransaction({ 
-                to: addr, 
-                value: ethers.utils.parseEther(amt.toString()), 
-                gasLimit: 21000 
-            }).then(function(tx) {
+            burner.sendTransaction({ to: addr, value: ethers.utils.parseEther(amt.toString()), gasLimit: 21000 }).then(function(tx) {
                 return tx.wait();
-            }).then(function() {
-                return updateBal();
-            }).catch(function(e) { console.error(e); });
+            }).then(function() { return updateBal(); }).catch(function(e) { console.error(e); });
         };
         
         joinBtn.onclick = function() {
@@ -906,10 +880,7 @@
             joinBtn.textContent = "Joining...";
             joinBtn.disabled = true;
             
-            contract.joinTournament({ 
-                value: ethers.utils.parseEther("10"), 
-                gasLimit: 300000 
-            }).then(function(tx) {
+            contract.joinTournament({ value: ethers.utils.parseEther("10"), gasLimit: 300000 }).then(function(tx) {
                 joinBtn.textContent = "Confirming...";
                 return tx.wait();
             }).then(function() {
@@ -937,46 +908,31 @@
         }
         
         function initBranches() {
-            var existingBranches = document.querySelectorAll(".branch");
-            for (var i = 0; i < existingBranches.length; i++) {
-                existingBranches[i].remove();
-            }
+            var existing = document.querySelectorAll(".branch");
+            for (var i = 0; i < existing.length; i++) existing[i].remove();
             branches = [];
             for (var j = 0; j < 8; j++) {
                 var side = Math.random() > 0.5 ? "left" : "right";
                 var y = 165 + j * 70;
-                var el = createBranch(side, y);
-                branches.push({ side: side, y: y, el: el });
+                branches.push({ side: side, y: y, el: createBranch(side, y) });
             }
         }
         
         function startGame() {
-            if (!burner) return;
-            
-            // Block starting if tournament is locked
-            if (tournamentLocked) return;
+            if (!burner || tournamentLocked) return;
             
             var bal = parseFloat(balanceAmt.textContent);
             if (bal < 0.001) return;
             if (!canRestart && gameOver.classList.contains("show")) return;
             
-            // Check if we can start based on mode
-            if (gameMode === "tournament") {
-                // Can only play tournament during play phase if registered
-                if (tournamentPhase !== 1 || !isRegistered) {
-                    return; // Can't start tournament game
-                }
-            }
-            
             var isTournamentGame = (gameMode === "tournament" && tournamentPhase === 1 && isRegistered);
+            if (gameMode === "tournament" && !isTournamentGame) return;
             
-            score = 0;
-            txCount = 0;
-            timeLeft = 100;
-            playerSide = "left";
-            gameActive = true;
-            canRestart = false;
-            chopsSinceLastTx = 0;
+            score = 0; txCount = 0; timeLeft = 100; playerSide = "left";
+            gameActive = true; canRestart = false; chopsSinceLastTx = 0;
+            
+            // Cache the play end time at game start for consistent timing
+            cachedPlayEndTime = isTournamentGame ? playEndTime : 0;
             
             startOverlay.classList.add("hidden");
             gameOver.classList.remove("show", "canRestart", "newRecord");
@@ -986,13 +942,16 @@
             timeBar.className = "";
             lumberjack.className = "left";
             gameArea.classList.remove("shake");
+            $("txLink").innerHTML = "";
             
             if (isTournamentGame) {
                 gameArea.classList.add("tournament");
                 tournamentBadge.classList.add("show");
+                tournamentCountdown.classList.add("show");
             } else {
                 gameArea.classList.remove("tournament");
                 tournamentBadge.classList.remove("show");
+                tournamentCountdown.classList.remove("show");
             }
             
             initBranches();
@@ -1007,18 +966,11 @@
         function gameLoop() {
             if (!gameActive) return;
             
-            // In tournament mode, HARD STOP when timer hits 0
-            if (gameMode === "tournament" && tournamentPhase === 1) {
-                var now = Date.now();
-                var remaining = Math.max(0, playEndTime - now);
+            // Check tournament time limit FIRST
+            if (gameMode === "tournament" && cachedPlayEndTime > 0) {
+                var remaining = cachedPlayEndTime - Date.now();
                 if (remaining <= 0) {
-                    // Tournament time expired - LOCK EVERYTHING
-                    tournamentLocked = true;
-                    gameActive = false;
-                    cancelAnimationFrame(animFrame);
-                    
-                    // Force end game immediately
-                    endGame();
+                    forceEndGame("TIME'S UP!");
                     return;
                 }
             }
@@ -1034,13 +986,9 @@
             var pct = Math.max(0, timeLeft);
             timeBar.style.width = pct + "%";
             
-            if (pct > 50) {
-                timeBar.className = "";
-            } else if (pct > 25) {
-                timeBar.className = "warning";
-            } else {
-                timeBar.className = "danger";
-            }
+            if (pct > 50) timeBar.className = "";
+            else if (pct > 25) timeBar.className = "warning";
+            else timeBar.className = "danger";
             
             if (timeLeft <= 0) {
                 endGame();
@@ -1051,7 +999,7 @@
         }
         
         function chop(side) {
-            if (!gameActive) return;
+            if (!gameActive || tournamentLocked) return;
             
             var now = Date.now();
             if (now - lastChopTime < 60) return;
@@ -1081,16 +1029,12 @@
             
             var newSide = Math.random() > 0.5 ? "left" : "right";
             var newY = branches[branches.length - 1].y + 70;
-            var newEl = createBranch(newSide, newY);
-            branches.push({ side: newSide, y: newY, el: newEl });
+            branches.push({ side: newSide, y: newY, el: createBranch(newSide, newY) });
             
-            score++;
-            txCount++;
-            chopsSinceLastTx++;
+            score++; txCount++; chopsSinceLastTx++;
             timeLeft = Math.min(100, timeLeft + 6);
             scoreDisplay.textContent = score;
             
-            // Batch chops - only send transaction every 10 chops
             if (chopsSinceLastTx >= CHOPS_PER_TX) {
                 chopsSinceLastTx = 0;
                 contract.chop(userAddress, score, { gasLimit: 100000 }).catch(function() {});
@@ -1098,6 +1042,7 @@
         }
         
         function endGame() {
+            if (!gameActive) return;
             gameActive = false;
             cancelAnimationFrame(animFrame);
             
@@ -1106,6 +1051,8 @@
             gameArea.classList.add("shake");
             playDeathSound();
             setTimeout(function() { gameArea.classList.remove("shake"); }, 250);
+            
+            tournamentCountdown.classList.remove("show", "urgent");
             
             var isRecord = score > highScore;
             if (isRecord) {
@@ -1119,64 +1066,29 @@
             $("beatScore").textContent = isRecord ? "🎉 NEW RECORD!" : "Best: " + highScore;
             
             if (isRecord) gameOver.classList.add("newRecord");
+            gameOver.querySelector("h2").textContent = isRecord ? "🎉 NEW RECORD!" : "GAME OVER";
             
-            if (isTournamentGame) {
+            if (isTournamentGame && isRegistered) {
                 $("tournamentSubmit").classList.add("show");
                 if (score > myCurrentTournamentScore) {
                     $("tournamentSubmit").textContent = "🏆 Submitting score " + score + "...";
+                    submitScoreWithRetry(score, 0);
                 } else {
                     $("tournamentSubmit").textContent = "Score " + score + " (your best: " + myCurrentTournamentScore + ")";
                 }
             } else {
                 $("tournamentSubmit").classList.remove("show");
+                contract.endGame(userAddress, score, { gasLimit: 150000 }).catch(function() {});
             }
             
-            gameOver.querySelector("h2").textContent = isRecord ? "🎉 NEW RECORD!" : "GAME OVER";
             gameOver.style.display = "flex";
             gameOver.classList.add("show");
+            $("restartBtn").style.display = "block";
             
             setTimeout(function() {
                 canRestart = true;
                 gameOver.classList.add("canRestart");
             }, 800);
-            
-            submitGameResults(isTournamentGame, score);
-        }
-        
-        function submitGameResults(isTournamentGame, finalScore) {
-            if (isTournamentGame && isRegistered && finalScore > myCurrentTournamentScore) {
-                // Submit score with retries, regardless of phase timing
-                var submitAttempts = 0;
-                var maxAttempts = 3;
-                
-                function trySubmit() {
-                    submitAttempts++;
-                    contract.submitScore(finalScore, { gasLimit: 300000 }).then(function(tx) {
-                        $("tournamentSubmit").textContent = "🏆 Confirming " + finalScore + "...";
-                        return tx.wait();
-                    }).then(function(receipt) {
-                        $("tournamentSubmit").textContent = "🏆 Score " + finalScore + " confirmed!";
-                        $("txLink").innerHTML = '<a href="' + EXPLORER + '/tx/' + receipt.transactionHash + '" target="_blank">View on Explorer →</a>';
-                        myCurrentTournamentScore = finalScore;
-                        $("myScoreVal").textContent = finalScore;
-                        setTimeout(updateTournamentInfo, 1000);
-                    }).catch(function(err) {
-                        console.error("Score submit failed (attempt " + submitAttempts + "):", err);
-                        
-                        // Retry if we haven't hit max attempts
-                        if (submitAttempts < maxAttempts) {
-                            $("tournamentSubmit").textContent = "🔄 Retrying score submit...";
-                            setTimeout(trySubmit, 1000);
-                        } else {
-                            $("tournamentSubmit").textContent = "⚠️ Submit failed - score may not count";
-                        }
-                    });
-                }
-                
-                trySubmit();
-            } else if (!isTournamentGame) {
-                contract.endGame(userAddress, finalScore, { gasLimit: 150000 }).catch(function() {});
-            }
             
             updateBal();
         }
@@ -1184,13 +1096,9 @@
         $("restartBtn").onclick = startGame;
         
         function handleTap(side) {
-            // Block all taps if tournament is locked
             if (tournamentLocked) return;
-            
             if (!gameActive) {
-                if (canRestart || !gameOver.classList.contains("show")) {
-                    startGame();
-                }
+                if (canRestart || !gameOver.classList.contains("show")) startGame();
             } else {
                 chop(side);
             }
@@ -1202,76 +1110,15 @@
         $("tapRight").ontouchstart = function(e) { e.preventDefault(); handleTap("right"); };
         
         document.onkeydown = function(e) {
-            // Block all keyboard if tournament is locked
             if (tournamentLocked) return;
-            
-            if (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight") {
-                e.preventDefault();
-            }
+            if (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight") e.preventDefault();
             if (gameOver.classList.contains("show") && canRestart && (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight")) {
-                startGame();
-                return;
+                startGame(); return;
             }
-            if (e.key === " " && !gameActive && !gameOver.classList.contains("show")) {
-                startGame();
-            }
+            if (e.key === " " && !gameActive && !gameOver.classList.contains("show")) startGame();
             if (e.key === "ArrowLeft") handleTap("left");
             if (e.key === "ArrowRight") handleTap("right");
         };
-        
-        function showFinalizingScreen() {
-            finalizingOverlay.classList.add("show");
-            resultsDisplay.classList.remove("show");
-            $("finalizingSpinner").style.display = "block";
-            $("finalizingText").style.display = "block";
-            
-            // Wait only 1 second then fetch and show results (reduced from 3)
-            setTimeout(function() {
-                contract.getLastTournamentResult().then(function(last) {
-                    var lastId = last[0].toNumber();
-                    var winners = last[1];
-                    var lastHighScore = last[2].toNumber();
-                    var prizePerWinner = parseFloat(ethers.utils.formatEther(last[3]));
-                    var lastPlayerCount = last[4].toNumber();
-                    
-                    var html = "";
-                    
-                    if (lastPlayerCount === 0) {
-                        html = '<div class="result-refund">📭 No players joined</div>';
-                    } else if (lastPlayerCount === 1) {
-                        html = '<div class="result-refund">💸 Only 1 player joined</div>';
-                        html += '<div class="result-refund">Entry fee refunded</div>';
-                    } else if (winners.length === 0 || lastHighScore === 0) {
-                        html = '<div class="result-refund">💸 No scores submitted</div>';
-                        html += '<div class="result-refund">All players refunded</div>';
-                    } else if (winners.length === 1) {
-                        html = '<div class="result-winner">🏆 WINNER: ' + formatAddr(winners[0]) + '</div>';
-                        html += '<div class="result-score">High Score: ' + lastHighScore + '</div>';
-                        html += '<div class="result-prize">Prize: ' + prizePerWinner.toFixed(1) + ' MON</div>';
-                    } else {
-                        html = '<div class="result-winner">🏆 ' + winners.length + '-WAY TIE!</div>';
-                        html += '<div class="result-score">High Score: ' + lastHighScore + '</div>';
-                        for (var i = 0; i < winners.length; i++) {
-                            html += '<div class="result-winner">' + formatAddr(winners[i]) + '</div>';
-                        }
-                        html += '<div class="result-prize">Each won: ' + prizePerWinner.toFixed(1) + ' MON</div>';
-                    }
-                    
-                    resultsContent.innerHTML = html;
-                    
-                    // Hide spinner, show results
-                    $("finalizingSpinner").style.display = "none";
-                    $("finalizingText").style.display = "none";
-                    resultsDisplay.classList.add("show");
-                }).catch(function(e) {
-                    console.error("Results fetch error:", e);
-                    resultsContent.innerHTML = '<div class="result-refund">⚠️ Could not load results</div>';
-                    $("finalizingSpinner").style.display = "none";
-                    $("finalizingText").style.display = "none";
-                    resultsDisplay.classList.add("show");
-                });
-            }, 1000); // Reduced from 3000ms to 1000ms
-        }
     </script>
 </body>
 </html>
